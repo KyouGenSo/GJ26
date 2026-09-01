@@ -1,0 +1,4 @@
+[submodule "SyzygyEngine"]
+	path = SyzygyEngine
+	url = https://github.com/TaiseiHamaya/SyzygyEngine.git
+	branch = develop

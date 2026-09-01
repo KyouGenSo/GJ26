@@ -1,0 +1,31 @@
+{
+  "ProjectName": "GJ26",
+  "WindowStyle": {
+    "Fullscreen": true,
+    "MaximizeBox": false,
+    "MinimizeBox": true,
+    "Resizable": false
+  },
+  "GraphicsAPI": {
+    "NumBuffering": 2,
+    "ShaderVersion": "6.6",
+    "SrvHeapSize": 65536,
+    "RtvHeapSize": 10,
+    "DsvHeapSize": 1,
+    "ClearColor": {
+      "R": 0.0,
+      "G": 0.0,
+      "B": 0.0,
+      "A": 1.0
+    }
+  },
+  "Application": {
+    "Window": {
+      "Width": 1920,
+      "Height": 1080
+    },
+    "FixDeltaSeconds": null,
+    "TargetFrameRate": null
+  }
+}
+
