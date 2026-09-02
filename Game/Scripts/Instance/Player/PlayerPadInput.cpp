@@ -9,6 +9,7 @@ PlayerInputFrame PlayerPadInput::update() {
 
 	PlayerInputFrame result;
 	result.move = szg::Input::StickL();
+	result.cameraRotationInput = szg::Input::StickR();
 	result.jumpTriggered = mapper.trigger(PlayerInputAction::Jump);
 	result.pushPressed = mapper.press(PlayerInputAction::Push);
 	result.pullPressed = mapper.press(PlayerInputAction::Pull);

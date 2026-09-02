@@ -4,8 +4,8 @@
 	"Font": [],
 	"Json": [],
 	"Mesh": [
-		".\\SyzygyEngine\\Assets\\Models\\Grid\\Grid.gltf",
-		".\\SyzygyEngine\\Assets\\Models\\Primitive\\Sphere.obj"
+		".\\SyzygyEngine\\Assets\\Models\\Primitive\\Sphere.obj",
+		".\\SyzygyEngine\\Assets\\Models\\Grid\\Grid.gltf"
 	],
 	"Shader": [],
 	"Skeleton": [],

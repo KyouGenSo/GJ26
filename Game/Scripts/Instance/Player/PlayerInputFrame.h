@@ -13,6 +13,10 @@ enum class PlayerInputAction {
 /// </summary>
 struct PlayerInputFrame {
 	Vector2 move;
+	/// Pad右スティックなどの継続的な旋回入力
+	Vector2 cameraRotationInput;
+	/// マウスなどの現在フレームに発生した旋回量
+	Vector2 cameraRotationDelta;
 	bool jumpTriggered{ false };
 	bool pushPressed{ false };
 	bool pullPressed{ false };

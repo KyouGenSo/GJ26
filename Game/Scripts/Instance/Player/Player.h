@@ -8,6 +8,8 @@
 #include "PlayerInput.h"
 #include "PlayerStateManager.h"
 
+class FollowCamera;
+
 /// <summary>
 /// プレイヤー
 /// </summary>
@@ -51,6 +53,12 @@ public:
 	PlayerContext& get_context_mut() noexcept;
 	/// PlayerContextを読み取り専用で取得
 	const PlayerContext& get_context_imm() const noexcept;
+	/// 操作対象のWorldInstanceを取得
+	Reference<szg::WorldInstance> get_world_instance_mut() noexcept;
+	/// 操作対象のWorldInstanceを読み取り専用で取得
+	Reference<const szg::WorldInstance> get_world_instance_imm() const noexcept;
+	/// 追従カメラを取得
+	Reference<FollowCamera> get_follow_camera_mut() noexcept;
 	/// stateを取得
 	PlayerState get_state() const noexcept;
 	/// 移動速度を取得
@@ -72,11 +80,14 @@ public:
 	void set_grip_move_speed(float gripMoveSpeed) noexcept;
 	/// 掴める対象が存在するかを設定
 	void set_can_grip(bool canGrip) noexcept;
+	/// Playerが操作する追従カメラを設定
+	void set_follow_camera(Reference<FollowCamera> followCamera) noexcept;
 
 	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
 
 private:
 	Reference<szg::SkinningMeshInstance> meshInstance_;
+	Reference<FollowCamera> followCamera_;
 
 	PlayerInput playerInput_;
 	PlayerContext context_;

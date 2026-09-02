@@ -9,6 +9,11 @@ PlayerInputFrame PlayerInput::update() {
 	if (result.move.length() > 1.0f) {
 		result.move = result.move.normalize();
 	}
+	result.cameraRotationInput = key.cameraRotationInput + pad.cameraRotationInput;
+	if (result.cameraRotationInput.length() > 1.0f) {
+		result.cameraRotationInput = result.cameraRotationInput.normalize();
+	}
+	result.cameraRotationDelta = key.cameraRotationDelta + pad.cameraRotationDelta;
 
 	result.jumpTriggered = key.jumpTriggered || pad.jumpTriggered;
 	result.pushPressed = key.pushPressed || pad.pushPressed;

@@ -30,4 +30,8 @@ struct PlayerContext {
 	PlayerInputFrame input;
 	/// 現在フレームの経過秒数
 	float deltaSeconds{ 0.0f };
+	/// カメラ視点をXZ平面へ投影した前方向
+	Vector3 moveForward{ 0.0f, 0.0f, 1.0f };
+	/// カメラ視点をXZ平面へ投影した右方向
+	Vector3 moveRight{ 1.0f, 0.0f, 0.0f };
 };

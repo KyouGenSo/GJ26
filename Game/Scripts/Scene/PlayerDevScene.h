@@ -4,6 +4,7 @@
 #include <Engine/Runtime/Scene/Scene.h>
 
 class Player;
+class FollowCamera;
 
 class PlayerDevScene : public szg::Scene {
 public:
@@ -19,5 +20,6 @@ public:
 private:
 
 	std::unique_ptr<Player> playerScript;
+	std::unique_ptr<FollowCamera> followCameraScript;
 
 };

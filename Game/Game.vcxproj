@@ -15,29 +15,31 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp" />
     <ClCompile Include="Scripts\Instance\Player\Player.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerKeyInput.cpp" />
-	<ClCompile Include="Scripts\Instance\Player\PlayerMovement.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\PlayerMovement.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp" />
-	<ClCompile Include="Scripts\Instance\Player\PlayerState.cpp" />
-	<ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\PlayerState.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
     <ClCompile Include="Scripts\main.cpp" />
     <ClCompile Include="Scripts\Scene\FactoryGJ26.cpp" />
     <ClCompile Include="Scripts\GJ26.cpp" />
     <ClCompile Include="Scripts\Scene\PlayerDevScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
     <ClInclude Include="Scripts\InputMapper.h" />
-	<ClInclude Include="Scripts\Instance\Player\PlayerContext.h" />
+    <ClInclude Include="Scripts\Instance\Player\PlayerContext.h" />
     <ClInclude Include="Scripts\Instance\Player\Player.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerInput.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerInputFrame.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerKeyInput.h" />
-	<ClInclude Include="Scripts\Instance\Player\PlayerMovement.h" />
+    <ClInclude Include="Scripts\Instance\Player\PlayerMovement.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerPadInput.h" />
-	<ClInclude Include="Scripts\Instance\Player\PlayerState.h" />
-	<ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
+    <ClInclude Include="Scripts\Instance\Player\PlayerState.h" />
+    <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
     <ClInclude Include="Scripts\GJ26.h" />
     <ClInclude Include="Scripts\Scene\PlayerDevScene.h" />

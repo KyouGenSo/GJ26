@@ -2,6 +2,8 @@
 
 #include <Engine/Runtime/Clock/WorldClock.h>
 
+#include "Scripts/Instance/FollowCamera/FollowCamera.h"
+
 Player::Player(Reference<szg::WorldInstance> worldInstance_) noexcept {
 	set_world_instance(worldInstance_);
 }
@@ -13,6 +15,7 @@ void Player::finalize() {
 	stateManager_.reset(context_);
 	context_ = {};
 	meshInstance_.reset();
+	followCamera_.reset();
 }
 
 //================================
@@ -21,6 +24,16 @@ void Player::finalize() {
 void Player::prev_update() {
 	context_.input = playerInput_.update();
 	context_.deltaSeconds = szg::WorldClock::DeltaSeconds();
+	if (followCamera_) {
+		followCamera_->add_rotation_input(context_.input.cameraRotationInput);
+		followCamera_->add_rotation_delta(context_.input.cameraRotationDelta);
+		context_.moveForward = followCamera_->get_horizontal_forward();
+		context_.moveRight = followCamera_->get_horizontal_right();
+	}
+	else {
+		context_.moveForward = { 0.0f, 0.0f, 1.0f };
+		context_.moveRight = { 1.0f, 0.0f, 0.0f };
+	}
 	stateManager_.update(context_);
 }
 
@@ -79,6 +92,27 @@ const PlayerContext& Player::get_context_imm() const noexcept {
 }
 
 //================================
+// 操作対象のWorldInstanceの取得
+//================================
+Reference<szg::WorldInstance> Player::get_world_instance_mut() noexcept {
+	return context_.worldInstance;
+}
+
+//================================
+// 操作対象のWorldInstanceの読み取り専用取得
+//================================
+Reference<const szg::WorldInstance> Player::get_world_instance_imm() const noexcept {
+	return context_.worldInstance;
+}
+
+//================================
+// 追従カメラの取得
+//================================
+Reference<FollowCamera> Player::get_follow_camera_mut() noexcept {
+	return followCamera_;
+}
+
+//================================
 // 状態の取得
 //================================
 PlayerState Player::get_state() const noexcept {
@@ -106,6 +140,10 @@ void Player::set_grip_move_speed(float gripMoveSpeed) noexcept {
 
 void Player::set_can_grip(bool canGrip) noexcept {
 	context_.canGrip = canGrip;
+}
+
+void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
+	followCamera_ = followCamera;
 }
 
 void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance) {

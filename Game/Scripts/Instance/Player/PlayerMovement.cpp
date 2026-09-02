@@ -7,11 +7,9 @@ void PlayerMovement::move_horizontal(PlayerContext& context, float moveSpeed) no
 		return;
 	}
 
-	const Vector3 moveDirection{
-		context.input.move.x,
-		0.0f,
-		context.input.move.y,
-	};
+	const Vector3 moveDirection =
+		context.moveRight * context.input.move.x +
+		context.moveForward * context.input.move.y;
 	const float moveDistance = moveSpeed * context.deltaSeconds;
 	context.worldInstance->transform_mut().plus_translate(moveDirection * moveDistance);
 }
