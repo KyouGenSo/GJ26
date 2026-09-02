@@ -40,12 +40,12 @@ bool MapChipField::load_stage(i32 stageNumber) {
 }
 
 std::string MapChipField::StageDirectory(i32 stageNumber) {
-	return std::format("[[game]]/Map/Stage{}", stageNumber);
+	return std::format("[[game]]/Map/Stage{:02}", stageNumber);
 }
 
 i32 MapChipField::CountStages() {
 	i32 count = 0;
-	while (ExistsCsv(std::format("{}/layer1.csv", StageDirectory(count + 1)))) {
+	while (ExistsCsv(std::format("{}/layer01.csv", StageDirectory(count + 1)))) {
 		++count;
 	}
 	return count;
@@ -61,7 +61,7 @@ bool MapChipField::load(const std::string& directory) {
 
 	std::vector<szg::CSVAsset<i32>> layers;
 	for (i32 i = 1; ; ++i) {
-		std::filesystem::path file = szg::IAssetBuilder::ResolveFilePath(std::format("{}/layer{}.csv", directory, i), "csv");
+		std::filesystem::path file = szg::IAssetBuilder::ResolveFilePath(std::format("{}/layer{:02}.csv", directory, i), "csv");
 		if (!std::filesystem::exists(file)) {
 			break;
 		}

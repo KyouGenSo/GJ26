@@ -28,16 +28,16 @@ struct MapChipIndex {
 };
 
 /// <summary>
-/// <para>3Dマップチップ(整数IDの3次元グリッド)</para>
-/// <para>CSV : layerN.csv が y=N-1、行=z(1行目が z=0)、列=x(左→右が +X)</para>
+/// <para>3Dマップチップ</para>
+/// <para>CSV : layer01.csv, layer02.csv, ... の N 番目が y=N-1、行=z(1行目が z=0)、列=x(左→右が +X)</para>
 /// <para>チップ(x,y,z)はワールド座標(x,y,z)を中心とする 1x1x1 の立方体</para>
 /// </summary>
 class MapChipField {
 public:
 	/// <summary>
-	/// directory/layer1.csv, layer2.csv, ... を連番が途切れるまで読み込む
+	/// directory/layer01.csv, layer02.csv, ... を連番が途切れるまで読み込む
 	/// </summary>
-	/// <param name="directory">"[[game]]/Map/Test" 形式のディレクトリ</param>
+	/// <param name="directory">"[[game]]/Map/Stage01" 形式のディレクトリ</param>
 	/// <returns>1層以上読み込めたら true</returns>
 	bool load(const std::string& directory);
 
@@ -47,12 +47,12 @@ public:
 	bool load_stage(i32 stageNumber);
 
 	/// <summary>
-	/// "[[game]]/Map/Stage{N}" 形式のステージディレクトリ(N は 1 始まり)
+	/// "[[game]]/Map/Stage01" 形式のステージディレクトリ(番号は 1 始まり、0 埋め 2 桁)
 	/// </summary>
 	static std::string StageDirectory(i32 stageNumber);
 
 	/// <summary>
-	/// Stage1, Stage2, ... の layer1.csv が存在する間数える
+	/// Stage01, Stage02, ... の layer01.csv が存在する間数える
 	/// </summary>
 	static i32 CountStages();
 
