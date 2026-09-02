@@ -1,10 +1,10 @@
 {
   "ProjectName": "GJ26",
   "WindowStyle": {
-    "Fullscreen": true,
+    "Fullscreen": false,
     "MaximizeBox": false,
     "MinimizeBox": true,
-    "Resizable": false
+    "Resizable": true
   },
   "GraphicsAPI": {
     "NumBuffering": 2,
