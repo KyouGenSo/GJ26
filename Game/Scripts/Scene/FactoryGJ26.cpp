@@ -1,14 +1,15 @@
 #include "FactoryGJ26.h"
 
-#include <Engine/Runtime/Scene/Scene.h>
+#include "MapTestScene.h"
 
 std::unique_ptr<szg::Scene> FactoryGJ26::initialize_scene2() {
-	return create_scene2(0);
+	return create_scene2(SceneListGJ26::MapTest);
 }
 
-std::unique_ptr<szg::Scene> FactoryGJ26::create_scene2(i32) {
-	return std::make_unique<szg::Scene>();
+std::unique_ptr<szg::Scene> FactoryGJ26::create_scene2(i32 next) {
+	switch (next) {
+	case SceneListGJ26::MapTest:
+	default:
+		return std::make_unique<MapTestScene>();
+	}
 }
-
-
-

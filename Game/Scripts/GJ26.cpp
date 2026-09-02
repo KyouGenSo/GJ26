@@ -7,5 +7,3 @@
 void GJ26::initialize() {
 	szg::SceneManager2::SetupFactory(std::make_unique<FactoryGJ26>());
 }
-
-

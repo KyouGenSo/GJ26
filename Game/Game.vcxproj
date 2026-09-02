@@ -18,10 +18,16 @@
     <ClCompile Include="Scripts\main.cpp" />
     <ClCompile Include="Scripts\Scene\FactoryGJ26.cpp" />
     <ClCompile Include="Scripts\GJ26.cpp" />
+    <ClCompile Include="Scripts\MapChip\MapChipField.cpp" />
+    <ClCompile Include="Scripts\Scene\MapTestScene.cpp" />
+    <ClCompile Include="Scripts\ScriptMapTest\MapTestScript.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
     <ClInclude Include="Scripts\GJ26.h" />
+    <ClInclude Include="Scripts\MapChip\MapChipField.h" />
+    <ClInclude Include="Scripts\Scene\MapTestScene.h" />
+    <ClInclude Include="Scripts\ScriptMapTest\MapTestScript.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
