@@ -4,18 +4,22 @@
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
+#include <Engine/Runtime/Scene/SceneManager2.h>
+
+#include "Scripts/Scene/FactoryGJ26.h"
 
 void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	worldRoot = worldRoot_;
+
+	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
+	pad.initialize({ szg::PadID::LShoulder, szg::PadID::RShoulder }, szg::InputInitializeMode::Current);
+
 	stageCount = MapChipField::CountStages();
 	if (stageCount == 0) {
-		szgWarning("MapTestScript: \'{}\' not found.", MapChipField::StageDirectory(1));
+		szgWarning("MapTestScript: '{}' not found.", MapChipField::StageDirectory(1));
 		return;
 	}
 	stageNumber = std::clamp(szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1), 1, stageCount);
-
-	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right });
-	pad.initialize({ szg::PadID::LShoulder, szg::PadID::RShoulder });
 
 	// 地面
 	ground = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
@@ -25,11 +29,17 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 }
 
 void MapTestScript::prev_update() {
+	keys.update();
+	pad.update();
+
+	if (keys.trigger(szg::KeyID::F5)) {
+		szg::SceneManager2::SceneChange(SceneListGJ26::StageEditor, 0.0f);
+		return;
+	}
+
 	if (stageCount == 0) {
 		return;
 	}
-	keys.update();
-	pad.update();
 
 	i32 step = 0;
 	if (keys.trigger(szg::KeyID::Left) || pad.trigger(szg::PadID::LShoulder)) {

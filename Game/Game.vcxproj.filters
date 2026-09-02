@@ -10,6 +10,11 @@
     <ClCompile Include="Scripts\MapChip\MapChipField.cpp" />
     <ClCompile Include="Scripts\Scene\MapTestScene.cpp" />
     <ClCompile Include="Scripts\ScriptMapTest\MapTestScript.cpp" />
+    <ClCompile Include="Scripts\Editor\StageEditorDocument.cpp" />
+    <ClCompile Include="Scripts\Editor\StageEditorWindow.cpp" />
+    <ClCompile Include="Scripts\Scene\StageEditorScene.cpp" />
+    <ClCompile Include="Scripts\ScriptStageEditor\StageEditorCameraScript.cpp" />
+    <ClCompile Include="Scripts\ScriptStageEditor\StageEditorScript.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
@@ -17,6 +22,11 @@
     <ClInclude Include="Scripts\MapChip\MapChipField.h" />
     <ClInclude Include="Scripts\Scene\MapTestScene.h" />
     <ClInclude Include="Scripts\ScriptMapTest\MapTestScript.h" />
+    <ClInclude Include="Scripts\Editor\StageEditorDocument.h" />
+    <ClInclude Include="Scripts\Editor\StageEditorWindow.h" />
+    <ClInclude Include="Scripts\Scene\StageEditorScene.h" />
+    <ClInclude Include="Scripts\ScriptStageEditor\StageEditorCameraScript.h" />
+    <ClInclude Include="Scripts\ScriptStageEditor\StageEditorScript.h" />
   </ItemGroup>
 </Project>
 

@@ -1,0 +1,77 @@
+{
+	"Instances": [
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 0.9467254281044006,
+					"XYZ": {
+						"X": 0.3220418393611908,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 1.5,
+					"Y": 10.0,
+					"Z": -10.5
+				}
+			},
+			"Name": "MainCamera",
+			"Projection": {
+				"AspectRatio": 1.7776999473571777,
+				"FOV Y": 0.44999998807907104,
+				"FarClip": 1000.0,
+				"NearClip": 0.10000000149011612,
+				"Type": 0
+			},
+			"Type": 3000,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"Color": {
+				"B": 1.0,
+				"G": 1.0,
+				"R": 1.0
+			},
+			"Direction": {
+				"X": 0.3202599883079529,
+				"Y": -0.8006399869918823,
+				"Z": 0.48037999868392944
+			},
+			"Influence Layer": 1,
+			"Intensity": 1.0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 3.5,
+					"Y": 5.0,
+					"Z": 2.5
+				}
+			},
+			"Name": "DirectionalLight",
+			"Type": 5000,
+			"Use runtime": false
+		}
+	],
+	"Name": "Main",
+	"NumLayer": 1
+}
