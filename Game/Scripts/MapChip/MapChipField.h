@@ -42,6 +42,21 @@ public:
 	bool load(const std::string& directory);
 
 	/// <summary>
+	/// StageDirectory(stageNumber) を load する
+	/// </summary>
+	bool load_stage(i32 stageNumber);
+
+	/// <summary>
+	/// "[[game]]/Map/Stage{N}" 形式のステージディレクトリ(N は 1 始まり)
+	/// </summary>
+	static std::string StageDirectory(i32 stageNumber);
+
+	/// <summary>
+	/// Stage1, Stage2, ... の layer1.csv が存在する間数える
+	/// </summary>
+	static i32 CountStages();
+
+	/// <summary>
 	/// Empty 以外のチップに表示用の立方体を生成する
 	/// </summary>
 	void build(szg::WorldRoot& worldRoot_);

@@ -26,7 +26,30 @@ ColorRGB ChipColor(MapChipType type) {
 	}
 }
 
+/// <summary>
+/// "[[game]]/..." 形式の CSV パスが実在するか
+/// </summary>
+bool ExistsCsv(const std::string& path) {
+	return std::filesystem::exists(szg::IAssetBuilder::ResolveFilePath(path, "csv"));
+}
+
 } // namespace
+
+bool MapChipField::load_stage(i32 stageNumber) {
+	return load(StageDirectory(stageNumber));
+}
+
+std::string MapChipField::StageDirectory(i32 stageNumber) {
+	return std::format("[[game]]/Map/Stage{}", stageNumber);
+}
+
+i32 MapChipField::CountStages() {
+	i32 count = 0;
+	while (ExistsCsv(std::format("{}/layer1.csv", StageDirectory(count + 1)))) {
+		++count;
+	}
+	return count;
+}
 
 bool MapChipField::load(const std::string& directory) {
 	for (auto& visual : visuals) {
