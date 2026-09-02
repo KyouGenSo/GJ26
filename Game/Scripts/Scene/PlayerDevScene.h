@@ -1,12 +1,15 @@
 #pragma once
+#include <memory>
+
 #include <Engine/Runtime/Scene/Scene.h>
 
+class Player;
 
 class PlayerDevScene : public szg::Scene {
 public:
 
 	PlayerDevScene() noexcept;
-	~PlayerDevScene() noexcept override = default;
+	~PlayerDevScene() noexcept override;
 
 	SZG_CLASS_MOVE_ONLY(PlayerDevScene)
 
@@ -15,5 +18,6 @@ public:
 
 private:
 
+	std::unique_ptr<Player> playerScript;
 
 };

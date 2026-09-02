@@ -1,22 +1,12 @@
 #pragma once
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Module/World/WorldInstance/WorldInstance.h>
+#include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 
 #include <Library/Utility/Template/Reference.h>
 
 #include "PlayerInput.h"
-
-enum class PlayerState {
-	Idle,
-	Move,
-};
-
-enum class PlayerAction {
-	None,
-	Jump,
-	push,
-	pull,
-};
+#include "PlayerStateManager.h"
 
 /// <summary>
 /// プレイヤー
@@ -46,55 +36,49 @@ public:
 	///　</summary>
 	void post_update() override;
 
-public:
-	/// <summary>
-	/// 操作対象のWorldInstanceを設定
-	/// </summary>
-	void set_world_instance(Reference<szg::WorldInstance> worldInstance) noexcept;
-
-	/// <summary>
-	/// 入力設定を取得
-	/// </summary>
-	PlayerInput& input_mut() noexcept;
-
-	/// <summary>
-	/// 現在フレームの入力を取得
-	/// </summary>
-	const PlayerInputFrame& input_imm() const noexcept;
-
-	void set_state(PlayerState state);
-	PlayerState state_imm() const noexcept;
-
-	/// <summary>
-	/// 移動速度を設定（ワールド単位/秒）
-	/// </summary>
-	void set_move_speed(float moveSpeed) noexcept;
-
-	/// <summary>
-	/// 移動速度を取得（ワールド単位/秒）
-	/// </summary>
-	float move_speed() const noexcept;
-
-	void set_action(PlayerAction action);
-
 	/// <summary>
 	/// プレイヤーのY座標から接地状態を更新
 	/// </summary>
 	void update_grounded(float positionY) noexcept;
 
-	/// <summary>
+public:
+
+	/// 入力設定を取得
+	PlayerInput& get_input_mut() noexcept;
+	/// 現在フレームの入力を取得
+	const PlayerInputFrame& get_input_imm() const noexcept;
+	/// PlayerContextを取得
+	PlayerContext& get_context_mut() noexcept;
+	/// PlayerContextを読み取り専用で取得
+	const PlayerContext& get_context_imm() const noexcept;
+	/// stateを取得
+	PlayerState get_state() const noexcept;
+	/// 移動速度を取得
+	float get_move_speed() const noexcept;
 	/// 接地しているか
-	/// </summary>
 	bool is_grounded() const noexcept;
 
-private:
-	void update_movement();
+public:
+
+	/// 操作対象のWorldInstanceを設定
+	void set_world_instance(Reference<szg::WorldInstance> worldInstance) noexcept;
+	/// 移動速度を設定
+	void set_move_speed(float moveSpeed) noexcept;
+	/// ジャンプ力を設定
+	void set_jump_power(float jumpPower) noexcept;
+	/// 落下速度を設定
+	void set_fall_speed(float fallSpeed) noexcept;
+	/// Push、Pull中の移動速度を設定
+	void set_grip_move_speed(float gripMoveSpeed) noexcept;
+	/// 掴める対象が存在するかを設定
+	void set_can_grip(bool canGrip) noexcept;
+
+	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
 
 private:
-	Reference<szg::WorldInstance> worldInstance;
-	PlayerInput playerInput;
-	PlayerInputFrame inputFrame;
-	PlayerState state{ PlayerState::Idle };
-	float moveSpeed{ 5.0f };
-	bool isGrounded{ false };
+	Reference<szg::SkinningMeshInstance> meshInstance_;
+
+	PlayerInput playerInput_;
+	PlayerContext context_;
+	PlayerStateManager stateManager_;
 };

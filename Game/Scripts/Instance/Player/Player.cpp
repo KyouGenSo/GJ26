@@ -10,121 +10,125 @@ Player::Player(Reference<szg::WorldInstance> worldInstance_) noexcept {
 // 開放処理
 //================================
 void Player::finalize() {
-	worldInstance.reset();
-	inputFrame = {};
-	state = PlayerState::Idle;
-	isGrounded = false;
+	stateManager_.reset(context_);
+	context_ = {};
+	meshInstance_.reset();
 }
 
 //================================
 // world更新前処理
 //================================
 void Player::prev_update() {
-	inputFrame = playerInput.update();
-	update_movement();
+	context_.input = playerInput_.update();
+	context_.deltaSeconds = szg::WorldClock::DeltaSeconds();
+	stateManager_.update(context_);
 }
 
 //================================
 // world更新後処理
 //================================
 void Player::post_update() {
-	if (!worldInstance) {
-		isGrounded = false;
+	if (!context_.worldInstance) {
+		context_.isGrounded = false;
 		return;
 	}
 
-	update_grounded(worldInstance->world_position().y);
+	update_grounded(context_.worldInstance->world_position().y);
 }
 
 //================================
 // 操作対象のWorldInstanceを設定
 //================================
 void Player::set_world_instance(Reference<szg::WorldInstance> worldInstance_) noexcept {
-	worldInstance = worldInstance_;
+	context_.worldInstance = worldInstance_;
 
-	if (!worldInstance) {
-		isGrounded = false;
+	if (!context_.worldInstance) {
+		context_.isGrounded = false;
 		return;
 	}
 
-	update_grounded(worldInstance->transform_imm().get_translate().y);
+	update_grounded(context_.worldInstance->transform_imm().get_translate().y);
 }
 
 //================================
 // 入力設定の取得
 //================================
-PlayerInput& Player::input_mut() noexcept {
-	return playerInput;
+PlayerInput& Player::get_input_mut() noexcept {
+	return playerInput_;
 }
 
 //================================
 // 現在フレームの入力を取得
 //================================
-const PlayerInputFrame& Player::input_imm() const noexcept {
-	return inputFrame;
+const PlayerInputFrame& Player::get_input_imm() const noexcept {
+	return context_.input;
 }
 
 //================================
-// 状態の設定
+// PlayerContextの取得
 //================================
-void Player::set_state(PlayerState state_) {
-	state = state_;
+PlayerContext& Player::get_context_mut() noexcept {
+	return context_;
+}
+
+//================================
+// PlayerContextの読み取り専用取得
+//================================
+const PlayerContext& Player::get_context_imm() const noexcept {
+	return context_;
 }
 
 //================================
 // 状態の取得
 //================================
-PlayerState Player::state_imm() const noexcept {
-	return state;
+PlayerState Player::get_state() const noexcept {
+	return stateManager_.get_current_state();
 }
 
 //================================
 // 移動速度の設定
 //================================
-void Player::set_move_speed(float moveSpeed_) noexcept {
-	moveSpeed = moveSpeed_ < 0.0f ? 0.0f : moveSpeed_;
+void Player::set_move_speed(float moveSpeed) noexcept {
+	context_.moveSpeed = moveSpeed < 0.0f ? 0.0f : moveSpeed;
+}
+
+void Player::set_jump_power(float jumpPower) noexcept {
+	context_.jumpPower = jumpPower < 0.0f ? 0.0f : jumpPower;
+}
+
+void Player::set_fall_speed(float fallSpeed) noexcept {
+	context_.fallSpeed = fallSpeed < 0.0f ? 0.0f : fallSpeed;
+}
+
+void Player::set_grip_move_speed(float gripMoveSpeed) noexcept {
+	context_.gripMoveSpeed = gripMoveSpeed < 0.0f ? 0.0f : gripMoveSpeed;
+}
+
+void Player::set_can_grip(bool canGrip) noexcept {
+	context_.canGrip = canGrip;
+}
+
+void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance) {
+	meshInstance_ = meshInstance;
 }
 
 //================================
 // 移動速度の取得
 //================================
-float Player::move_speed() const noexcept {
-	return moveSpeed;
-}
-
-//================================
-// 移動処理
-//================================
-void Player::update_movement() {
-	if (inputFrame.move.length() == 0.0f) {
-		set_state(PlayerState::Idle);
-		return;
-	}
-
-	set_state(PlayerState::Move);
-	if (!worldInstance) {
-		return;
-	}
-
-	const Vector3 moveDirection{
-		inputFrame.move.x,
-		0.0f,
-		inputFrame.move.y,
-	};
-	const float moveDistance = moveSpeed * szg::WorldClock::DeltaSeconds();
-	worldInstance->transform_mut().plus_translate(moveDirection * moveDistance);
+float Player::get_move_speed() const noexcept {
+	return context_.moveSpeed;
 }
 
 //================================
 // 接地状態の更新
 //================================
 void Player::update_grounded(float positionY) noexcept {
-	isGrounded = positionY == 0.0f;
+	context_.isGrounded = positionY == 0.0f;
 }
 
 //================================
 // 接地状態の取得
 //================================
 bool Player::is_grounded() const noexcept {
-	return isGrounded;
+	return context_.isGrounded;
 }
