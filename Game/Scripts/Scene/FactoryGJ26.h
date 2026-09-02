@@ -4,6 +4,9 @@
 
 enum SceneListGJ26 {
 	MapTest = 0,
+	StageEditor,
+
+	NumScene,
 };
 
 class FactoryGJ26 final : public szg::BaseSceneFactory {
