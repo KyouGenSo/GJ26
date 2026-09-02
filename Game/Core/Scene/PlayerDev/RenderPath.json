@@ -1,0 +1,12 @@
+{
+	"Nodes": [],
+	"ResultNode": {
+		"Connect": null,
+		"Debug": {
+			"Position": {
+				"X": 600.0,
+				"Y": 350.0
+			}
+		}
+	}
+}
