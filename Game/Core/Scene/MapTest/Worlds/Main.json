@@ -31,7 +31,7 @@
 				"Type": 0
 			},
 			"Type": 3000,
-			"Use runtime": false
+			"Use runtime": true
 		},
 		{
 			"Children": [],

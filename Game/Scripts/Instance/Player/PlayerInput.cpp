@@ -16,8 +16,7 @@ PlayerInputFrame PlayerInput::update() {
 	result.cameraRotationDelta = key.cameraRotationDelta + pad.cameraRotationDelta;
 
 	result.jumpTriggered = key.jumpTriggered || pad.jumpTriggered;
-	result.pushPressed = key.pushPressed || pad.pushPressed;
-	result.pullPressed = key.pullPressed || pad.pullPressed;
+	result.gripPressed = key.gripPressed || pad.gripPressed;
 	return result;
 }
 

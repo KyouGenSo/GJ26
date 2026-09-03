@@ -2,6 +2,7 @@
 
 PlayerPadInput::PlayerPadInput() {
 	mapper.bind(PlayerInputAction::Jump, szg::PadID::A);
+	mapper.bind(PlayerInputAction::Grip, szg::PadID::B);
 }
 
 PlayerInputFrame PlayerPadInput::update() {
@@ -11,8 +12,7 @@ PlayerInputFrame PlayerPadInput::update() {
 	result.move = szg::Input::StickL();
 	result.cameraRotationInput = szg::Input::StickR();
 	result.jumpTriggered = mapper.trigger(PlayerInputAction::Jump);
-	result.pushPressed = mapper.press(PlayerInputAction::Push);
-	result.pullPressed = mapper.press(PlayerInputAction::Pull);
+	result.gripPressed = mapper.press(PlayerInputAction::Grip);
 	return result;
 }
 

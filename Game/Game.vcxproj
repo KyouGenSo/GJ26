@@ -23,6 +23,7 @@
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerState.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
+    <ClCompile Include="Scripts\MapChip\BlockMovementJudge.cpp" />
     <ClCompile Include="Scripts\main.cpp" />
     <ClCompile Include="Scripts\Scene\FactoryGJ26.cpp" />
     <ClCompile Include="Scripts\GJ26.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="Scripts\Instance\Player\PlayerPadInput.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerState.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
+    <ClInclude Include="Scripts\MapChip\BlockMovementJudge.h" />
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
     <ClInclude Include="Scripts\GJ26.h" />
     <ClInclude Include="Scripts\MapChip\MapChipField.h" />

@@ -145,6 +145,10 @@ std::optional<MapChipIndex> MapChipField::to_index(const Vector3& position) cons
 	return index;
 }
 
+bool MapChipField::contains(const MapChipIndex& index) const {
+	return is_inside(index.x, index.y, index.z);
+}
+
 bool MapChipField::is_inside(i32 x, i32 y, i32 z) const {
 	return 0 <= x && x < sizeX && 0 <= y && y < sizeY && 0 <= z && z < sizeZ;
 }

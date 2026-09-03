@@ -6,7 +6,9 @@
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Library/Utility/Template/Reference.h>
 
-#include "Scripts/MapChip/MapChipField.h"
+#include "Scripts/MapChip/BlockMovementJudge.h"
+
+class Player;
 
 /// <summary>
 /// <para>マップチップの表示確認用スクリプト</para>
@@ -21,17 +23,22 @@ public:
 
 public:
 	void setup(Reference<szg::WorldRoot> worldRoot_);
+	void set_player(Reference<Player> player_);
 	void prev_update() override;
 
 	MapChipField& field_mut() { return field; }
+	Reference<const BlockMovementJudge> movement_judge_imm() const { return blockMovementJudge; }
 
 private:
 	void reload();
+	void reset_player_position();
 
 private:
 	MapChipField field;
+	BlockMovementJudge blockMovementJudge;
 	Reference<szg::WorldRoot> worldRoot;
 	Reference<szg::StaticMeshInstance> ground;
+	Reference<Player> player;
 	szg::InputHandler<szg::KeyID> keys;
 	szg::InputHandler<szg::PadID> pad;
 	i32 stageNumber{ 1 };

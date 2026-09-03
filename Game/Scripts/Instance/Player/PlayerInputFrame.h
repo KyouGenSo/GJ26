@@ -4,8 +4,7 @@
 
 enum class PlayerInputAction {
 	Jump,
-	Push,
-	Pull,
+	Grip,
 };
 
 /// <summary>
@@ -18,6 +17,6 @@ struct PlayerInputFrame {
 	/// マウスなどの現在フレームに発生した旋回量
 	Vector2 cameraRotationDelta;
 	bool jumpTriggered{ false };
-	bool pushPressed{ false };
-	bool pullPressed{ false };
+	/// ブロックを掴む入力が押されている
+	bool gripPressed{ false };
 };

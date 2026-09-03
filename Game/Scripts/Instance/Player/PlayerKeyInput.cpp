@@ -4,10 +4,12 @@
 
 PlayerKeyInput::PlayerKeyInput() {
 	mapper.bind(PlayerInputAction::Jump, szg::KeyID::Space);
+	mouseMapper.bind(PlayerInputAction::Grip, szg::MouseID::Left);
 }
 
 PlayerInputFrame PlayerKeyInput::update() {
 	mapper.update();
+	mouseMapper.update();
 
 	PlayerInputFrame result;
 	result.move = szg::InputAdvanced::PressWASD();
@@ -17,13 +19,16 @@ PlayerInputFrame PlayerKeyInput::update() {
 		-mouseDelta.y * mouseSensitivity_,
 	};
 	result.jumpTriggered = mapper.trigger(PlayerInputAction::Jump);
-	result.pushPressed = mapper.press(PlayerInputAction::Push);
-	result.pullPressed = mapper.press(PlayerInputAction::Pull);
+	result.gripPressed = mouseMapper.press(PlayerInputAction::Grip);
 	return result;
 }
 
 InputMapper<PlayerInputAction, szg::KeyID>& PlayerKeyInput::mapper_mut() noexcept {
 	return mapper;
+}
+
+InputMapper<PlayerInputAction, szg::MouseID>& PlayerKeyInput::mouse_mapper_mut() noexcept {
+	return mouseMapper;
 }
 
 float PlayerKeyInput::get_mouse_sensitivity() const noexcept {

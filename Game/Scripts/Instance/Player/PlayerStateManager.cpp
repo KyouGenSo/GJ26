@@ -44,13 +44,8 @@ void PlayerStateManager::update_locomotion_transition(PlayerContext& context) {
 		return;
 	}
 
-	if (context.canGrip && context.isGrounded && context.input.pushPressed) {
-		change_state(PlayerState::Push, context);
-		return;
-	}
-
-	if (context.canGrip && context.isGrounded && context.input.pullPressed) {
-		change_state(PlayerState::Pull, context);
+	if (context.gripTargetIndex && context.isGrounded && context.input.gripPressed) {
+		change_state(PlayerState::Grip, context);
 		return;
 	}
 
@@ -85,10 +80,8 @@ IPlayerState& PlayerStateManager::resolve_state(PlayerState state) noexcept {
 		return moveState_;
 	case PlayerState::Jump:
 		return jumpState_;
-	case PlayerState::Push:
-		return pushState_;
-	case PlayerState::Pull:
-		return pullState_;
+	case PlayerState::Grip:
+		return gripState_;
 	default:
 		return idleState_;
 	}

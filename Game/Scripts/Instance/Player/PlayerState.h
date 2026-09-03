@@ -6,8 +6,7 @@ enum class PlayerState {
 	Idle,
 	Move,
 	Jump,
-	Push,
-	Pull,
+	Grip,
 };
 
 /// <summary>
@@ -52,29 +51,11 @@ private:
 };
 
 /// <summary>
-/// Push、Pullに共通する掴みState
-/// 直接使用せず、派生Stateを使用する
+/// 掴み入力中のState
 /// </summary>
-class PlayerGripState : public IPlayerState {
+class PlayerGripState final : public IPlayerState {
 public:
-	void enter(PlayerContext& context) override final;
-	void execute(PlayerContext& context) override final;
-	void exit(PlayerContext& context) override final;
-
-protected:
-	virtual bool is_grip_input_active(const PlayerContext& context) const noexcept = 0;
-	virtual void execute_grip(PlayerContext& context) = 0;
-	virtual void exit_grip(PlayerContext& context);
-};
-
-class PlayerPushState final : public PlayerGripState {
-protected:
-	bool is_grip_input_active(const PlayerContext& context) const noexcept override;
-	void execute_grip(PlayerContext& context) override;
-};
-
-class PlayerPullState final : public PlayerGripState {
-protected:
-	bool is_grip_input_active(const PlayerContext& context) const noexcept override;
-	void execute_grip(PlayerContext& context) override;
+	void enter(PlayerContext& context) override;
+	void execute(PlayerContext& context) override;
+	void exit(PlayerContext& context) override;
 };

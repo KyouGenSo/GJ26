@@ -1,4 +1,6 @@
 #pragma once
+#include <optional>
+
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Module/World/WorldInstance/WorldInstance.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
@@ -65,6 +67,16 @@ public:
 	float get_move_speed() const noexcept;
 	/// 接地しているか
 	bool is_grounded() const noexcept;
+	/// プレイヤーが向いているXZ平面上のワールド方向
+	const Vector3& get_direction() const noexcept;
+	/// 現在掴めるブロックのインデックス
+	const std::optional<MapChipIndex>& get_grip_target_index() const noexcept;
+	/// 現在掴んでいるブロックのインデックス
+	const std::optional<MapChipIndex>& get_gripped_block_index() const noexcept;
+	/// 掴んだブロックの移動可否判定
+	const std::optional<BlockMoveResult>& get_block_move_result() const noexcept;
+	/// 掴んだブロックを指定方向へ移動できるか
+	bool can_move_gripped_block(BlockMoveDirection direction) const noexcept;
 
 public:
 
@@ -76,10 +88,14 @@ public:
 	void set_jump_power(float jumpPower) noexcept;
 	/// 落下速度を設定
 	void set_fall_speed(float fallSpeed) noexcept;
-	/// Push、Pull中の移動速度を設定
+	/// ブロックを掴んでいる間の移動速度を設定
 	void set_grip_move_speed(float gripMoveSpeed) noexcept;
-	/// 掴める対象が存在するかを設定
-	void set_can_grip(bool canGrip) noexcept;
+	/// プレイヤーの向きを設定(Y成分は無視、ゼロベクトルなら変更しない)
+	void set_direction(const Vector3& direction) noexcept;
+	/// 現在掴めるブロックを手動設定する
+	void set_grip_target(const std::optional<MapChipIndex>& blockIndex) noexcept;
+	/// マップチップの選択と移動可否判定を行う仲介クラスを設定する
+	void set_block_movement_judge(Reference<const BlockMovementJudge> judge) noexcept;
 	/// Playerが操作する追従カメラを設定
 	void set_follow_camera(Reference<FollowCamera> followCamera) noexcept;
 
@@ -88,6 +104,7 @@ public:
 private:
 	Reference<szg::SkinningMeshInstance> meshInstance_;
 	Reference<FollowCamera> followCamera_;
+	Reference<const BlockMovementJudge> blockMovementJudge_;
 
 	PlayerInput playerInput_;
 	PlayerContext context_;

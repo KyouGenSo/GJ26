@@ -22,9 +22,11 @@ enum class MapChipType : i32 {
 /// マップチップのグリッド座標
 /// </summary>
 struct MapChipIndex {
-	i32 x;
-	i32 y;
-	i32 z;
+	i32 x{ 0 };
+	i32 y{ 0 };
+	i32 z{ 0 };
+
+	bool operator==(const MapChipIndex&) const noexcept = default;
 };
 
 /// <summary>
@@ -80,6 +82,11 @@ public:
 	/// ワールド座標 → グリッド座標(範囲外は nullopt)
 	/// </summary>
 	std::optional<MapChipIndex> to_index(const Vector3& position) const;
+
+	/// <summary>
+	/// グリッド座標がフィールド内か
+	/// </summary>
+	bool contains(const MapChipIndex& index) const;
 
 	i32 width() const { return sizeX; }
 	i32 height() const { return sizeY; }

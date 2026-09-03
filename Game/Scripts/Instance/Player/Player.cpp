@@ -16,6 +16,7 @@ void Player::finalize() {
 	context_ = {};
 	meshInstance_.reset();
 	followCamera_.reset();
+	blockMovementJudge_.reset();
 }
 
 //================================
@@ -34,7 +35,20 @@ void Player::prev_update() {
 		context_.moveForward = { 0.0f, 0.0f, 1.0f };
 		context_.moveRight = { 1.0f, 0.0f, 0.0f };
 	}
+
+	if (blockMovementJudge_ && context_.worldInstance && !context_.grippedBlockIndex) {
+		context_.gripTargetIndex = blockMovementJudge_->find_grip_target(
+			context_.worldInstance->world_position(), context_.direction);
+	}
 	stateManager_.update(context_);
+
+	if (blockMovementJudge_ && context_.grippedBlockIndex) {
+		context_.blockMoveResult = blockMovementJudge_->judge(
+			*context_.grippedBlockIndex, context_.direction);
+	}
+	else {
+		context_.blockMoveResult.reset();
+	}
 }
 
 //================================
@@ -138,8 +152,21 @@ void Player::set_grip_move_speed(float gripMoveSpeed) noexcept {
 	context_.gripMoveSpeed = gripMoveSpeed < 0.0f ? 0.0f : gripMoveSpeed;
 }
 
-void Player::set_can_grip(bool canGrip) noexcept {
-	context_.canGrip = canGrip;
+void Player::set_direction(const Vector3& direction) noexcept {
+	const Vector3 horizontal{ direction.x, 0.0f, direction.z };
+	if (horizontal.length() > 0.0f) {
+		context_.direction = horizontal.normalize_safe(context_.direction);
+	}
+}
+
+void Player::set_grip_target(const std::optional<MapChipIndex>& blockIndex) noexcept {
+	if (!context_.grippedBlockIndex) {
+		context_.gripTargetIndex = blockIndex;
+	}
+}
+
+void Player::set_block_movement_judge(Reference<const BlockMovementJudge> judge) noexcept {
+	blockMovementJudge_ = judge;
 }
 
 void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
@@ -169,4 +196,24 @@ void Player::update_grounded(float positionY) noexcept {
 //================================
 bool Player::is_grounded() const noexcept {
 	return context_.isGrounded;
+}
+
+const Vector3& Player::get_direction() const noexcept {
+	return context_.direction;
+}
+
+const std::optional<MapChipIndex>& Player::get_grip_target_index() const noexcept {
+	return context_.gripTargetIndex;
+}
+
+const std::optional<MapChipIndex>& Player::get_gripped_block_index() const noexcept {
+	return context_.grippedBlockIndex;
+}
+
+const std::optional<BlockMoveResult>& Player::get_block_move_result() const noexcept {
+	return context_.blockMoveResult;
+}
+
+bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept {
+	return context_.blockMoveResult && context_.blockMoveResult->can_move(direction);
 }

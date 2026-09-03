@@ -8,5 +8,8 @@ struct PlayerContext;
 class PlayerMovement {
 public:
 	/// 入力方向へXZ平面上を移動する
-	static void move_horizontal(PlayerContext& context, float moveSpeed) noexcept;
+	static void move_horizontal(
+		PlayerContext& context,
+		float moveSpeed,
+		bool updateDirection = true) noexcept;
 };

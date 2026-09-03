@@ -66,39 +66,24 @@ void PlayerJumpState::exit(PlayerContext&) {
 }
 
 void PlayerGripState::enter(PlayerContext& context) {
-	isRunning_ = context.canGrip && context.isGrounded;
+	isRunning_ = context.gripTargetIndex.has_value() && context.isGrounded;
+	if (isRunning_) {
+		context.grippedBlockIndex = context.gripTargetIndex;
+	}
 }
 
 void PlayerGripState::execute(PlayerContext& context) {
-	if (!isRunning_ || !context.canGrip || !is_grip_input_active(context)) {
+	if (!isRunning_ || !context.grippedBlockIndex || !context.input.gripPressed) {
 		isRunning_ = false;
 		return;
 	}
 
-	PlayerMovement::move_horizontal(context, context.gripMoveSpeed);
-	execute_grip(context);
+	// 掴み中は後退や横移動をしても、ブロックに向いた direction を維持する
+	PlayerMovement::move_horizontal(context, context.gripMoveSpeed, false);
 }
 
 void PlayerGripState::exit(PlayerContext& context) {
-	exit_grip(context);
+	context.grippedBlockIndex.reset();
+	context.blockMoveResult.reset();
 	isRunning_ = false;
-}
-
-void PlayerGripState::exit_grip(PlayerContext&) {
-}
-
-bool PlayerPushState::is_grip_input_active(const PlayerContext& context) const noexcept {
-	return context.input.pushPressed;
-}
-
-void PlayerPushState::execute_grip(PlayerContext&) {
-	// Push対象の移動処理は対象選択の仕様決定後に実装する
-}
-
-bool PlayerPullState::is_grip_input_active(const PlayerContext& context) const noexcept {
-	return context.input.pullPressed;
-}
-
-void PlayerPullState::execute_grip(PlayerContext&) {
-	// Pull対象の移動処理は対象選択の仕様決定後に実装する
 }
