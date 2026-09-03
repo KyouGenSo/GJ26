@@ -168,6 +168,24 @@ bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to
 	return true;
 }
 
+bool MapChipField::can_move_goal_piece(const MapChipIndex& from, const MapChipIndex& to) const {
+	if (from.y != to.y || std::abs(to.x - from.x) + std::abs(to.z - from.z) != 1) {
+		return false;
+	}
+	// get は範囲外を Empty と返すので to の範囲内判定を明示する
+	return get(from.x, from.y, from.z) == MapChipType::GoalPiece
+		&& is_inside(to.x, to.y, to.z) && get(to.x, to.y, to.z) == MapChipType::Empty;
+}
+
+bool MapChipField::move_goal_piece(const MapChipIndex& from, const MapChipIndex& to) {
+	if (!can_move_goal_piece(from, to)) {
+		return false;
+	}
+	set(from.x, from.y, from.z, MapChipType::Empty);
+	set(to.x, to.y, to.z, MapChipType::GoalPiece);
+	return true;
+}
+
 std::vector<MapChipIndex> MapChipField::find_all(MapChipType type) const {
 	std::vector<MapChipIndex> result;
 	for (i32 y = 0; y < sizeY; ++y) {
