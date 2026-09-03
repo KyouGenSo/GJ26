@@ -4,7 +4,7 @@
 	"Font": [],
 	"Json": [],
 	"Mesh": [
-		".\\SyzygyEngine\\Assets\\Models\\Primitive\\Sphere.obj"
+		".\\Game\\Assets\\Models\\Player_Model_ver2.0.gltf"
 	],
 	"Shader": [],
 	"Skeleton": [],

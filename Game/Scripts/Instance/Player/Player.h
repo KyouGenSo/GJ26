@@ -3,7 +3,6 @@
 
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Module/World/WorldInstance/WorldInstance.h>
-#include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 
 #include <Library/Utility/Template/Reference.h>
 
@@ -65,6 +64,8 @@ public:
 	PlayerState get_state() const noexcept;
 	/// 移動速度を取得
 	float get_move_speed() const noexcept;
+	/// 表示メッシュの方向追従速度を取得
+	float get_mesh_turn_speed() const noexcept;
 	/// 接地しているか
 	bool is_grounded() const noexcept;
 	/// プレイヤーが向いているXZ平面上のワールド方向
@@ -90,21 +91,30 @@ public:
 	void set_fall_speed(float fallSpeed) noexcept;
 	/// ブロックを掴んでいる間の移動速度を設定
 	void set_grip_move_speed(float gripMoveSpeed) noexcept;
+	/// 表示メッシュの方向追従速度を設定
+	void set_mesh_turn_speed(float meshTurnSpeed) noexcept;
 	/// プレイヤーの向きを設定(Y成分は無視、ゼロベクトルなら変更しない)
 	void set_direction(const Vector3& direction) noexcept;
 	/// 現在掴めるブロックを手動設定する
 	void set_grip_target(const std::optional<MapChipIndex>& blockIndex) noexcept;
 	/// マップチップの選択と移動可否判定を行う仲介クラスを設定する
-	void set_block_movement_judge(Reference<const BlockMovementJudge> judge) noexcept;
+	void set_block_movement_judge(Reference<BlockMovementJudge> judge) noexcept;
 	/// Playerが操作する追従カメラを設定
 	void set_follow_camera(Reference<FollowCamera> followCamera) noexcept;
 
-	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
+	/// directionに合わせて回転させる表示メッシュを設定
+	void set_mesh_instance(Reference<szg::WorldInstance> meshInstance) noexcept;
 
 private:
-	Reference<szg::SkinningMeshInstance> meshInstance_;
+	void update_gripped_block_movement();
+	void update_mesh_direction(bool snap = false) noexcept;
+
+private:
+	Reference<szg::WorldInstance> meshInstance_;
 	Reference<FollowCamera> followCamera_;
-	Reference<const BlockMovementJudge> blockMovementJudge_;
+	Reference<BlockMovementJudge> blockMovementJudge_;
+	bool gripMoveInputReady_{ true };
+	float meshTurnSpeed_{ 12.0f };
 
 	PlayerInput playerInput_;
 	PlayerContext context_;

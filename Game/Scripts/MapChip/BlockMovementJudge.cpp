@@ -17,7 +17,7 @@ bool BlockMoveResult::can_move(BlockMoveDirection direction) const noexcept {
 	return destination(direction).has_value();
 }
 
-std::optional<MapChipIndex> BlockMoveResult::destination(BlockMoveDirection direction) const noexcept {
+std::optional<BlockMoveDestination> BlockMoveResult::destination(BlockMoveDirection direction) const noexcept {
 	switch (direction) {
 	case BlockMoveDirection::Forward:
 		return forward;
@@ -35,14 +35,14 @@ std::optional<MapChipIndex> BlockMoveResult::destination(BlockMoveDirection dire
 //===========================================
 // コンストラクタ
 //===========================================
-BlockMovementJudge::BlockMovementJudge(Reference<const MapChipField> field) noexcept
+BlockMovementJudge::BlockMovementJudge(Reference<MapChipField> field) noexcept
 	: field_(field) {
 }
 
 //===========================================
 // MapChipField の設定
 //===========================================
-void BlockMovementJudge::set_field(Reference<const MapChipField> field) noexcept {
+void BlockMovementJudge::set_field(Reference<MapChipField> field) noexcept {
 	field_ = field;
 }
 
@@ -62,7 +62,8 @@ std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
 	}
 
 	const MapChipIndex target = Add(*playerIndex, cardinal_direction(playerDirection));
-	if (!field_->contains(target) || field_->get(target.x, target.y, target.z) == MapChipType::Empty) {
+	if (!field_->contains(target) ||
+		field_->get(target.x, target.y, target.z) != MapChipType::GoalPiece) {
 		return std::nullopt;
 	}
 	return target;
@@ -72,26 +73,57 @@ std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
 // 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 //===========================================
 BlockMoveResult BlockMovementJudge::judge(
+	const Vector3& playerPosition,
 	const MapChipIndex& blockIndex,
 	const Vector3& playerDirection) const noexcept {
 	BlockMoveResult result{};
 	result.blockIndex = blockIndex;
 
-	if (!field_ || !field_->contains(blockIndex) ||
-		field_->get(blockIndex.x, blockIndex.y, blockIndex.z) == MapChipType::Empty) {
+	if (!field_) {
+		return result;
+	}
+
+	const std::optional<MapChipIndex> playerIndex = field_->to_index(playerPosition);
+	if (!playerIndex || !field_->contains(blockIndex) ||
+		field_->get(blockIndex.x, blockIndex.y, blockIndex.z) != MapChipType::GoalPiece) {
 		return result;
 	}
 
 	const MapChipIndex forward = cardinal_direction(playerDirection);
+	if (Add(*playerIndex, forward) != blockIndex) {
+		return result;
+	}
+	result.playerIndex = *playerIndex;
+
 	const MapChipIndex backward{ -forward.x, 0, -forward.z };
 	const MapChipIndex right{ forward.z, 0, -forward.x };
 	const MapChipIndex left{ -right.x, 0, -right.z };
 
-	result.forward = find_empty_destination(blockIndex, forward);
-	result.backward = find_empty_destination(blockIndex, backward);
-	result.left = find_empty_destination(blockIndex, left);
-	result.right = find_empty_destination(blockIndex, right);
+	result.forward = find_goal_piece_destination(*playerIndex, blockIndex, forward);
+	result.backward = find_goal_piece_destination(*playerIndex, blockIndex, backward);
+	result.left = find_goal_piece_destination(*playerIndex, blockIndex, left);
+	result.right = find_goal_piece_destination(*playerIndex, blockIndex, right);
 	return result;
+}
+
+//===========================================
+// 判定に成功した場合だけGoalPieceを移動する
+//===========================================
+std::optional<BlockMoveDestination> BlockMovementJudge::try_move_goal_piece(
+	const Vector3& playerPosition,
+	const MapChipIndex& blockIndex,
+	const Vector3& playerDirection,
+	BlockMoveDirection moveDirection) {
+	if (!field_) {
+		return std::nullopt;
+	}
+
+	const std::optional<BlockMoveDestination> move =
+		judge(playerPosition, blockIndex, playerDirection).destination(moveDirection);
+	if (!move || !field_->move_goal_piece(blockIndex, move->blockIndex)) {
+		return std::nullopt;
+	}
+	return move;
 }
 
 //===========================================
@@ -105,14 +137,26 @@ MapChipIndex BlockMovementJudge::cardinal_direction(const Vector3& direction) no
 }
 
 //===========================================
-// 指定マスから指定オフセット先のマスが空かどうかを取得
+// GoalPieceを指定マスから指定オフセット先へ動かせるかどうかを取得
 //===========================================
-std::optional<MapChipIndex> BlockMovementJudge::find_empty_destination(
+std::optional<BlockMoveDestination> BlockMovementJudge::find_goal_piece_destination(
+	const MapChipIndex& playerIndex,
 	const MapChipIndex& source,
 	const MapChipIndex& offset) const noexcept {
-	const MapChipIndex destination = Add(source, offset);
-	if (!field_->contains(destination) ||
-		field_->get(destination.x, destination.y, destination.z) != MapChipType::Empty) {
+	const BlockMoveDestination destination{
+		.playerIndex = Add(playerIndex, offset),
+		.blockIndex = Add(source, offset),
+	};
+
+	// 前進時はPlayerがGoalPieceの元セルへ入るため、同時移動によって空くセルとして扱う
+	const bool canMovePlayer =
+		field_->contains(destination.playerIndex) &&
+		(destination.playerIndex == source ||
+			field_->get(
+				destination.playerIndex.x,
+				destination.playerIndex.y,
+				destination.playerIndex.z) == MapChipType::Empty);
+	if (!canMovePlayer || !field_->can_move_goal_piece(source, destination.blockIndex)) {
 		return std::nullopt;
 	}
 	return destination;

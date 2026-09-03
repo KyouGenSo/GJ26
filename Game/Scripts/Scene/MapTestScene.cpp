@@ -52,7 +52,8 @@ void MapTestScene::custom_setup() {
 
 	std::unique_ptr<Player> player = eps::CreateUnique<Player>(playerInstance);
 	Reference<Player> playerRef = player;
-	playerRef->set_block_movement_judge(mapTestRef->movement_judge_imm());
+	playerRef->set_mesh_instance(playerMesh);
+	playerRef->set_block_movement_judge(mapTestRef->movement_judge_mut());
 
 	std::unique_ptr<FollowCamera> followCamera;
 	const std::optional<Reference<szg::CameraInstance>> camera =

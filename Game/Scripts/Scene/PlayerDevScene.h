@@ -15,6 +15,7 @@ public:
 	SZG_CLASS_MOVE_ONLY(PlayerDevScene)
 
 public:
+	void custom_load_asset() override;
 	void custom_setup() override;
 
 private:

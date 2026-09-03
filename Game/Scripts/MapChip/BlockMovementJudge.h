@@ -18,15 +18,24 @@ enum class BlockMoveDirection {
 };
 
 /// <summary>
-/// 掴んだブロックを移動できる隣接マス
+/// 1回のグリッド移動後のPlayerとGoalPieceの位置
+/// </summary>
+struct BlockMoveDestination {
+	MapChipIndex playerIndex{};
+	MapChipIndex blockIndex{};
+};
+
+/// <summary>
+/// 掴んだGoalPieceを移動できる隣接マス
 /// nullopt の方向には移動できない
 /// </summary>
 struct BlockMoveResult {
-	MapChipIndex blockIndex;
-	std::optional<MapChipIndex> forward;
-	std::optional<MapChipIndex> backward;
-	std::optional<MapChipIndex> left;
-	std::optional<MapChipIndex> right;
+	MapChipIndex playerIndex{};
+	MapChipIndex blockIndex{};
+	std::optional<BlockMoveDestination> forward;
+	std::optional<BlockMoveDestination> backward;
+	std::optional<BlockMoveDestination> left;
+	std::optional<BlockMoveDestination> right;
 
 	/// <summary>
 	/// 指定方向に移動できるか
@@ -34,7 +43,7 @@ struct BlockMoveResult {
 	/// <param name="direction"></param>
 	/// <returns></returns>
 	bool can_move(BlockMoveDirection direction) const noexcept;
-	std::optional<MapChipIndex> destination(BlockMoveDirection direction) const noexcept;
+	std::optional<BlockMoveDestination> destination(BlockMoveDirection direction) const noexcept;
 };
 
 /// <summary>
@@ -48,13 +57,13 @@ public:
 	/// コンストラクタ・デストラクタ
 	/// </summary>
 	BlockMovementJudge() = default;
-	explicit BlockMovementJudge(Reference<const MapChipField> field) noexcept;
+	explicit BlockMovementJudge(Reference<MapChipField> field) noexcept;
 
 	/// <summary>
 	/// MapChipField の設定
 	/// </summary>
 	/// <param name="field"></param>
-	void set_field(Reference<const MapChipField> field) noexcept;
+	void set_field(Reference<MapChipField> field) noexcept;
 
 	/// プレイヤーの現在マスに隣接する、向いている方向のブロックを取得
 	std::optional<MapChipIndex> find_grip_target(
@@ -63,17 +72,26 @@ public:
 
 	/// 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 	BlockMoveResult judge(
+		const Vector3& playerPosition,
 		const MapChipIndex& blockIndex,
 		const Vector3& playerDirection) const noexcept;
+
+	/// 判定に成功した場合だけGoalPieceを移動し、PlayerとGoalPieceの移動先を返す
+	std::optional<BlockMoveDestination> try_move_goal_piece(
+		const Vector3& playerPosition,
+		const MapChipIndex& blockIndex,
+		const Vector3& playerDirection,
+		BlockMoveDirection moveDirection);
 
 private:
 
 	/// プレイヤーの向きベクトルから、前方方向のグリッド座標オフセットを取得
 	static MapChipIndex cardinal_direction(const Vector3& direction) noexcept;
-	std::optional<MapChipIndex> find_empty_destination(
+	std::optional<BlockMoveDestination> find_goal_piece_destination(
+		const MapChipIndex& playerIndex,
 		const MapChipIndex& source,
 		const MapChipIndex& offset) const noexcept;
 
 private:
-	Reference<const MapChipField> field_;
+	Reference<MapChipField> field_;
 };

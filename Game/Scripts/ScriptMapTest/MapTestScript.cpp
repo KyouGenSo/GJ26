@@ -44,7 +44,8 @@ std::optional<TemporaryPlayerSpawn> FindTemporaryPlayerSpawn(const MapChipField&
 					0,
 					z + direction.z,
 				};
-				if (field.contains(target) && field.get(target.x, target.y, target.z) != MapChipType::Empty) {
+				if (field.contains(target) &&
+					field.get(target.x, target.y, target.z) == MapChipType::GoalPiece) {
 					return TemporaryPlayerSpawn{
 						MapChipField::to_world(x, 0, z),
 						Vector3{
@@ -73,7 +74,7 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	worldRoot = worldRoot_;
 	blockMovementJudge.set_field(field);
 
-	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
+	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::Up, szg::KeyID::Down, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
 	pad.initialize({ szg::PadID::LShoulder, szg::PadID::RShoulder }, szg::InputInitializeMode::Current);
 
 	stageCount = MapChipField::CountStages();
@@ -97,6 +98,9 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 
 void MapTestScript::set_player(Reference<Player> player_) {
 	player = player_;
+	if (marker) {
+		marker->set_active(!player);
+	}
 	reset_player_position();
 }
 
@@ -110,6 +114,11 @@ void MapTestScript::prev_update() {
 	}
 
 	if (stageCount == 0) {
+		return;
+	}
+
+	if (keys.trigger(szg::KeyID::Up) || keys.trigger(szg::KeyID::Down)) {
+		debug_move_goal_piece(keys.trigger(szg::KeyID::Up));
 		return;
 	}
 
@@ -136,8 +145,8 @@ void MapTestScript::reload() {
 	const Vector3 center = MapChipField::to_world(field.width() - 1, 0, field.depth() - 1) * 0.5f;
 	ground->transform_mut().set_scale(Vector3{ static_cast<r32>(field.width()), 0.1f, static_cast<r32>(field.depth()) });
 	ground->transform_mut().set_translate(Vector3{ center.x, -0.55f, center.z });
-	reset_player_position();
 
+	reset_player_position();
 	szgInformation("MapTestScript: stage {}/{} ({}x{}x{})", stageNumber, stageCount, field.width(), field.height(), field.depth());
 }
 
@@ -156,5 +165,45 @@ void MapTestScript::reset_player_position() {
 	player->set_direction(spawn->direction);
 	if (Reference<FollowCamera> followCamera = player->get_follow_camera_mut()) {
 		followCamera->request_snap();
+	}
+}
+
+/// <summary>
+/// Player（未設定ならマーカー）の前後左右にあるGoalPieceを押す / 引く
+/// </summary>
+void MapTestScript::debug_move_goal_piece(bool push) {
+	// ponytail: Player の Push / Pull が move_goal_piece を呼ぶようになったら削除する
+	Reference<szg::WorldInstance> actor =
+		player ? player->get_world_instance_mut() : Reference<szg::WorldInstance>{ marker };
+	if (!actor) {
+		return;
+	}
+
+	const std::optional<MapChipIndex> at = field.to_index(actor->transform_imm().get_translate());
+	if (!at) {
+		return;
+	}
+	constexpr MapChipIndex kDirections[]{ { 1, 0, 0 }, { -1, 0, 0 }, { 0, 0, 1 }, { 0, 0, -1 } };
+	for (const MapChipIndex& d : kDirections) {
+		const MapChipIndex piece{ at->x + d.x, at->y, at->z + d.z };
+		if (field.get(piece.x, piece.y, piece.z) != MapChipType::GoalPiece) {
+			continue;
+		}
+		const MapChipIndex pieceTo = push ? MapChipIndex{ piece.x + d.x, piece.y, piece.z + d.z } : *at;
+		const MapChipIndex markerTo = push ? piece : MapChipIndex{ at->x - d.x, at->y, at->z - d.z };
+		if (!push && field.get(markerTo.x, markerTo.y, markerTo.z) != MapChipType::Empty) {
+			return;
+		}
+		if (field.move_goal_piece(piece, pieceTo)) {
+			actor->transform_mut().set_translate(MapChipField::to_world(markerTo.x, markerTo.y, markerTo.z));
+			if (player) {
+				player->set_direction(Vector3{
+					static_cast<r32>(d.x),
+					0.0f,
+					static_cast<r32>(d.z),
+				});
+			}
+		}
+		return;
 	}
 }

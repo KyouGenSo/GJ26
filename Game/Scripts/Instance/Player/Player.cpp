@@ -1,8 +1,30 @@
 #include "Player.h"
 
+#include <algorithm>
+#include <cmath>
+
+#include <Engine/Application/Logger.h>
 #include <Engine/Runtime/Clock/WorldClock.h>
 
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
+
+namespace {
+
+constexpr float kGripMoveTriggerThreshold = 0.5f;
+constexpr float kGripMoveResetThreshold = 0.25f;
+
+std::optional<BlockMoveDirection> ResolveBlockMoveDirection(const PlayerContext& context) noexcept {
+	if (std::abs(context.input.move.y) >= std::abs(context.input.move.x)) {
+		return context.input.move.y >= 0.0f
+			? BlockMoveDirection::Forward
+			: BlockMoveDirection::Backward;
+	}
+	return context.input.move.x >= 0.0f
+		? BlockMoveDirection::Right
+		: BlockMoveDirection::Left;
+}
+
+} // namespace
 
 Player::Player(Reference<szg::WorldInstance> worldInstance_) noexcept {
 	set_world_instance(worldInstance_);
@@ -17,6 +39,7 @@ void Player::finalize() {
 	meshInstance_.reset();
 	followCamera_.reset();
 	blockMovementJudge_.reset();
+	gripMoveInputReady_ = true;
 }
 
 //================================
@@ -41,10 +64,14 @@ void Player::prev_update() {
 			context_.worldInstance->world_position(), context_.direction);
 	}
 	stateManager_.update(context_);
+	update_gripped_block_movement();
+	update_mesh_direction();
 
-	if (blockMovementJudge_ && context_.grippedBlockIndex) {
+	if (blockMovementJudge_ && context_.worldInstance && context_.grippedBlockIndex) {
 		context_.blockMoveResult = blockMovementJudge_->judge(
-			*context_.grippedBlockIndex, context_.direction);
+			context_.worldInstance->world_position(),
+			*context_.grippedBlockIndex,
+			context_.direction);
 	}
 	else {
 		context_.blockMoveResult.reset();
@@ -152,6 +179,10 @@ void Player::set_grip_move_speed(float gripMoveSpeed) noexcept {
 	context_.gripMoveSpeed = gripMoveSpeed < 0.0f ? 0.0f : gripMoveSpeed;
 }
 
+void Player::set_mesh_turn_speed(float meshTurnSpeed) noexcept {
+	meshTurnSpeed_ = std::max(meshTurnSpeed, 0.0f);
+}
+
 void Player::set_direction(const Vector3& direction) noexcept {
 	const Vector3 horizontal{ direction.x, 0.0f, direction.z };
 	if (horizontal.length() > 0.0f) {
@@ -165,7 +196,7 @@ void Player::set_grip_target(const std::optional<MapChipIndex>& blockIndex) noex
 	}
 }
 
-void Player::set_block_movement_judge(Reference<const BlockMovementJudge> judge) noexcept {
+void Player::set_block_movement_judge(Reference<BlockMovementJudge> judge) noexcept {
 	blockMovementJudge_ = judge;
 }
 
@@ -173,8 +204,9 @@ void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
 	followCamera_ = followCamera;
 }
 
-void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance) {
+void Player::set_mesh_instance(Reference<szg::WorldInstance> meshInstance) noexcept {
 	meshInstance_ = meshInstance;
+	update_mesh_direction(true);
 }
 
 //================================
@@ -182,6 +214,10 @@ void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance
 //================================
 float Player::get_move_speed() const noexcept {
 	return context_.moveSpeed;
+}
+
+float Player::get_mesh_turn_speed() const noexcept {
+	return meshTurnSpeed_;
 }
 
 //================================
@@ -216,4 +252,88 @@ const std::optional<BlockMoveResult>& Player::get_block_move_result() const noex
 
 bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept {
 	return context_.blockMoveResult && context_.blockMoveResult->can_move(direction);
+}
+
+//================================
+// Grip中の入力でPlayerとGoalPieceを1マス移動する
+//================================
+void Player::update_gripped_block_movement() {
+	if (stateManager_.get_current_state() != PlayerState::Grip ||
+		!blockMovementJudge_ || !context_.worldInstance || !context_.grippedBlockIndex) {
+		gripMoveInputReady_ = true;
+		return;
+	}
+
+	const float inputLength = context_.input.move.length();
+	if (inputLength <= kGripMoveResetThreshold) {
+		gripMoveInputReady_ = true;
+		return;
+	}
+	if (!gripMoveInputReady_ || inputLength < kGripMoveTriggerThreshold) {
+		return;
+	}
+
+	gripMoveInputReady_ = false;
+	const std::optional<BlockMoveDirection> moveDirection = ResolveBlockMoveDirection(context_);
+	if (!moveDirection) {
+		return;
+	}
+
+	const std::optional<BlockMoveDestination> move = blockMovementJudge_->try_move_goal_piece(
+		context_.worldInstance->world_position(),
+		*context_.grippedBlockIndex,
+		context_.direction,
+		*moveDirection);
+	if (!move) {
+		return;
+	}
+
+	context_.worldInstance->transform_mut().set_translate(MapChipField::to_world(
+		move->playerIndex.x,
+		move->playerIndex.y,
+		move->playerIndex.z));
+	context_.grippedBlockIndex = move->blockIndex;
+	szgInformation(
+		"Player: moved grabbed GoalPiece. player=({}, {}, {}), block=({}, {}, {})",
+		move->playerIndex.x,
+		move->playerIndex.y,
+		move->playerIndex.z,
+		move->blockIndex.x,
+		move->blockIndex.y,
+		move->blockIndex.z);
+}
+
+//================================
+// directionに表示メッシュの前方(+Z)を合わせる
+//================================
+void Player::update_mesh_direction(bool snap) noexcept {
+	if (!meshInstance_) {
+		return;
+	}
+
+	const Vector3 horizontalDirection{
+		context_.direction.x,
+		0.0f,
+		context_.direction.z,
+	};
+	if (horizontalDirection.length() == 0.0f) {
+		return;
+	}
+
+	const Quaternion targetRotation =
+		Quaternion::LookForward(horizontalDirection.normalize_safe(CVector3::BASIS_Z));
+	auto& transform = meshInstance_->transform_mut();
+	if (snap) {
+		transform.set_quaternion(targetRotation);
+		return;
+	}
+
+	const float interpolation = std::clamp(
+		1.0f - std::exp(-meshTurnSpeed_ * context_.deltaSeconds),
+		0.0f,
+		1.0f);
+	transform.set_quaternion(Quaternion::Slerp(
+		transform.get_quaternion(),
+		targetRotation,
+		interpolation).normalize());
 }

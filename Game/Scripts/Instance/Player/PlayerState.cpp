@@ -84,8 +84,7 @@ void PlayerGripState::execute(PlayerContext& context) {
 		return;
 	}
 
-	// 掴み中は後退や横移動をしても、ブロックに向いた direction を維持する
-	PlayerMovement::move_horizontal(context, context.gripMoveSpeed, false);
+	// Grip中の移動はPlayerがGoalPieceと同時にグリッド単位で処理する
 }
 
 void PlayerGripState::exit(PlayerContext& context) {

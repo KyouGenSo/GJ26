@@ -81,6 +81,18 @@ public:
 	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
 
 	/// <summary>
+	/// ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)
+	/// </summary>
+	bool can_move_goal_piece(const MapChipIndex& from, const MapChipIndex& to) const;
+
+	/// <summary>
+	/// <para>ゴール条件オブジェクトを from から隣の空セル to へ 1 マス動かす(プレイヤーが掴んで押す・引く 1 歩分)</para>
+	/// <para>押す: to = ピースの向こう側のセル / 引く: プレイヤーが 1 歩下がった後に to = 元のプレイヤーのセル</para>
+	/// </summary>
+	/// <returns>can_move_goal_piece が false のときは動かさず false</returns>
+	bool move_goal_piece(const MapChipIndex& from, const MapChipIndex& to);
+
+	/// <summary>
 	/// 指定種類の全セル
 	/// </summary>
 	std::vector<MapChipIndex> find_all(MapChipType type) const;
@@ -91,7 +103,7 @@ public:
 	Reference<szg::StaticMeshInstance> visual_mut(const MapChipIndex& index);
 
 	/// <summary>
-	/// load / set / stretch_clay のたびに増える。他システムが再判定するためのトリガー
+	/// load / set / stretch_clay / move_goal_piece のたびに増える。他システムが再判定するためのトリガー
 	/// </summary>
 	u32 version() const { return revision; }
 
