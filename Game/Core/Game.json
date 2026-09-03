@@ -1,6 +1,7 @@
 {
 	"SceneList": [
 		"MapTest",
-		"StageEditor"
+		"StageEditor",
+		"PlayerDev"
 	]
 }

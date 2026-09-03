@@ -5,6 +5,7 @@
 enum SceneListGJ26 {
 	MapTest = 0,
 	StageEditor,
+	PlayerDev,
 
 	NumScene,
 };

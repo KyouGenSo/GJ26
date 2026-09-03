@@ -1,0 +1,13 @@
+{
+	"Animation": [],
+	"Audio": [],
+	"Font": [],
+	"Json": [],
+	"Mesh": [
+		".\\SyzygyEngine\\Assets\\Models\\Primitive\\Sphere.obj",
+		".\\SyzygyEngine\\Assets\\Models\\Grid\\Grid.gltf"
+	],
+	"Shader": [],
+	"Skeleton": [],
+	"Texture": []
+}

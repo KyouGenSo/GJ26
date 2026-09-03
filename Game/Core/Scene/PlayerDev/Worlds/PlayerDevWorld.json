@@ -1,0 +1,195 @@
+{
+	"Instances": [
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 0.9990482926368713,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.043619412928819656,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0000026226043701,
+					"Y": 1.0000022649765015,
+					"Z": 1.0000026226043701
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": -38.470035552978516
+				}
+			},
+			"Name": "MainCamera",
+			"Projection": {
+				"AspectRatio": 1.7776999473571777,
+				"FOV Y": 0.44999998807907104,
+				"FarClip": 1000.0,
+				"NearClip": 0.10000000149011612,
+				"Type": 0
+			},
+			"Type": 3000,
+			"Use runtime": true
+		},
+		{
+			"Children": [
+				{
+					"IsDraw": true,
+					"Layer": 0,
+					"Local transform": {
+						"Rotation": {
+							"W": 1.0,
+							"XYZ": {
+								"X": 0.0,
+								"Y": 0.0,
+								"Z": 0.0
+							}
+						},
+						"Scale": {
+							"X": 0.10000000149011612,
+							"Y": 0.10000000149011612,
+							"Z": 0.10000000149011612
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.10000000149011612,
+							"Z": 0.0
+						}
+					},
+					"Materials": [
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 0,
+							"Shininess": 50.0,
+							"Texture": "uvChecker.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						}
+					],
+					"Mesh": "Sphere.obj",
+					"Name": "PlayerMesh",
+					"Type": 2000,
+					"Use runtime": true
+				}
+			],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.5750190615653992
+				}
+			},
+			"Name": "Player",
+			"Type": 1000,
+			"Use runtime": true
+		},
+		{
+			"Children": [
+				{
+					"IsDraw": true,
+					"Layer": 0,
+					"Local transform": {
+						"Rotation": {
+							"W": 1.0,
+							"XYZ": {
+								"X": 0.0,
+								"Y": 0.0,
+								"Z": 0.0
+							}
+						},
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0,
+							"Z": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0,
+							"Z": 0.0
+						}
+					},
+					"Materials": [
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 0,
+							"Shininess": 50.0,
+							"Texture": "Grid.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 20.0,
+									"Y": 20.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": -0.0
+								}
+							}
+						}
+					],
+					"Mesh": "Grid.gltf",
+					"Name": "",
+					"Type": 2000,
+					"Use runtime": false
+				}
+			],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "Ground",
+			"Type": 1000,
+			"Use runtime": false
+		}
+	],
+	"Name": "PlayerDevWorld",
+	"NumLayer": 1
+}
