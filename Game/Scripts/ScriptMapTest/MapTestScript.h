@@ -29,6 +29,11 @@ public:
 	MapChipField& field_mut() { return field; }
 	Reference<const BlockMovementJudge> movement_judge_imm() const { return blockMovementJudge; }
 
+	/// <summary>
+	/// Player の操作対象にするマーカー(青い小さな立方体)
+	/// </summary>
+	Reference<szg::WorldInstance> marker_mut() { return marker; }
+
 private:
 	void reload();
 	void reset_player_position();
@@ -38,6 +43,7 @@ private:
 	BlockMovementJudge blockMovementJudge;
 	Reference<szg::WorldRoot> worldRoot;
 	Reference<szg::StaticMeshInstance> ground;
+	Reference<szg::StaticMeshInstance> marker;
 	Reference<Player> player;
 	szg::InputHandler<szg::KeyID> keys;
 	szg::InputHandler<szg::PadID> pad;

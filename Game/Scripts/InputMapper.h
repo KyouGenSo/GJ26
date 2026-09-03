@@ -51,6 +51,7 @@ private:
 private:
 	std::unordered_map<Action, std::vector<InputId>> bindings;
 	szg::InputHandler<InputId> inputHandler;
+	bool isHandlerDirty{ false };
 };
 
 template<typename Action, typename InputId>
@@ -61,7 +62,7 @@ void InputMapper<Action, InputId>::bind(Action action, InputId input) {
 	}
 
 	inputs.emplace_back(input);
-	rebuild_handler();
+	isHandlerDirty = true;
 }
 
 template<typename Action, typename InputId>
@@ -81,7 +82,7 @@ bool InputMapper<Action, InputId>::unbind(Action action, InputId input) {
 	if (inputs.empty()) {
 		bindings.erase(binding);
 	}
-	rebuild_handler();
+	isHandlerDirty = true;
 	return true;
 }
 
@@ -90,17 +91,23 @@ void InputMapper<Action, InputId>::clear(Action action) {
 	if (bindings.erase(action) == 0) {
 		return;
 	}
-	rebuild_handler();
+	isHandlerDirty = true;
 }
 
 template<typename Action, typename InputId>
 void InputMapper<Action, InputId>::clear() {
+	if (bindings.empty()) {
+		return;
+	}
 	bindings.clear();
-	rebuild_handler();
+	isHandlerDirty = true;
 }
 
 template<typename Action, typename InputId>
 void InputMapper<Action, InputId>::update() {
+	if (isHandlerDirty) {
+		rebuild_handler();
+	}
 	inputHandler.update();
 }
 
@@ -148,5 +155,6 @@ void InputMapper<Action, InputId>::rebuild_handler() {
 		}
 	}
 
-	inputHandler.initialize(std::move(inputs));
+	inputHandler.initialize(std::move(inputs), szg::InputInitializeMode::Current);
+	isHandlerDirty = false;
 }

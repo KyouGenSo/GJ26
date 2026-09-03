@@ -1,5 +1,7 @@
 #include "MapTestScene.h"
 
+#include <memory>
+
 #include <optional>
 
 #include <Engine/Application/Logger.h>
@@ -11,6 +13,8 @@
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
+#include "Scripts/Instance/Player/Player.h"
+#include "Scripts/Manager/GoalManager.h"
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
@@ -69,4 +73,12 @@ void MapTestScene::custom_setup() {
 	if (followCamera) {
 		sceneScriptManager.register_script(std::move(followCamera));
 	}
+	mapTestRef->setup(world->world_root_mut());
+
+	// 登録順 = 更新順。Player がマーカーを動かした後に GoalManager が判定する);
+	std::unique_ptr<GoalManager> goalManager = eps::CreateUnique<GoalManager>();
+	Reference<GoalManager> goalRef = goalManager;
+	goalRef->setup(mapTestRef->field_mut(), world->world_root_mut());
+	goalRef->set_player(playerRef);
+	sceneScriptManager.register_script(std::move(goalManager));
 }
