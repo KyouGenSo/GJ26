@@ -156,10 +156,10 @@ bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to
 		return false;
 	}
 
-	// 元セルを除いた同じブロックのセル数 = これまでに伸びた数
+	// 伸ばせるのは元セルの前後左右 4 方向に各 1 セル
 	const i32 root = clayOrigin[flat_index(from.x, from.y, from.z)];
-	const i32 stretched = static_cast<i32>(std::count(clayOrigin.begin(), clayOrigin.end(), root)) - 1;
-	if (stretched >= kMaxStretch) {
+	const MapChipIndex origin = unflatten(root);
+	if (to.y != origin.y || std::abs(to.x - origin.x) + std::abs(to.z - origin.z) != 1) {
 		return false;
 	}
 
@@ -211,6 +211,10 @@ bool MapChipField::is_inside(i32 x, i32 y, i32 z) const {
 
 i32 MapChipField::flat_index(i32 x, i32 y, i32 z) const {
 	return x + sizeX * (z + sizeZ * y);
+}
+
+MapChipIndex MapChipField::unflatten(i32 flat) const {
+	return MapChipIndex{ flat % sizeX, flat / (sizeX * sizeZ), (flat / sizeX) % sizeZ };
 }
 
 void MapChipField::refresh_visual(i32 x, i32 y, i32 z) {

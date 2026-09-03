@@ -75,9 +75,9 @@ public:
 	void set(i32 x, i32 y, i32 z, MapChipType type);
 
 	/// <summary>
-	/// 粘土を from から隣接する空セル to へ 1 セル伸ばす
+	/// 粘土を from から隣接する空セル to へ伸ばす。伸ばせるのは元セルの前後左右 4 方向に各 1 セルまで
 	/// </summary>
-	/// <returns>from が粘土でない / to が空でない / 隣接していない / そのブロックの伸びが上限 のときは false</returns>
+	/// <returns>from が粘土でない / to が空でない / 隣接していない / to が元セルの X・Z 隣でない ときは false</returns>
 	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
 
 	/// <summary>
@@ -112,11 +112,10 @@ public:
 private:
 	bool is_inside(i32 x, i32 y, i32 z) const;
 	i32 flat_index(i32 x, i32 y, i32 z) const;
+	MapChipIndex unflatten(i32 flat) const;
 	void refresh_visual(i32 x, i32 y, i32 z);
 
 private:
-	static constexpr i32 kMaxStretch = 1; // 1 ブロックが伸ばせるセル数
-
 	i32 sizeX{ 0 };
 	i32 sizeY{ 0 };
 	i32 sizeZ{ 0 };
