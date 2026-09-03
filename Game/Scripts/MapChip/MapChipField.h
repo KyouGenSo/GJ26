@@ -75,18 +75,20 @@ public:
 	void set(i32 x, i32 y, i32 z, MapChipType type);
 
 	/// <summary>
-	/// 粘土を from から隣接する空セル to へ伸ばす。伸ばせるのは元セルの前後左右 4 方向に各 1 セルまで
+	/// <para>粘土を from から隣接する空セル to へ伸ばす。伸ばせるのは元セルの前後左右 4 方向に各 1 セルまで</para>
+	/// <para>to がゴール条件オブジェクトなら伸びずにその粘土ブロックがつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
 	/// </summary>
-	/// <returns>from が粘土でない / to が空でない / 隣接していない / to が元セルの X・Z 隣でない ときは false</returns>
+	/// <returns>from が粘土でない / to が空でもピースでもない / 隣接していない / to が元セルの X・Z 隣でない / 既につながっている ときは false</returns>
 	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
 
 	/// <summary>
-	/// ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)
+	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
+	/// <para>つながった粘土も一緒に動くので、粘土の移動先が塞がっていれば false</para>
 	/// </summary>
 	bool can_move_goal_piece(const MapChipIndex& from, const MapChipIndex& to) const;
 
 	/// <summary>
-	/// <para>ゴール条件オブジェクトを from から隣の空セル to へ 1 マス動かす(プレイヤーが掴んで押す・引く 1 歩分)</para>
+	/// <para>ゴール条件オブジェクトを from から隣の空セル to へ 1 マス動かす(プレイヤーが掴んで押す・引く 1 歩分)。つながった粘土も一緒に動く</para>
 	/// <para>押す: to = ピースの向こう側のセル / 引く: プレイヤーが 1 歩下がった後に to = 元のプレイヤーのセル</para>
 	/// </summary>
 	/// <returns>can_move_goal_piece が false のときは動かさず false</returns>
@@ -125,7 +127,9 @@ private:
 	bool is_inside(i32 x, i32 y, i32 z) const;
 	i32 flat_index(i32 x, i32 y, i32 z) const;
 	MapChipIndex unflatten(i32 flat) const;
-	void refresh_visual(i32 x, i32 y, i32 z);
+	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
+	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
+	void refresh_visual(i32 flat);
 
 private:
 	i32 sizeX{ 0 };
@@ -133,6 +137,7 @@ private:
 	i32 sizeZ{ 0 };
 	std::vector<MapChipType> chips;
 	std::vector<i32> clayOrigin; // chips と同じ添字。粘土なら元セルの flat_index、他は -1
+	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	u32 revision{ 0 };
