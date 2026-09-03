@@ -25,6 +25,11 @@ public:
 
 	MapChipField& field_mut() { return field; }
 
+	/// <summary>
+	/// Player の操作対象にするマーカー(青い小さな立方体)
+	/// </summary>
+	Reference<szg::WorldInstance> marker_mut() { return marker; }
+
 private:
 	void reload();
 
@@ -32,6 +37,7 @@ private:
 	MapChipField field;
 	Reference<szg::WorldRoot> worldRoot;
 	Reference<szg::StaticMeshInstance> ground;
+	Reference<szg::StaticMeshInstance> marker;
 	szg::InputHandler<szg::KeyID> keys;
 	szg::InputHandler<szg::PadID> pad;
 	i32 stageNumber{ 1 };

@@ -16,6 +16,7 @@ enum class MapChipType : i32 {
 	Empty = 0,     // 空
 	Clay = 1,      // 粘土
 	GoalPiece = 2, // ゴール条件オブジェクト
+	Goal = 3,      // ゴール
 };
 
 /// <summary>
@@ -25,6 +26,8 @@ struct MapChipIndex {
 	i32 x;
 	i32 y;
 	i32 z;
+
+	bool operator==(const MapChipIndex&) const = default;
 };
 
 /// <summary>
@@ -67,9 +70,30 @@ public:
 	MapChipType get(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
-	/// チップの設定(build 済みなら表示も更新、範囲外は無視)
+	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと新しいブロック扱い
 	/// </summary>
 	void set(i32 x, i32 y, i32 z, MapChipType type);
+
+	/// <summary>
+	/// 粘土を from から隣接する空セル to へ 1 セル伸ばす
+	/// </summary>
+	/// <returns>from が粘土でない / to が空でない / 隣接していない / そのブロックの伸びが上限 のときは false</returns>
+	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
+
+	/// <summary>
+	/// 指定種類の全セル
+	/// </summary>
+	std::vector<MapChipIndex> find_all(MapChipType type) const;
+
+	/// <summary>
+	/// build 済みセルの表示インスタンス(Empty / 未 build / 範囲外は null)
+	/// </summary>
+	Reference<szg::StaticMeshInstance> visual_mut(const MapChipIndex& index);
+
+	/// <summary>
+	/// load / set / stretch_clay のたびに増える。他システムが再判定するためのトリガー
+	/// </summary>
+	u32 version() const { return revision; }
 
 	/// <summary>
 	/// グリッド座標 → ワールド座標(チップ中心)
@@ -91,10 +115,14 @@ private:
 	void refresh_visual(i32 x, i32 y, i32 z);
 
 private:
+	static constexpr i32 kMaxStretch = 1; // 1 ブロックが伸ばせるセル数
+
 	i32 sizeX{ 0 };
 	i32 sizeY{ 0 };
 	i32 sizeZ{ 0 };
 	std::vector<MapChipType> chips;
+	std::vector<i32> clayOrigin; // chips と同じ添字。粘土なら元セルの flat_index、他は -1
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
+	u32 revision{ 0 };
 };
