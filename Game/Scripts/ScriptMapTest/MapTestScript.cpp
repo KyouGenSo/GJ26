@@ -68,13 +68,17 @@ std::optional<TemporaryPlayerSpawn> FindTemporaryPlayerSpawn(const MapChipField&
 	};
 }
 
+// 一時操作でマーカーの隣を探す順(±X, ±Z)
+constexpr MapChipIndex kDirections[]{ { 1, 0, 0 }, { -1, 0, 0 }, { 0, 0, 1 }, { 0, 0, -1 } };
+
+
 } // namespace
 
 void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	worldRoot = worldRoot_;
 	blockMovementJudge.set_field(field);
 
-	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::Up, szg::KeyID::Down, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
+	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::Up, szg::KeyID::Down, szg::KeyID::Z, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
 	pad.initialize({ szg::PadID::LShoulder, szg::PadID::RShoulder }, szg::InputInitializeMode::Current);
 
 	stageCount = MapChipField::CountStages();
@@ -119,6 +123,10 @@ void MapTestScript::prev_update() {
 
 	if (keys.trigger(szg::KeyID::Up) || keys.trigger(szg::KeyID::Down)) {
 		debug_move_goal_piece(keys.trigger(szg::KeyID::Up));
+		return;
+	}
+	if (keys.trigger(szg::KeyID::Z)) {
+		debug_stretch_clay();
 		return;
 	}
 
@@ -183,7 +191,6 @@ void MapTestScript::debug_move_goal_piece(bool push) {
 	if (!at) {
 		return;
 	}
-	constexpr MapChipIndex kDirections[]{ { 1, 0, 0 }, { -1, 0, 0 }, { 0, 0, 1 }, { 0, 0, -1 } };
 	for (const MapChipIndex& d : kDirections) {
 		const MapChipIndex piece{ at->x + d.x, at->y, at->z + d.z };
 		if (field.get(piece.x, piece.y, piece.z) != MapChipType::GoalPiece) {
@@ -192,9 +199,11 @@ void MapTestScript::debug_move_goal_piece(bool push) {
 		const MapChipIndex pieceTo = push ? MapChipIndex{ piece.x + d.x, piece.y, piece.z + d.z } : *at;
 		const MapChipIndex markerTo = push ? piece : MapChipIndex{ at->x - d.x, at->y, at->z - d.z };
 		if (!push && field.get(markerTo.x, markerTo.y, markerTo.z) != MapChipType::Empty) {
+			szgInformation("MapTestScript: pull ng (marker blocked)");
 			return;
 		}
-		if (field.move_goal_piece(piece, pieceTo)) {
+		const bool moved = field.move_goal_piece(piece, pieceTo);
+		if (moved) {
 			actor->transform_mut().set_translate(MapChipField::to_world(markerTo.x, markerTo.y, markerTo.z));
 			if (player) {
 				player->set_direction(Vector3{
@@ -204,6 +213,33 @@ void MapTestScript::debug_move_goal_piece(bool push) {
 				});
 			}
 		}
+		szgInformation("MapTestScript: {} piece ({},{},{}) -> ({},{},{}) {}",
+			push ? "push" : "pull", piece.x, piece.y, piece.z, pieceTo.x, pieceTo.y, pieceTo.z, moved ? "ok" : "ng");
+		return;
+	}
+}
+
+/// <summary>
+/// マーカーの前後左右にある粘土を、±X ±Z の順で最初に伸ばせた方向へ 1 マス伸ばす(伸ばす先がゴール条件オブジェクトならつながる)
+/// </summary>
+void MapTestScript::debug_stretch_clay() {
+	const std::optional<MapChipIndex> at = field.to_index(marker->transform_imm().get_translate());
+	if (!at) {
+		return;
+	}
+	for (const MapChipIndex& d : kDirections) {
+		const MapChipIndex clay{ at->x + d.x, at->y, at->z + d.z };
+		if (field.get(clay.x, clay.y, clay.z) != MapChipType::Clay) {
+			continue;
+		}
+		for (const MapChipIndex& e : kDirections) {
+			const MapChipIndex to{ clay.x + e.x, clay.y, clay.z + e.z };
+			if (field.stretch_clay(clay, to)) {
+				szgInformation("MapTestScript: stretch ({},{},{}) -> ({},{},{}) ok", clay.x, clay.y, clay.z, to.x, to.y, to.z);
+				return;
+			}
+		}
+		szgInformation("MapTestScript: stretch ({},{},{}) ng", clay.x, clay.y, clay.z);
 		return;
 	}
 }

@@ -4,14 +4,9 @@
 #include "StageEditorScene.h"
 #include "PlayerDevScene.h"
 
-std::unique_ptr<szg::Scene> FactoryGJ26::initialize_scene2() {
-	return create_scene2(SceneListGJ26::PlayerDev);
-}
-
-std::unique_ptr<szg::Scene> FactoryGJ26::create_scene2(i32 next) {
+std::unique_ptr<szg::Scene> FactoryGJ26::create_scene2(i32 next) const {
 	switch (next) {
 	case SceneListGJ26::MapTest:
-	default:
 		return std::make_unique<MapTestScene>();
 
 	case SceneListGJ26::StageEditor:
@@ -19,5 +14,8 @@ std::unique_ptr<szg::Scene> FactoryGJ26::create_scene2(i32 next) {
 
 	case SceneListGJ26::PlayerDev:
 		return std::make_unique<PlayerDevScene>();
+
+	default:
+		return nullptr;
 	}
 }
