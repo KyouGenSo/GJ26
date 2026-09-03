@@ -11,7 +11,7 @@
 /// <summary>
 /// <para>マップチップの表示確認用スクリプト</para>
 /// <para>起動時は Temp/StageNumber のステージ(無ければ 1)を読み、← →(LB / RB)で前後のステージに切り替える</para>
-/// <para>↑ ↓ でマーカーに隣接するゴール条件オブジェクトを押す / 引く(Player の Push / Pull 実装までの一時操作)</para>
+/// <para>↑ ↓ でマーカーに隣接するゴール条件オブジェクトを押す / 引く、Z で隣接する粘土を伸ばす(Player の Push / Pull 実装までの一時操作)</para>
 /// </summary>
 class MapTestScript final : public szg::ISceneScript {
 public:
@@ -34,6 +34,7 @@ public:
 private:
 	void reload();
 	void debug_move_goal_piece(bool push);
+	void debug_stretch_clay();
 
 private:
 	MapChipField field;
