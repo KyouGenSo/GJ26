@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <format>
 
@@ -20,7 +21,9 @@ ColorRGB ChipColor(MapChipType type) {
 	case MapChipType::Clay:
 		return ColorRGB{ 0.55f, 0.35f, 0.20f };
 	case MapChipType::GoalPiece:
-		return CColorRGB::YELLOW;
+		return CColorRGB::RED;
+	case MapChipType::Goal:
+		return CColorRGB::GREEN;
 	default:
 		return CColorRGB::WHITE;
 	}
@@ -58,6 +61,7 @@ bool MapChipField::load(const std::string& directory) {
 		}
 	}
 	visuals.clear();
+	++revision;
 
 	std::vector<szg::CSVAsset<i32>> layers;
 	for (i32 i = 1; ; ++i) {
@@ -76,6 +80,7 @@ bool MapChipField::load(const std::string& directory) {
 		szgWarning("MapChipField: layer csv not found in \'{}\'", directory);
 		sizeX = sizeY = sizeZ = 0;
 		chips.clear();
+		clayOrigin.clear();
 		return false;
 	}
 
@@ -97,6 +102,14 @@ bool MapChipField::load(const std::string& directory) {
 			for (i32 x = 0; x < layer.size_col(z); ++x) {
 				chips[flat_index(x, y, z)] = static_cast<MapChipType>(layer.at(z, x));
 			}
+		}
+	}
+
+	// CSV の粘土はそれぞれ独立したブロック
+	clayOrigin.assign(chips.size(), -1);
+	for (size_t i = 0; i < chips.size(); ++i) {
+		if (chips[i] == MapChipType::Clay) {
+			clayOrigin[i] = static_cast<i32>(i);
 		}
 	}
 	return true;
@@ -123,10 +136,57 @@ void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type) {
 	if (!is_inside(x, y, z)) {
 		return;
 	}
-	chips[flat_index(x, y, z)] = type;
+	const i32 i = flat_index(x, y, z);
+	chips[i] = type;
+	clayOrigin[i] = type == MapChipType::Clay ? i : -1;
+	++revision;
 	if (!visuals.empty()) {
 		refresh_visual(x, y, z);
 	}
+}
+
+bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to) {
+	if (!is_inside(from.x, from.y, from.z) || !is_inside(to.x, to.y, to.z)) {
+		return false;
+	}
+	if (std::abs(to.x - from.x) + std::abs(to.y - from.y) + std::abs(to.z - from.z) != 1) {
+		return false;
+	}
+	if (get(from.x, from.y, from.z) != MapChipType::Clay || get(to.x, to.y, to.z) != MapChipType::Empty) {
+		return false;
+	}
+
+	// 元セルを除いた同じブロックのセル数 = これまでに伸びた数
+	const i32 root = clayOrigin[flat_index(from.x, from.y, from.z)];
+	const i32 stretched = static_cast<i32>(std::count(clayOrigin.begin(), clayOrigin.end(), root)) - 1;
+	if (stretched >= kMaxStretch) {
+		return false;
+	}
+
+	set(to.x, to.y, to.z, MapChipType::Clay);
+	clayOrigin[flat_index(to.x, to.y, to.z)] = root;
+	return true;
+}
+
+std::vector<MapChipIndex> MapChipField::find_all(MapChipType type) const {
+	std::vector<MapChipIndex> result;
+	for (i32 y = 0; y < sizeY; ++y) {
+		for (i32 z = 0; z < sizeZ; ++z) {
+			for (i32 x = 0; x < sizeX; ++x) {
+				if (chips[flat_index(x, y, z)] == type) {
+					result.emplace_back(x, y, z);
+				}
+			}
+		}
+	}
+	return result;
+}
+
+Reference<szg::StaticMeshInstance> MapChipField::visual_mut(const MapChipIndex& index) {
+	if (visuals.empty() || !is_inside(index.x, index.y, index.z)) {
+		return nullptr;
+	}
+	return visuals[flat_index(index.x, index.y, index.z)];
 }
 
 Vector3 MapChipField::to_world(i32 x, i32 y, i32 z) {
