@@ -39,6 +39,7 @@ void Player::finalize() {
 	meshInstance_.reset();
 	followCamera_.reset();
 	blockMovementJudge_.reset();
+	gripInputReady_ = true;
 	gripMoveInputReady_ = true;
 }
 
@@ -47,6 +48,12 @@ void Player::finalize() {
 //================================
 void Player::prev_update() {
 	context_.input = playerInput_.update();
+	if (!context_.input.gripPressed) {
+		gripInputReady_ = true;
+	}
+	if (!gripInputReady_) {
+		context_.input.gripPressed = false;
+	}
 	context_.deltaSeconds = szg::WorldClock::DeltaSeconds();
 	if (followCamera_) {
 		followCamera_->add_rotation_input(context_.input.cameraRotationInput);
@@ -67,7 +74,8 @@ void Player::prev_update() {
 	update_gripped_block_movement();
 	update_mesh_direction();
 
-	if (blockMovementJudge_ && context_.worldInstance && context_.grippedBlockIndex) {
+	if (blockMovementJudge_ && context_.worldInstance && context_.grippedBlockIndex &&
+		blockMovementJudge_->is_goal_piece(*context_.grippedBlockIndex)) {
 		context_.blockMoveResult = blockMovementJudge_->judge(
 			context_.worldInstance->world_position(),
 			*context_.grippedBlockIndex,
@@ -255,7 +263,7 @@ bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept
 }
 
 //================================
-// Grip中の入力でPlayerとGoalPieceを1マス移動する
+// Grip中の入力でPlayerと対象ブロックを1マス操作する
 //================================
 void Player::update_gripped_block_movement() {
 	if (stateManager_.get_current_state() != PlayerState::Grip ||
@@ -276,6 +284,41 @@ void Player::update_gripped_block_movement() {
 	gripMoveInputReady_ = false;
 	const std::optional<BlockMoveDirection> moveDirection = ResolveBlockMoveDirection(context_);
 	if (!moveDirection) {
+		return;
+	}
+
+	const std::optional<ClayDeformationResult> deformation = blockMovementJudge_->try_deform_clay(
+		context_.worldInstance->world_position(),
+		*context_.grippedBlockIndex,
+		context_.direction,
+		*moveDirection);
+	if (deformation) {
+		context_.worldInstance->transform_mut().set_translate(MapChipField::to_world(
+			deformation->playerIndex.x,
+			deformation->playerIndex.y,
+			deformation->playerIndex.z));
+
+		if (deformation->type == ClayDeformationType::Connect) {
+			gripInputReady_ = false;
+			context_.input.gripPressed = false;
+			stateManager_.release_grip(context_);
+		}
+		else {
+			context_.grippedBlockIndex = deformation->clayIndex;
+		}
+
+		const char* operation = deformation->type == ClayDeformationType::Stretch
+			? "stretched"
+			: "connected";
+		szgInformation(
+			"Player: {} Clay. player=({}, {}, {}), clay=({}, {}, {})",
+			operation,
+			deformation->playerIndex.x,
+			deformation->playerIndex.y,
+			deformation->playerIndex.z,
+			deformation->clayIndex.x,
+			deformation->clayIndex.y,
+			deformation->clayIndex.z);
 		return;
 	}
 

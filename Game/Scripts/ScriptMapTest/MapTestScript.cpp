@@ -78,7 +78,7 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	worldRoot = worldRoot_;
 	blockMovementJudge.set_field(field);
 
-	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::Up, szg::KeyID::Down, szg::KeyID::Z, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
+	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::Up, szg::KeyID::Down, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
 	pad.initialize({ szg::PadID::LShoulder, szg::PadID::RShoulder }, szg::InputInitializeMode::Current);
 
 	stageCount = MapChipField::CountStages();
@@ -125,11 +125,6 @@ void MapTestScript::prev_update() {
 		debug_move_goal_piece(keys.trigger(szg::KeyID::Up));
 		return;
 	}
-	if (keys.trigger(szg::KeyID::Z)) {
-		debug_stretch_clay();
-		return;
-	}
-
 	i32 step = 0;
 	if (keys.trigger(szg::KeyID::Left) || pad.trigger(szg::PadID::LShoulder)) {
 		step = -1;
@@ -175,7 +170,6 @@ void MapTestScript::reset_player_position() {
 		followCamera->request_snap();
 	}
 }
-
 /// <summary>
 /// Player（未設定ならマーカー）の前後左右にあるGoalPieceを押す / 引く
 /// </summary>
@@ -215,31 +209,6 @@ void MapTestScript::debug_move_goal_piece(bool push) {
 		}
 		szgInformation("MapTestScript: {} piece ({},{},{}) -> ({},{},{}) {}",
 			push ? "push" : "pull", piece.x, piece.y, piece.z, pieceTo.x, pieceTo.y, pieceTo.z, moved ? "ok" : "ng");
-		return;
-	}
-}
-
-/// <summary>
-/// マーカーの前後左右にある粘土を、±X ±Z の順で最初に伸ばせた方向へ 1 マス伸ばす(伸ばす先がゴール条件オブジェクトならつながる)
-/// </summary>
-void MapTestScript::debug_stretch_clay() {
-	const std::optional<MapChipIndex> at = field.to_index(marker->transform_imm().get_translate());
-	if (!at) {
-		return;
-	}
-	for (const MapChipIndex& d : kDirections) {
-		const MapChipIndex clay{ at->x + d.x, at->y, at->z + d.z };
-		if (field.get(clay.x, clay.y, clay.z) != MapChipType::Clay) {
-			continue;
-		}
-		for (const MapChipIndex& e : kDirections) {
-			const MapChipIndex to{ clay.x + e.x, clay.y, clay.z + e.z };
-			if (field.stretch_clay(clay, to)) {
-				szgInformation("MapTestScript: stretch ({},{},{}) -> ({},{},{}) ok", clay.x, clay.y, clay.z, to.x, to.y, to.z);
-				return;
-			}
-		}
-		szgInformation("MapTestScript: stretch ({},{},{}) ng", clay.x, clay.y, clay.z);
 		return;
 	}
 }

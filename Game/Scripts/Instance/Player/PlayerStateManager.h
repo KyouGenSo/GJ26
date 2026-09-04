@@ -9,6 +9,8 @@ class PlayerStateManager {
 public:
 	void update(PlayerContext& context);
 	void reset(PlayerContext& context);
+	/// GoalPiece接続などにより、入力を離す前にGripを終了する
+	void release_grip(PlayerContext& context);
 
 	PlayerState get_current_state() const noexcept;
 

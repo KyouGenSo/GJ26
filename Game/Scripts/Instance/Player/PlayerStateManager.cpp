@@ -24,6 +24,13 @@ void PlayerStateManager::reset(PlayerContext& context) {
 	isInitialized_ = false;
 }
 
+void PlayerStateManager::release_grip(PlayerContext& context) {
+	if (!isInitialized_ || currentState_ != PlayerState::Grip) {
+		return;
+	}
+	change_state(select_locomotion_state(context), context);
+}
+
 PlayerState PlayerStateManager::get_current_state() const noexcept {
 	return currentState_;
 }

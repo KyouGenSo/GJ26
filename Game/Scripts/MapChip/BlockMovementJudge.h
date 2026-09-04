@@ -46,6 +46,20 @@ struct BlockMoveResult {
 	std::optional<BlockMoveDestination> destination(BlockMoveDirection direction) const noexcept;
 };
 
+enum class ClayDeformationType {
+	Stretch,
+	Connect,
+};
+
+/// <summary>
+/// 1回の粘土変形後のPlayerとGrip対象
+/// </summary>
+struct ClayDeformationResult {
+	MapChipIndex playerIndex{};
+	MapChipIndex clayIndex{};
+	ClayDeformationType type{ ClayDeformationType::Stretch };
+};
+
 /// <summary>
 /// MapChipField の状態から、ブロックの選択と前後左右への移動可否を判定する
 /// Player と MapChipField を直接結合しないための仲介クラス
@@ -70,6 +84,12 @@ public:
 		const Vector3& playerPosition,
 		const Vector3& playerDirection) const noexcept;
 
+	/// 指定セルが粘土か
+	bool is_clay(const MapChipIndex& index) const noexcept;
+
+	/// 指定セルがゴール条件オブジェクトか
+	bool is_goal_piece(const MapChipIndex& index) const noexcept;
+
 	/// 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 	BlockMoveResult judge(
 		const Vector3& playerPosition,
@@ -83,10 +103,22 @@ public:
 		const Vector3& playerDirection,
 		BlockMoveDirection moveDirection);
 
+	/// <summary>
+	/// Grip中の粘土を指定方向へ1マス伸ばし、Playerも同じ方向へ移動する
+	/// </summary>
+	std::optional<ClayDeformationResult> try_deform_clay(
+		const Vector3& playerPosition,
+		const MapChipIndex& clayIndex,
+		const Vector3& playerDirection,
+		BlockMoveDirection moveDirection);
+
 private:
 
 	/// プレイヤーの向きベクトルから、前方方向のグリッド座標オフセットを取得
 	static MapChipIndex cardinal_direction(const Vector3& direction) noexcept;
+	static MapChipIndex relative_direction(
+		const Vector3& playerDirection,
+		BlockMoveDirection moveDirection) noexcept;
 	std::optional<BlockMoveDestination> find_goal_piece_destination(
 		const MapChipIndex& playerIndex,
 		const MapChipIndex& source,

@@ -62,11 +62,22 @@ std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
 	}
 
 	const MapChipIndex target = Add(*playerIndex, cardinal_direction(playerDirection));
-	if (!field_->contains(target) ||
-		field_->get(target.x, target.y, target.z) != MapChipType::GoalPiece) {
+	if (!field_->contains(target)) {
+		return std::nullopt;
+	}
+	const MapChipType type = field_->get(target.x, target.y, target.z);
+	if (type != MapChipType::GoalPiece && type != MapChipType::Clay) {
 		return std::nullopt;
 	}
 	return target;
+}
+
+bool BlockMovementJudge::is_clay(const MapChipIndex& index) const noexcept {
+	return field_ && field_->get(index.x, index.y, index.z) == MapChipType::Clay;
+}
+
+bool BlockMovementJudge::is_goal_piece(const MapChipIndex& index) const noexcept {
+	return field_ && field_->get(index.x, index.y, index.z) == MapChipType::GoalPiece;
 }
 
 //===========================================
@@ -127,6 +138,49 @@ std::optional<BlockMoveDestination> BlockMovementJudge::try_move_goal_piece(
 }
 
 //===========================================
+// Grip中の粘土を伸ばし、Playerと次のGrip対象を返す
+//===========================================
+std::optional<ClayDeformationResult> BlockMovementJudge::try_deform_clay(
+	const Vector3& playerPosition,
+	const MapChipIndex& clayIndex,
+	const Vector3& playerDirection,
+	BlockMoveDirection moveDirection) {
+	if (!field_ || !is_clay(clayIndex)) {
+		return std::nullopt;
+	}
+
+	const std::optional<MapChipIndex> playerIndex = field_->to_index(playerPosition);
+	if (!playerIndex || Add(*playerIndex, cardinal_direction(playerDirection)) != clayIndex) {
+		return std::nullopt;
+	}
+
+	const MapChipIndex offset = relative_direction(playerDirection, moveDirection);
+	const MapChipIndex playerTo = Add(*playerIndex, offset);
+	const MapChipIndex clayTo = Add(clayIndex, offset);
+	if (!field_->contains(playerTo) || !field_->contains(clayTo)) {
+		return std::nullopt;
+	}
+
+	const MapChipType playerDestination = field_->get(playerTo.x, playerTo.y, playerTo.z);
+	if (playerTo == clayIndex ||
+		(playerDestination != MapChipType::Empty && playerDestination != MapChipType::Goal)) {
+		return std::nullopt;
+	}
+
+	const MapChipType clayDestination = field_->get(clayTo.x, clayTo.y, clayTo.z);
+	if (!field_->stretch_clay(clayIndex, clayTo)) {
+		return std::nullopt;
+	}
+	return ClayDeformationResult{
+		.playerIndex = playerTo,
+		.clayIndex = clayTo,
+		.type = clayDestination == MapChipType::GoalPiece
+			? ClayDeformationType::Connect
+			: ClayDeformationType::Stretch,
+	};
+}
+
+//===========================================
 // プレイヤーの向きベクトルから、前方方向のグリッド座標オフセットを取得
 //===========================================
 MapChipIndex BlockMovementJudge::cardinal_direction(const Vector3& direction) noexcept {
@@ -134,6 +188,25 @@ MapChipIndex BlockMovementJudge::cardinal_direction(const Vector3& direction) no
 		return { direction.x < 0.0f ? -1 : 1, 0, 0 };
 	}
 	return { 0, 0, direction.z < 0.0f ? -1 : 1 };
+}
+
+MapChipIndex BlockMovementJudge::relative_direction(
+	const Vector3& playerDirection,
+	BlockMoveDirection moveDirection) noexcept {
+	const MapChipIndex forward = cardinal_direction(playerDirection);
+	const MapChipIndex right{ forward.z, 0, -forward.x };
+	switch (moveDirection) {
+	case BlockMoveDirection::Forward:
+		return forward;
+	case BlockMoveDirection::Backward:
+		return { -forward.x, 0, -forward.z };
+	case BlockMoveDirection::Left:
+		return { -right.x, 0, -right.z };
+	case BlockMoveDirection::Right:
+		return right;
+	default:
+		return {};
+	}
 }
 
 //===========================================

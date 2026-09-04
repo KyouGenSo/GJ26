@@ -113,6 +113,7 @@ private:
 	Reference<szg::WorldInstance> meshInstance_;
 	Reference<FollowCamera> followCamera_;
 	Reference<BlockMovementJudge> blockMovementJudge_;
+	bool gripInputReady_{ true };
 	bool gripMoveInputReady_{ true };
 	float meshTurnSpeed_{ 12.0f };
 
