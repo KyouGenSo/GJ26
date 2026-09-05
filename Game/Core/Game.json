@@ -2,8 +2,8 @@
 	"SceneList": [
 		"MapTest",
 		"PlayerDev",
+		"SelectScene",
 		"StageEditor",
-		"Title",
-		"SelectScene"
+		"Title"
 	]
 }
