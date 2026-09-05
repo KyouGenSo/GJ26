@@ -25,7 +25,9 @@
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
     <ClCompile Include="Scripts\MapChip\BlockMovementJudge.cpp" />
     <ClCompile Include="Scripts\Scene\PlayerDevScene.cpp" />
+	<ClCompile Include="Scripts\Scene\SelectScene.cpp" />
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp" />
+    <ClCompile Include="Scripts\Scene\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\InputMapper.h" />
@@ -51,6 +53,8 @@
     <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
     <ClInclude Include="Scripts\MapChip\BlockMovementJudge.h" />
     <ClInclude Include="Scripts\Scene\PlayerDevScene.h" />
+	<ClInclude Include="Scripts\Scene\SelectScene.h" />
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
+    <ClInclude Include="Scripts\Scene\TitleScene.h" />
   </ItemGroup>
 </Project>

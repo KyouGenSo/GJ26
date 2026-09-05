@@ -1,0 +1,80 @@
+{
+	"Instances": [
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": -10.0
+				}
+			},
+			"Name": "MainCamera",
+			"Projection": {
+				"AspectRatio": 1.7777,
+				"FovY": 0.45,
+				"FarClip": 1000.0,
+				"NearClip": 0.1,
+				"Type": 0
+			},
+			"Type": 3000,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"Color": {
+				"A": 1.0,
+				"B": 1.0,
+				"G": 1.0,
+				"R": 1.0
+			},
+			"Font": "UDEVGothic35HS-Regular.mtsdf",
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "StageSelectTitle",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": 0.8,
+			"Text": "Stage Select",
+			"Type": 2003,
+			"Use runtime": false
+		}
+	],
+	"Name": "Main",
+	"NumLayer": 1
+}

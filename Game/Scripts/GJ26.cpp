@@ -12,7 +12,7 @@
 
 void GJ26::initialize() {
 	szg::SceneManager2::SetupFactory(std::make_unique<FactoryGJ26>());
-	szg::SceneManager2::SetupInitialScene(SceneListGJ26::PlayerDev);
+	szg::SceneManager2::SetupInitialScene(SceneListGJ26::Title);
 
 #ifdef DEBUG_FEATURES_ENABLE
 	auto manager = std::make_unique<szg::CustomEditorManager>();

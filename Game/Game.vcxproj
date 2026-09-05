@@ -37,6 +37,8 @@
     <ClCompile Include="Scripts\ScriptStageEditor\StageEditorCameraScript.cpp" />
     <ClCompile Include="Scripts\ScriptStageEditor\StageEditorScript.cpp" />
     <ClCompile Include="Scripts\Scene\PlayerDevScene.cpp" />
+	<ClCompile Include="Scripts\Scene\SelectScene.cpp" />
+    <ClCompile Include="Scripts\Scene\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
@@ -63,6 +65,8 @@
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorCameraScript.h" />
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorScript.h" />
     <ClInclude Include="Scripts\Scene\PlayerDevScene.h" />
+	<ClInclude Include="Scripts\Scene\SelectScene.h" />
+    <ClInclude Include="Scripts\Scene\TitleScene.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
