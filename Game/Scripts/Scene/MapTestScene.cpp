@@ -58,12 +58,18 @@ void MapTestScene::custom_setup() {
 	std::unique_ptr<FollowCamera> followCamera;
 	const std::optional<Reference<szg::CameraInstance>> camera =
 		szg::RuntimeStorage::GetValue<Reference<szg::CameraInstance>>("RuntimeInstance", "MainCamera");
-	if (camera) {
-		followCamera = eps::CreateUnique<FollowCamera>(*camera, playerRef);
+	const std::optional<Reference<szg::WorldInstance>> cameraFollowTarget =
+		szg::RuntimeStorage::GetValue<Reference<szg::WorldInstance>>("RuntimeInstance", "CameraFollowTarget");
+	if (camera && cameraFollowTarget) {
+		followCamera = eps::CreateUnique<FollowCamera>(camera.value_or(nullptr), cameraFollowTarget.value_or(nullptr));
 		playerRef->set_follow_camera(followCamera);
+		mapTestRef->set_follow_camera(followCamera);
+	}
+	else if (!camera) {
+		szgWarning("MapTest: MainCamera runtime instance not found.");
 	}
 	else {
-		szgWarning("MapTest: MainCamera runtime instance not found.");
+		szgWarning("MapTest: CameraFollowTarget runtime instance not found.");
 	}
 
 	mapTestRef->set_player(playerRef);

@@ -6,11 +6,9 @@
 
 #include <Engine/Runtime/Clock/WorldClock.h>
 
-#include "Scripts/Instance/Player/Player.h"
-
 FollowCamera::FollowCamera(
 	Reference<szg::CameraInstance> cameraInstance,
-	Reference<Player> owner) noexcept {
+	Reference<szg::WorldInstance> owner) noexcept {
 	set_camera_instance(cameraInstance);
 	set_owner(owner);
 }
@@ -56,7 +54,7 @@ void FollowCamera::set_camera_instance(Reference<szg::CameraInstance> cameraInst
 	request_snap();
 }
 
-void FollowCamera::set_owner(Reference<Player> owner) noexcept {
+void FollowCamera::set_owner(Reference<szg::WorldInstance> owner) noexcept {
 	owner_ = owner;
 	request_snap();
 }
@@ -92,11 +90,31 @@ void FollowCamera::set_pitch_limits(float minPitch, float maxPitch) noexcept {
 	pitch_ = std::clamp(pitch_, minPitch_, maxPitch_);
 }
 
+void FollowCamera::fit_to_bounds(const Vector3& boundsSize, float padding) noexcept {
+	const float radius = boundsSize.length() * 0.5f;
+	if (radius <= 0.0f) {
+		return;
+	}
+
+	// 射影行列の対角成分は各軸の半画角の cot。狭い方の画角に
+	// バウンディング球を収め、旋回方向にかかわらずステージ全体を映す。
+	float limitingCotangent = 1.0f;
+	if (cameraInstance_) {
+		const Matrix4x4& projection = cameraInstance_->proj_matrix();
+		limitingCotangent = std::max(
+			std::abs(projection[0][0]),
+			std::abs(projection[1][1]));
+	}
+	const float safePadding = std::max(padding, 1.0f);
+	set_distance(radius * std::sqrt(limitingCotangent * limitingCotangent + 1.0f) * safePadding);
+	request_snap();
+}
+
 Reference<szg::CameraInstance> FollowCamera::get_camera_instance_mut() noexcept {
 	return cameraInstance_;
 }
 
-Reference<Player> FollowCamera::get_owner_mut() noexcept {
+Reference<szg::WorldInstance> FollowCamera::get_owner_mut() noexcept {
 	return owner_;
 }
 
@@ -135,11 +153,11 @@ Vector3 FollowCamera::get_horizontal_right() const noexcept {
 }
 
 bool FollowCamera::can_update() const noexcept {
-	return cameraInstance_ && owner_ && owner_->get_world_instance_imm();
+	return cameraInstance_ && owner_;
 }
 
 Vector3 FollowCamera::calculate_target_position() const noexcept {
-	const auto ownerInstance = owner_->get_world_instance_imm();
+	const auto ownerInstance = owner_;
 	return ownerInstance->transform_imm().get_translate() + targetOffset_;
 }
 

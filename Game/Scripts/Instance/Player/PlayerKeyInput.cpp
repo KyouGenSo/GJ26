@@ -13,11 +13,13 @@ PlayerInputFrame PlayerKeyInput::update() {
 
 	PlayerInputFrame result;
 	result.move = szg::InputAdvanced::PressWASD();
-	const Vector2 mouseDelta = szg::Input::MouseDelta();
-	result.cameraRotationDelta = {
-		mouseDelta.x * mouseSensitivity_,
-		-mouseDelta.y * mouseSensitivity_,
-	};
+	if (szg::Input::IsPressMouse(szg::MouseID::Right)) {
+		const Vector2 mouseDelta = szg::Input::MouseDelta();
+		result.cameraRotationDelta = {
+			mouseDelta.x * mouseSensitivity_,
+			-mouseDelta.y * mouseSensitivity_,
+		};
+	}
 	result.jumpTriggered = mapper.trigger(PlayerInputAction::Jump);
 	result.gripPressed = mouseMapper.press(PlayerInputAction::Grip);
 	return result;

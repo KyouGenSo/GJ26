@@ -9,6 +9,7 @@
 #include "Scripts/MapChip/BlockMovementJudge.h"
 
 class Player;
+class FollowCamera;
 
 /// <summary>
 /// <para>マップチップの表示確認用スクリプト</para>
@@ -25,6 +26,7 @@ public:
 public:
 	void setup(Reference<szg::WorldRoot> worldRoot_);
 	void set_player(Reference<Player> player_);
+	void set_follow_camera(Reference<FollowCamera> followCamera_);
 	void prev_update() override;
 
 	MapChipField& field_mut() { return field; }
@@ -38,6 +40,7 @@ public:
 
 private:
 	void reload();
+	void update_camera_framing();
 	void debug_move_goal_piece(bool push);
 	void reset_player_position();
 
@@ -48,6 +51,7 @@ private:
 	Reference<szg::StaticMeshInstance> ground;
 	Reference<szg::StaticMeshInstance> marker;
 	Reference<Player> player;
+	Reference<FollowCamera> followCamera;
 	szg::InputHandler<szg::KeyID> keys;
 	szg::InputHandler<szg::PadID> pad;
 	i32 stageNumber{ 1 };

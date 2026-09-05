@@ -108,6 +108,11 @@ void MapTestScript::set_player(Reference<Player> player_) {
 	reset_player_position();
 }
 
+void MapTestScript::set_follow_camera(Reference<FollowCamera> followCamera_) {
+	followCamera = followCamera_;
+	update_camera_framing();
+}
+
 void MapTestScript::prev_update() {
 	keys.update();
 	pad.update();
@@ -149,8 +154,31 @@ void MapTestScript::reload() {
 	ground->transform_mut().set_scale(Vector3{ static_cast<r32>(field.width()), 0.1f, static_cast<r32>(field.depth()) });
 	ground->transform_mut().set_translate(Vector3{ center.x, -0.55f, center.z });
 
+	update_camera_framing();
 	reset_player_position();
 	szgInformation("MapTestScript: stage {}/{} ({}x{}x{})", stageNumber, stageCount, field.width(), field.height(), field.depth());
+}
+
+void MapTestScript::update_camera_framing() {
+	if (!followCamera || field.width() <= 0 || field.height() <= 0 || field.depth() <= 0) {
+		return;
+	}
+
+	Reference<szg::WorldInstance> target = followCamera->get_owner_mut();
+	if (!target) {
+		return;
+	}
+
+	const Vector3 center = MapChipField::to_world(
+		field.width() - 1,
+		field.height() - 1,
+		field.depth() - 1) * 0.5f;
+	target->transform_mut().set_translate(center);
+	followCamera->fit_to_bounds(Vector3{
+		static_cast<r32>(field.width()),
+		static_cast<r32>(field.height()),
+		static_cast<r32>(field.depth()),
+	});
 }
 
 void MapTestScript::reset_player_position() {

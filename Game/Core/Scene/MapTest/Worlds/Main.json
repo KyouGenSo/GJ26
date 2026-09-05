@@ -4,9 +4,9 @@
 			"Children": [],
 			"Local transform": {
 				"Rotation": {
-					"W": 0.9467255473136902,
+					"W": 0.9467254281044006,
 					"XYZ": {
-						"X": 0.3220418691635132,
+						"X": 0.3220418393611908,
 						"Y": 0.0,
 						"Z": 0.0
 					}
@@ -70,6 +70,32 @@
 			"Name": "DirectionalLight",
 			"Type": 5000,
 			"Use runtime": false
+		},
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "CameraFollowTarget",
+			"Type": 1000,
+			"Use runtime": true
 		}
 	],
 	"Name": "Main",

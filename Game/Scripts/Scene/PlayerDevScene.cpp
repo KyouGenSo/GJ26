@@ -47,26 +47,33 @@ void PlayerDevScene::custom_setup() {
 		szg::RuntimeStorage::GetValue<Reference<szg::StaticMeshInstance>>("RuntimeInstance", "PlayerMesh");
 	auto cameraInstance =
 		szg::RuntimeStorage::GetValue<Reference<szg::CameraInstance>>("RuntimeInstance", "MainCamera");
+	auto cameraFollowTargetInstance =
+		szg::RuntimeStorage::GetValue<Reference<szg::WorldInstance>>("RuntimeInstance", "CameraFollowTarget");
 
+	// Playerのスクリプトを作成
 	playerScript = eps::CreateUnique<Player>(playerInstance.value_or(nullptr));
 	Reference<Player> playerRef = playerScript;
 	if (playerSkinningMeshInstance) {
-		playerRef->set_mesh_instance(*playerSkinningMeshInstance);
+		playerRef->set_mesh_instance(playerSkinningMeshInstance.value_or(nullptr));
 	}
 	else if (playerStaticMeshInstance) {
-		playerRef->set_mesh_instance(*playerStaticMeshInstance);
+		playerRef->set_mesh_instance(playerStaticMeshInstance.value_or(nullptr));
 	}
 	else {
 		szgWarning("PlayerDev: PlayerMesh runtime instance not found.");
 	}
 	playerRef->set_block_movement_judge(mapTestRef->movement_judge_mut());
 
-	if (cameraInstance) {
-		followCameraScript = eps::CreateUnique<FollowCamera>(*cameraInstance, playerRef);
+	if (cameraInstance && cameraFollowTargetInstance) {
+		followCameraScript = eps::CreateUnique<FollowCamera>(cameraInstance.value_or(nullptr), cameraFollowTargetInstance.value_or(nullptr));
 		playerRef->set_follow_camera(followCameraScript);
+		mapTestRef->set_follow_camera(followCameraScript);
+	}
+	else if (!cameraInstance) {
+		szgWarning("PlayerDev: MainCamera runtime instance not found.");
 	}
 	else {
-		szgWarning("PlayerDev: MainCamera runtime instance not found.");
+		szgWarning("PlayerDev: CameraFollowTarget runtime instance not found.");
 	}
 
 	mapTestRef->set_player(playerRef);
