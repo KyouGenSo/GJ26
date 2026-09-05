@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Scripts\ScriptStageEditor\AxisController.cpp" />
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp" />
     <ClCompile Include="Scripts\Instance\Player\Player.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerInput.cpp" />
@@ -39,6 +40,7 @@
     <ClCompile Include="Scripts\Scene\PlayerDevScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Scripts\ScriptStageEditor\AxisController.h" />
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
     <ClInclude Include="Scripts\InputMapper.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerContext.h" />
