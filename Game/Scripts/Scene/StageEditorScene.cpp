@@ -5,6 +5,7 @@
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
+#include "Scripts/ScriptStageEditor/AxisController.h"
 #include "Scripts/ScriptStageEditor/StageEditorCameraScript.h"
 #include "Scripts/ScriptStageEditor/StageEditorScript.h"
 
@@ -25,11 +26,16 @@ void StageEditorScene::custom_setup() {
 	Reference<StageEditorCameraScript> cameraScriptRef = cameraScript;
 	sceneScriptManager.register_script(std::move(cameraScript));
 
-	Reference<szg::WorldCluster> world = world_mut(0);
+	std::unique_ptr<AxisController> axisController = eps::CreateUnique<AxisController>();
+	Reference<AxisController> axisControllerRef = axisController;
+	sceneScriptManager.register_script(std::move(axisController));
+
+		Reference<szg::WorldCluster> world = world_mut(0);
 	if (!world) {
 		szgError("StageEditorScene: world 0 not found.");
 		return;
 	}
 	scriptRef->setup(world->world_root_mut());
 	cameraScriptRef->setup(world->world_root_mut());
+	axisControllerRef->setup();
 }

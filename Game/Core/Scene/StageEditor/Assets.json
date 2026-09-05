@@ -5,7 +5,10 @@
 		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
 	],
 	"Json": [],
-	"Mesh": [],
+	"Mesh": [
+		".\\SyzygyEngine\\Assets\\Models\\Camera\\CameraAxis.obj"
+	],
+	"Param": [],
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": []
