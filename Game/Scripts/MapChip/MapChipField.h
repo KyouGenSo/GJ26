@@ -1,7 +1,9 @@
 #pragma once
 
+#include <array>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
@@ -28,6 +30,67 @@ struct MapChipIndex {
 	i32 z;
 
 	bool operator==(const MapChipIndex&) const = default;
+};
+
+/// <summary>
+/// 粘土ブロックの伸ばせない面(元セルから見た水平 4 方向)のビット
+/// </summary>
+namespace ClayFace {
+
+inline constexpr u8 None = 0;
+inline constexpr u8 PosX = 1;
+inline constexpr u8 NegX = 2;
+inline constexpr u8 PosZ = 4;
+inline constexpr u8 NegZ = 8;
+
+/// <summary>
+/// ビット / stage.json の表記 / グリッド方向 の対応
+/// </summary>
+struct Entry {
+	u8 bit;
+	const char* name;
+	MapChipIndex direction;
+};
+
+inline constexpr std::array<Entry, 4> Table{ {
+	{ PosX, "+X", { 1, 0, 0 } },
+	{ NegX, "-X", { -1, 0, 0 } },
+	{ PosZ, "+Z", { 0, 0, 1 } },
+	{ NegZ, "-Z", { 0, 0, -1 } },
+} };
+
+/// <summary>
+/// 方向 (±1,0,0) / (0,0,±1) → ビット(該当なしは None)
+/// </summary>
+constexpr u8 FromDirection(const MapChipIndex& direction) {
+	for (const Entry& entry : Table) {
+		if (entry.direction == direction) {
+			return entry.bit;
+		}
+	}
+	return None;
+}
+
+/// <summary>
+/// "+X" 等の表記 → ビット(不明は None)
+/// </summary>
+constexpr u8 FromName(std::string_view name) {
+	for (const Entry& entry : Table) {
+		if (name == entry.name) {
+			return entry.bit;
+		}
+	}
+	return None;
+}
+
+} // namespace ClayFace
+
+/// <summary>
+/// stage.json の "Clay" 1 件(粘土の元セルの位置と伸ばせない面)
+/// </summary>
+struct ClayFaceRecord {
+	MapChipIndex position;
+	u8 blockedFaces;
 };
 
 /// <summary>
@@ -70,16 +133,36 @@ public:
 	MapChipType get(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
-	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと新しいブロック扱い
+	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと全面開放の新しいブロック扱い
 	/// </summary>
 	void set(i32 x, i32 y, i32 z, MapChipType type);
 
 	/// <summary>
-	/// <para>粘土を from から隣接する空セル to へ伸ばす。伸ばせるのは元セルの前後左右 4 方向に各 1 セルまで</para>
+	/// <para>粘土を from から隣接する空セル to へ伸ばす。伸ばせるのは元セルの前後左右 4 方向に各 1 セルまで。塞がれた面(stage.json)からは伸ばせない</para>
 	/// <para>to がゴール条件オブジェクトなら伸びずにその粘土ブロックがつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
 	/// </summary>
-	/// <returns>from が粘土でない / to が空でもピースでもない / 隣接していない / to が元セルの X・Z 隣でない / 既につながっている ときは false</returns>
+	/// <returns>from が粘土でない / to が空でもピースでもない / 隣接していない / to が元セルの X・Z 隣でない / その面が塞がれている / 既につながっている ときは false</returns>
 	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
+
+	/// <summary>
+	/// セルが属する粘土ブロックの伸ばせない面(ClayFace のビット。粘土でない / 範囲外は None)
+	/// </summary>
+	u8 blocked_faces(const MapChipIndex& index) const;
+
+	/// <summary>
+	/// directory/stage.json の "Clay" を読む。ファイルが無ければ空(警告なし)、壊れていれば警告して空。セルが粘土かの検証は呼び出し側
+	/// </summary>
+	static std::vector<ClayFaceRecord> LoadStageJsonClay(const std::string& directory);
+
+	/// <summary>
+	/// directory/stage.json の "Clay" を records で書き換える(他のキーは維持、無ければ作る)
+	/// </summary>
+	static bool SaveStageJsonClay(const std::string& directory, const std::vector<ClayFaceRecord>& records);
+
+	/// <summary>
+	/// parent(粘土の元セルの立方体)の塞がれた各面に薄い暗色の板を子として付ける。親の destroy_self で一緒に消える
+	/// </summary>
+	static void AttachFacePlates(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces);
 
 	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
@@ -143,6 +226,7 @@ private:
 	std::vector<MapChipType> chips;
 	std::vector<i32> clayOrigin; // chips と同じ添字。粘土なら元セルの flat_index、他は -1
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
+	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	u32 revision{ 0 };

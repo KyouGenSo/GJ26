@@ -5,6 +5,10 @@
 #include <cstdlib>
 #include <filesystem>
 #include <format>
+#include <fstream>
+#include <iomanip>
+
+#include <json.hpp>
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/CSV/CSVAssetBuilder.h>
@@ -35,6 +39,13 @@ ColorRGB ChipColor(MapChipType type, bool attached) {
 /// </summary>
 bool ExistsCsv(const std::string& path) {
 	return std::filesystem::exists(szg::IAssetBuilder::ResolveFilePath(path, "csv"));
+}
+
+/// <summary>
+/// "[[game]]/Map/StageNN" 形式のディレクトリ → stage.json の実パス(CSV と同じフォルダ)
+/// </summary>
+std::filesystem::path StageJsonPath(const std::string& directory) {
+	return szg::IAssetBuilder::ResolveFilePath(std::format("{}/stage.json", directory), "csv");
 }
 
 } // namespace
@@ -83,6 +94,7 @@ bool MapChipField::load(const std::string& directory) {
 		chips.clear();
 		clayOrigin.clear();
 		clayPiece.clear();
+		clayBlockedFaces.clear();
 		return false;
 	}
 
@@ -115,6 +127,19 @@ bool MapChipField::load(const std::string& directory) {
 			clayOrigin[i] = static_cast<i32>(i);
 		}
 	}
+
+	// stage.json の塞がれた面。粘土でないセルの項目は無視
+	clayBlockedFaces.assign(chips.size(), ClayFace::None);
+	i32 ignored = 0;
+	for (const ClayFaceRecord& record : LoadStageJsonClay(directory)) {
+		const MapChipIndex& p = record.position;
+		if (!is_inside(p.x, p.y, p.z) || chips[flat_index(p.x, p.y, p.z)] != MapChipType::Clay) {
+			++ignored;
+			continue;
+		}
+		clayBlockedFaces[flat_index(p.x, p.y, p.z)] |= record.blockedFaces;
+	}
+	szgWarningIf(ignored > 0, "MapChipField: {} Clay entries in \'{}/stage.json\' are not on a clay cell (ignored)", ignored, directory);
 	return true;
 }
 
@@ -139,6 +164,7 @@ void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type) {
 	chips[i] = type;
 	clayOrigin[i] = type == MapChipType::Clay ? i : -1;
 	clayPiece[i] = -1;
+	clayBlockedFaces[i] = ClayFace::None;
 	++revision;
 	refresh_visual(i);
 }
@@ -159,6 +185,10 @@ bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to
 	const i32 root = clayOrigin[source];
 	const MapChipIndex origin = unflatten(root);
 	if (to.y != origin.y || std::abs(to.x - origin.x) + std::abs(to.z - origin.z) != 1) {
+		return false;
+	}
+	// 塞がれた面からは伸びず、ゴール条件オブジェクトにもつながらない
+	if (clayBlockedFaces[root] & ClayFace::FromDirection(MapChipIndex{ to.x - origin.x, 0, to.z - origin.z })) {
 		return false;
 	}
 
@@ -205,10 +235,11 @@ bool MapChipField::move_goal_piece(const MapChipIndex& from, const MapChipIndex&
 		MapChipType type;
 		i32 origin;
 		i32 piece;
+		u8 faces;
 	};
 	std::vector<Moved> moved;
 	for (const i32 cell : cells) {
-		moved.push_back(Moved{ *shifted(cell, delta), chips[cell], clayOrigin[cell], clayPiece[cell] });
+		moved.push_back(Moved{ *shifted(cell, delta), chips[cell], clayOrigin[cell], clayPiece[cell], clayBlockedFaces[cell] });
 	}
 
 	// 全部空けてからずらして置き直す(元セルと移動先の重なりを気にしなくてよい)
@@ -216,12 +247,14 @@ bool MapChipField::move_goal_piece(const MapChipIndex& from, const MapChipIndex&
 		chips[cell] = MapChipType::Empty;
 		clayOrigin[cell] = -1;
 		clayPiece[cell] = -1;
+		clayBlockedFaces[cell] = ClayFace::None;
 		refresh_visual(cell);
 	}
 	for (const Moved& m : moved) {
 		chips[m.target] = m.type;
 		clayOrigin[m.target] = m.origin == -1 ? -1 : *shifted(m.origin, delta);
 		clayPiece[m.target] = m.piece == -1 ? -1 : *shifted(m.piece, delta);
+		clayBlockedFaces[m.target] = m.faces;
 		refresh_visual(m.target);
 	}
 	++revision;
@@ -240,6 +273,110 @@ std::vector<MapChipIndex> MapChipField::find_all(MapChipType type) const {
 		}
 	}
 	return result;
+}
+
+u8 MapChipField::blocked_faces(const MapChipIndex& index) const {
+	if (!is_inside(index.x, index.y, index.z)) {
+		return ClayFace::None;
+	}
+	const i32 root = clayOrigin[flat_index(index.x, index.y, index.z)];
+	return root == -1 ? ClayFace::None : clayBlockedFaces[root];
+}
+
+std::vector<ClayFaceRecord> MapChipField::LoadStageJsonClay(const std::string& directory) {
+	std::vector<ClayFaceRecord> result;
+	const std::filesystem::path file = StageJsonPath(directory);
+	std::ifstream ifs{ file };
+	if (!ifs) {
+		return result;
+	}
+
+	const nlohmann::json root = nlohmann::json::parse(ifs, nullptr, false);
+	if (!root.is_object()) {
+		szgWarning("MapChipField: \'{}\' is not a json object", file.string());
+		return result;
+	}
+	const auto clay = root.find("Clay");
+	if (clay == root.end()) {
+		return result;
+	}
+	if (!clay->is_array()) {
+		szgWarning("MapChipField: \'{}\' \"Clay\" must be an array", file.string());
+		return result;
+	}
+
+	for (const nlohmann::json& entry : *clay) {
+		const auto position = entry.is_object() ? entry.find("Position") : entry.end();
+		if (position == entry.end() || !position->is_array() || position->size() != 3 ||
+			!std::all_of(position->begin(), position->end(), [](const nlohmann::json& v) { return v.is_number(); })) {
+			szgWarning("MapChipField: \'{}\' Clay entry has invalid \"Position\": {}", file.string(), entry.dump());
+			continue;
+		}
+		ClayFaceRecord record{ { position->at(0).get<i32>(), position->at(1).get<i32>(), position->at(2).get<i32>() }, ClayFace::None };
+		if (const auto faces = entry.find("BlockedFaces"); faces != entry.end() && faces->is_array()) {
+			for (const nlohmann::json& face : *faces) {
+				const u8 bit = face.is_string() ? ClayFace::FromName(face.get<std::string>()) : ClayFace::None;
+				szgWarningIf(bit == ClayFace::None, "MapChipField: \'{}\' unknown face {}", file.string(), face.dump());
+				record.blockedFaces |= bit;
+			}
+		}
+		result.push_back(record);
+	}
+	return result;
+}
+
+bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::vector<ClayFaceRecord>& records) {
+	const std::filesystem::path file = StageJsonPath(directory);
+
+	// 他のキーを残すため既存を読む。壊れていれば作り直す
+	nlohmann::json root = nlohmann::json::object();
+	if (std::ifstream ifs{ file }; ifs) {
+		nlohmann::json existing = nlohmann::json::parse(ifs, nullptr, false);
+		if (existing.is_object()) {
+			root = std::move(existing);
+		}
+	}
+
+	nlohmann::json clay = nlohmann::json::array();
+	for (const ClayFaceRecord& record : records) {
+		nlohmann::json names = nlohmann::json::array();
+		for (const ClayFace::Entry& entry : ClayFace::Table) {
+			if (record.blockedFaces & entry.bit) {
+				names.push_back(entry.name);
+			}
+		}
+		nlohmann::json item = nlohmann::json::object();
+		item["Position"] = { record.position.x, record.position.y, record.position.z };
+		item["BlockedFaces"] = std::move(names);
+		clay.push_back(std::move(item));
+	}
+	root["Clay"] = std::move(clay);
+
+	std::filesystem::create_directories(file.parent_path());
+	std::ofstream ofs{ file };
+	if (!ofs) {
+		szgWarning("MapChipField: failed to write \'{}\'", file.string());
+		return false;
+	}
+	ofs << std::setw(1) << std::setfill('\t') << root;
+	return true;
+}
+
+void MapChipField::AttachFacePlates(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces) {
+	constexpr r32 THICKNESS = 0.05f;
+	constexpr r32 SIZE = 0.9f; // 立方体の面より少し小さくして同一平面のちらつきを避ける
+	for (const ClayFace::Entry& face : ClayFace::Table) {
+		if (!(blockedFaces & face.bit)) {
+			continue;
+		}
+		Reference<szg::StaticMeshInstance> plate = worldRoot_.instantiate<szg::StaticMeshInstance>(parent, "Cube.obj");
+		const Vector3 direction = to_world(face.direction.x, face.direction.y, face.direction.z);
+		plate->transform_mut().set_translate(direction * 0.5f); // 親ローカルで面の中心
+		plate->transform_mut().set_scale(face.direction.x != 0 ? Vector3{ THICKNESS, SIZE, SIZE } : Vector3{ SIZE, SIZE, THICKNESS });
+		if (!plate->get_materials().empty()) {
+			plate->get_materials()[0].color = ColorRGB{ 0.05f, 0.05f, 0.05f };
+		}
+	}
 }
 
 Reference<szg::StaticMeshInstance> MapChipField::visual_mut(const MapChipIndex& index) {
@@ -341,6 +478,10 @@ void MapChipField::refresh_visual(i32 flat) {
 	cube->transform_mut().set_translate(to_world(index.x, index.y, index.z));
 	if (!cube->get_materials().empty()) {
 		cube->get_materials()[0].color = ChipColor(chips[flat], clayPiece[flat] != -1);
+	}
+	// 塞がれた面の板は元セルにだけ付ける
+	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {
+		AttachFacePlates(*worldRoot, cube, clayBlockedFaces[flat]);
 	}
 
 	visuals[flat] = cube;

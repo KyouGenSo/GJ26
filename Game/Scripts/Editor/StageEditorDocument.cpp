@@ -42,7 +42,7 @@ MapChipType StageEditorDocument::get(i32 x, i32 y, i32 z) const {
 	return is_inside(x, y, z) ? chips[flat_index(x, y, z)] : MapChipType::Empty;
 }
 
-void StageEditorDocument::set(i32 x, i32 y, i32 z, MapChipType type) {
+void StageEditorDocument::set(i32 x, i32 y, i32 z, MapChipType type, u8 blockedFaces) {
 	if (!is_inside(x, y, z)) {
 		return;
 	}
@@ -51,7 +51,12 @@ void StageEditorDocument::set(i32 x, i32 y, i32 z, MapChipType type) {
 		editSnapshotPushed = true;
 	}
 	chips[flat_index(x, y, z)] = type;
+	faces[flat_index(x, y, z)] = type == MapChipType::Clay ? blockedFaces : ClayFace::None;
 	++changeVersion;
+}
+
+u8 StageEditorDocument::blocked_faces(i32 x, i32 y, i32 z) const {
+	return is_inside(x, y, z) ? faces[flat_index(x, y, z)] : ClayFace::None;
 }
 
 void StageEditorDocument::create_new(i32 width, i32 height, i32 depth) {
@@ -61,6 +66,7 @@ void StageEditorDocument::create_new(i32 width, i32 height, i32 depth) {
 	sizeY = clamp_height(height);
 	sizeZ = clamp_depth(depth);
 	chips.assign(static_cast<size_t>(sizeX * sizeY * sizeZ), MapChipType::Empty);
+	faces.assign(chips.size(), ClayFace::None);
 	currentStageNumber = MapChipField::CountStages() + 1;
 	++changeVersion;
 }
@@ -109,6 +115,19 @@ bool StageEditorDocument::load(i32 stageNumber) {
 		}
 	}
 
+	// stage.json の塞がれた面。粘土でないセルの項目は無視
+	faces.assign(chips.size(), ClayFace::None);
+	i32 ignored = 0;
+	for (const ClayFaceRecord& record : MapChipField::LoadStageJsonClay(directory)) {
+		const MapChipIndex& p = record.position;
+		if (!is_inside(p.x, p.y, p.z) || chips[flat_index(p.x, p.y, p.z)] != MapChipType::Clay) {
+			++ignored;
+			continue;
+		}
+		faces[flat_index(p.x, p.y, p.z)] |= record.blockedFaces;
+	}
+	szgWarningIf(ignored > 0, "StageEditorDocument: {} Clay entries in '{}/stage.json' are not on a clay cell (ignored)", ignored, directory);
+
 	currentStageNumber = stageNumber;
 	++changeVersion;
 
@@ -146,6 +165,20 @@ bool StageEditorDocument::save() {
 		szg::CSVAssetSaver<i32> saver{ csv };
 		saver.save_to(dir / std::format("layer{:02}.csv", y + 1));
 	}
+
+	// 塞ぐ面のある粘土だけを stage.json に書く（0 件でも書いて古い内容を残さない）
+	std::vector<ClayFaceRecord> records;
+	for (i32 y = 0; y < sizeY; ++y) {
+		for (i32 z = 0; z < sizeZ; ++z) {
+			for (i32 x = 0; x < sizeX; ++x) {
+				const i32 i = flat_index(x, y, z);
+				if (chips[i] == MapChipType::Clay && faces[i] != ClayFace::None) {
+					records.push_back(ClayFaceRecord{ { x, y, z }, faces[i] });
+				}
+			}
+		}
+	}
+	MapChipField::SaveStageJsonClay(MapChipField::StageDirectory(currentStageNumber), records);
 
 	szgInformation("StageEditorDocument: saved Stage{:02} ({}x{}x{})", currentStageNumber, sizeX, sizeY, sizeZ);
 	return true;
@@ -187,7 +220,7 @@ void StageEditorDocument::undo() {
 	if (undoStack.empty()) {
 		return;
 	}
-	redoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips });
+	redoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces });
 	if (redoStack.size() > MAX_HISTORY) {
 		redoStack.pop_front();
 	}
@@ -200,7 +233,7 @@ void StageEditorDocument::redo() {
 	if (redoStack.empty()) {
 		return;
 	}
-	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips });
+	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces });
 	if (undoStack.size() > MAX_HISTORY) {
 		undoStack.pop_front();
 	}
@@ -210,7 +243,7 @@ void StageEditorDocument::redo() {
 }
 
 void StageEditorDocument::push_undo() {
-	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips });
+	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces });
 	if (undoStack.size() > MAX_HISTORY) {
 		undoStack.pop_front();
 	}
@@ -222,10 +255,12 @@ void StageEditorDocument::apply_snapshot(const StageSnapshot& snapshot) {
 	sizeY = snapshot.sizeY;
 	sizeZ = snapshot.sizeZ;
 	chips = snapshot.chips;
+	faces = snapshot.faces;
 }
 
 void StageEditorDocument::rebuild_chips(i32 newX, i32 newY, i32 newZ) {
 	std::vector<MapChipType> newChips(static_cast<size_t>(newX * newY * newZ), MapChipType::Empty);
+	std::vector<u8> newFaces(newChips.size(), ClayFace::None);
 	const i32 copyX = std::min(sizeX, newX);
 	const i32 copyY = std::min(sizeY, newY);
 	const i32 copyZ = std::min(sizeZ, newZ);
@@ -234,6 +269,7 @@ void StageEditorDocument::rebuild_chips(i32 newX, i32 newY, i32 newZ) {
 		for (i32 z = 0; z < copyZ; ++z) {
 			for (i32 x = 0; x < copyX; ++x) {
 				newChips[x + newX * (z + newZ * y)] = chips[flat_index(x, y, z)];
+				newFaces[x + newX * (z + newZ * y)] = faces[flat_index(x, y, z)];
 			}
 		}
 	}
@@ -242,6 +278,7 @@ void StageEditorDocument::rebuild_chips(i32 newX, i32 newY, i32 newZ) {
 	sizeY = newY;
 	sizeZ = newZ;
 	chips = std::move(newChips);
+	faces = std::move(newFaces);
 }
 
 i32 StageEditorDocument::flat_index(i32 x, i32 y, i32 z) const {

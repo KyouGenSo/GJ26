@@ -38,6 +38,7 @@ private:
 
 private:
 	MapChipType selectedChip{ MapChipType::Clay };
+	u8 selectedFaces{ ClayFace::None }; // 粘土を塗るときに付ける伸ばせない面
 
 	i32 newWidth{ 8 };
 	i32 newHeight{ 2 };

@@ -224,6 +224,18 @@ void StageEditorWindow::draw_chip_select() {
 	if (changed) {
 		selectedChip = int_to_chip(selected);
 	}
+
+	// 粘土を塗るときの伸ばせない面。既存の粘土はチェックを変えて塗り直すと上書きされる
+	if (selectedChip == MapChipType::Clay) {
+		ImGui::Text("伸ばせない面");
+		int flags = selectedFaces;
+		for (const ClayFace::Entry& face : ClayFace::Table) {
+			ImGui::CheckboxFlags(std::format("{} を塞ぐ", face.name).c_str(), &flags, face.bit);
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+		selectedFaces = static_cast<u8>(flags);
+	}
 }
 
 void StageEditorWindow::draw_layer_select() {
@@ -275,9 +287,9 @@ void StageEditorWindow::draw_grid() {
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
 
-			char label[8];
-			snprintf(label, sizeof(label), "%d", static_cast<i32>(chip));
-			ImGui::Button(label, buttonSize);
+			// 伸ばせない面のある粘土は "1*" のように印を付ける
+			const std::string label = std::format("{}{}", static_cast<i32>(chip), doc.blocked_faces(x, y, z) != ClayFace::None ? "*" : "");
+			ImGui::Button(label.c_str(), buttonSize);
 
 			ImGui::PopStyleColor(3);
 
@@ -287,7 +299,7 @@ void StageEditorWindow::draw_grid() {
 						doc.begin_edit();
 						isPainting = true;
 					}
-					doc.set(x, y, z, selectedChip);
+					doc.set(x, y, z, selectedChip, selectedFaces);
 				}
 				else if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 					if (!isPainting) {
