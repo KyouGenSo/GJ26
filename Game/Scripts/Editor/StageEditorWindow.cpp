@@ -65,6 +65,13 @@ StageEditorWindow::StageEditorWindow() {
 void StageEditorWindow::draw() {
 	update_focus();
 
+	if (isFocus) {
+		windowFlags = ImGuiWindowFlags_None;
+	}
+	else {
+		windowFlags = ImGuiWindowFlags_NoScrollWithMouse;
+	}
+
 	StageEditorDocument& doc = StageEditorDocument::GetInstance();
 
 	// ドキュメントサイズに合わせてレイヤー番号をクランプ
@@ -277,7 +284,7 @@ void StageEditorWindow::draw_grid() {
 
 	const ImVec2 buttonSize{ cellSize, cellSize };
 
-	for (i32 z = 0; z < doc.depth(); ++z) {
+	for (i32 z = doc.depth() - 1; z >= 0; --z) {
 		for (i32 x = 0; x < doc.width(); ++x) {
 			ImGui::PushID(static_cast<i32>(x + z * doc.width()));
 
