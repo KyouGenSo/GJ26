@@ -1,0 +1,241 @@
+{
+	"Instances": [
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "MainCamera",
+			"Projection": {
+				"Bottom": -5.400000095367432,
+				"FarClip": 10.0,
+				"Left": -9.600000381469727,
+				"NearClip": 0.0,
+				"Right": 9.600000381469727,
+				"Top": 5.400000095367432,
+				"Type": 1
+			},
+			"Type": 3000,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.08715562522411346,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.9961947202682495,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0000001192092896,
+					"Y": 1.000000238418579,
+					"Z": 1.0000001192092896
+				},
+				"Translate": {
+					"X": 6.731356620788574,
+					"Y": 0.0,
+					"Z": -3.933906555175781e-06
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "TakeCEngine_Logo.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "SelectAllowSprite_Right",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 4.0,
+				"Y": 4.0
+			},
+			"Type": 2002,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.043619345873594284,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.9990482926368713,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 0.9999948740005493,
+					"Y": 1.0000011920928955,
+					"Z": 0.9999948740005493
+				},
+				"Translate": {
+					"X": -6.562225818634033,
+					"Y": 0.0,
+					"Z": -3.2782550078991335e-06
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "TakeCEngine_Logo.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "SelectAllowSprite_Left",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 4.0,
+				"Y": 4.0
+			},
+			"Type": 2002,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"Color": {
+				"A": 1.0,
+				"B": 1.0,
+				"G": 1.0,
+				"R": 1.0
+			},
+			"Font": "UDEVGothic35HS-Regular.mtsdf",
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.02617673948407173,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.999657392501831,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0000133514404297,
+					"Y": 1.0000171661376953,
+					"Z": 1.0000133514404297
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 3.956482410430908,
+					"Z": 0.0
+				}
+			},
+			"Name": "StageNumber",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": 1.0,
+			"Text": "Stage1",
+			"Type": 2003,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"Color": {
+				"A": 1.0,
+				"B": 1.0,
+				"G": 1.0,
+				"R": 1.0
+			},
+			"Font": "UDEVGothic35HS-Regular.mtsdf",
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.00872658658772707,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.9999619722366333,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0000189542770386,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": -2.9640142917633057,
+					"Z": 0.0
+				}
+			},
+			"Name": "StageSelectTitle",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": 1.0,
+			"Text": "Stage Select",
+			"Type": 2003,
+			"Use runtime": false
+		}
+	],
+	"Name": "UI",
+	"NumLayer": 1
+}

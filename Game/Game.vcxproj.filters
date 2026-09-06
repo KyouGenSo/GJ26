@@ -28,6 +28,9 @@
     <Filter Include="Scripts\ScriptMapTest">
       <UniqueIdentifier>{39F405ED-4FD1-41BB-BAC5-5E7452E00E5A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\ScriptStageSelect">
+      <UniqueIdentifier>{42927C14-C9A0-47D0-80DA-9435863DD282}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Scripts\ScriptStageEditor">
       <UniqueIdentifier>{D45DF7E8-6D8E-480D-98C0-308377A9584F}</UniqueIdentifier>
     </Filter>
@@ -104,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="Scripts\Scene\SelectScene.cpp">
       <Filter>Scripts\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\ScriptStageSelect\StageSelectScript.cpp">
+	  <Filter>Scripts\ScriptStageSelect</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\Scene\TitleScene.cpp">
       <Filter>Scripts\Scene</Filter>
@@ -187,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="Scripts\Scene\SelectScene.h">
       <Filter>Scripts\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\ScriptStageSelect\StageSelectScript.h">
+	  <Filter>Scripts\ScriptStageSelect</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Scene\TitleScene.h">
       <Filter>Scripts\Scene</Filter>

@@ -19,15 +19,15 @@
 				"Translate": {
 					"X": 0.0,
 					"Y": 0.0,
-					"Z": -10.0
+					"Z": -7.900000095367432
 				}
 			},
-			"Name": "MainCamera",
+			"Name": "3dCamera",
 			"Projection": {
-				"AspectRatio": 1.7777,
-				"FovY": 0.45,
+				"AspectRatio": 1.7776999473571777,
+				"FOV Y": 0.44999998807907104,
 				"FarClip": 1000.0,
-				"NearClip": 0.1,
+				"NearClip": 0.10000000149011612,
 				"Type": 0
 			},
 			"Type": 3000,
@@ -36,20 +36,23 @@
 		{
 			"Children": [],
 			"Color": {
-				"A": 1.0,
 				"B": 1.0,
 				"G": 1.0,
 				"R": 1.0
 			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
+			"Direction": {
+				"X": -0.0,
+				"Y": -1.0,
+				"Z": -0.0
+			},
+			"Influence Layer": 3,
+			"Intensity": 1.0,
 			"Local transform": {
 				"Rotation": {
-					"W": 0.0,
+					"W": 1.0,
 					"XYZ": {
 						"X": 0.0,
-						"Y": 1.0,
+						"Y": 0.0,
 						"Z": 0.0
 					}
 				},
@@ -64,14 +67,8 @@
 					"Z": 0.0
 				}
 			},
-			"Name": "StageSelectTitle",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 0.8,
-			"Text": "Stage Select",
-			"Type": 2003,
+			"Name": "DirectionalLight",
+			"Type": 5000,
 			"Use runtime": false
 		}
 	],
