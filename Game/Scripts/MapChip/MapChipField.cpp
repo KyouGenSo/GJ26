@@ -154,12 +154,28 @@ bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to
 		return false;
 	}
 
-	// 伸ばせるのは元セルの前後左右 4 方向に各 1 セル
+	// コアは前後左右へ分岐できる。子はコアから伸びた直線の外向きにだけ伸ばせる。
 	const i32 source = flat_index(from.x, from.y, from.z);
 	const i32 root = clayOrigin[source];
-	const MapChipIndex origin = unflatten(root);
-	if (to.y != origin.y || std::abs(to.x - origin.x) + std::abs(to.z - origin.z) != 1) {
+	if (root < 0 || root >= static_cast<i32>(chips.size())) {
 		return false;
+	}
+	const MapChipIndex origin = unflatten(root);
+	if (to.y != origin.y) {
+		return false;
+	}
+	if (source != root) {
+		const i32 branchX = from.x - origin.x;
+		const i32 branchZ = from.z - origin.z;
+		// 子は必ずコアと同じX軸またはZ軸上にあり、その外向きだけを許可する。
+		if ((branchX != 0 && branchZ != 0) || (branchX == 0 && branchZ == 0)) {
+			return false;
+		}
+		const i32 stretchX = branchX == 0 ? 0 : (branchX < 0 ? -1 : 1);
+		const i32 stretchZ = branchZ == 0 ? 0 : (branchZ < 0 ? -1 : 1);
+		if (to.x - from.x != stretchX || to.z - from.z != stretchZ) {
+			return false;
+		}
 	}
 
 	const i32 target = flat_index(to.x, to.y, to.z);

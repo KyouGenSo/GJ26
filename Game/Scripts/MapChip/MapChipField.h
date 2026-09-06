@@ -75,10 +75,10 @@ public:
 	void set(i32 x, i32 y, i32 z, MapChipType type);
 
 	/// <summary>
-	/// <para>粘土を from から隣接する空セル to へ伸ばす。伸ばせるのは元セルの前後左右 4 方向に各 1 セルまで</para>
+	/// <para>粘土を from から隣接する空セル to へ伸ばす。コアは前後左右へ分岐でき、子はコアから外向きの直線方向にだけ伸ばせる</para>
 	/// <para>to がゴール条件オブジェクトなら伸びずにその粘土ブロックがつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
 	/// </summary>
-	/// <returns>from が粘土でない / to が空でもピースでもない / 隣接していない / to が元セルの X・Z 隣でない / 既につながっている ときは false</returns>
+	/// <returns>from が粘土でない / to が空でもピースでもない / 許可された伸長方向でない / 既につながっている ときは false</returns>
 	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
 
 	/// <summary>
