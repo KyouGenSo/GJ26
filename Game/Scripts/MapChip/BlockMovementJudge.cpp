@@ -8,6 +8,16 @@ MapChipIndex Add(const MapChipIndex& lhs, const MapChipIndex& rhs) noexcept {
 	return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
 }
 
+/// プレイヤーが通れないチップか
+bool IsSolid(MapChipType type) noexcept {
+	return type == MapChipType::Clay || type == MapChipType::GoalPiece;
+}
+
+/// ワールド座標を含むセルの添字(セル中心が整数座標)
+i32 CellIndex(float position) noexcept {
+	return static_cast<i32>(std::floor(position + 0.5f));
+}
+
 } // namespace
 
 //===========================================
@@ -78,6 +88,30 @@ bool BlockMovementJudge::is_clay(const MapChipIndex& index) const noexcept {
 
 bool BlockMovementJudge::is_goal_piece(const MapChipIndex& index) const noexcept {
 	return field_ && field_->get(index.x, index.y, index.z) == MapChipType::GoalPiece;
+}
+
+//===========================================
+// AABBと重なるセルに固体があるか
+//===========================================
+bool BlockMovementJudge::overlaps_solid(const Vector3& min, const Vector3& max) const noexcept {
+	// ステージ未ロード時は全域が範囲外になるので判定しない
+	if (!field_ || field_->width() <= 0) {
+		return false;
+	}
+
+	for (i32 z = CellIndex(min.z); z <= CellIndex(max.z); ++z) {
+		for (i32 x = CellIndex(min.x); x <= CellIndex(max.x); ++x) {
+			if (x < 0 || x >= field_->width() || z < 0 || z >= field_->depth()) {
+				return true;
+			}
+			for (i32 y = CellIndex(min.y); y <= CellIndex(max.y); ++y) {
+				if (IsSolid(field_->get(x, y, z))) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 //===========================================
