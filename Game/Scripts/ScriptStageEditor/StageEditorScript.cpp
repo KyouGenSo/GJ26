@@ -87,6 +87,9 @@ void StageEditorScript::rebuild() {
 				if (!cube->get_materials().empty()) {
 					cube->get_materials()[0].color = ChipColor(chip);
 				}
+				if (chip == MapChipType::Clay) {
+					MapChipField::AttachFacePlates(*worldRoot, cube, doc.blocked_faces(x, y, z));
+				}
 				cubes.emplace_back(cube);
 			}
 		}

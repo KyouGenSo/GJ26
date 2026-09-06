@@ -1,7 +1,59 @@
 {
 	"Instances": [
 		{
-			"Children": [],
+			"Children": [
+				{
+					"IsDraw": true,
+					"Layer": 1,
+					"Local transform": {
+						"Rotation": {
+							"W": 1.0,
+							"XYZ": {
+								"X": 0.0,
+								"Y": 0.0,
+								"Z": 0.0
+							}
+						},
+						"Scale": {
+							"X": 3.0,
+							"Y": 3.0,
+							"Z": 3.0
+						},
+						"Translate": {
+							"X": 6.553610801696777,
+							"Y": 2.6762466430664063,
+							"Z": 21.622447967529297
+						}
+					},
+					"Materials": [
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 0,
+							"Shininess": 50.0,
+							"Texture": "DebugAxis.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						}
+					],
+					"Mesh": "CameraAxis.obj",
+					"Name": "Axis",
+					"Type": 2000,
+					"Use runtime": true
+				}
+			],
 			"Local transform": {
 				"Rotation": {
 					"W": 0.9467254281044006,
@@ -73,5 +125,5 @@
 		}
 	],
 	"Name": "Main",
-	"NumLayer": 1
+	"NumLayer": 2
 }

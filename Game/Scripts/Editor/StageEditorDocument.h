@@ -15,6 +15,7 @@ struct StageSnapshot {
 	i32 sizeY{ 0 };
 	i32 sizeZ{ 0 };
 	std::vector<MapChipType> chips;
+	std::vector<u8> faces;
 };
 
 /// <summary>
@@ -59,9 +60,14 @@ public:
 	MapChipType get(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
-	/// 指定座標のチップ値を設定（範囲外は無視）
+	/// 指定座標のチップ値と粘土の伸ばせない面を設定（粘土以外は面を None に強制、範囲外は無視）
 	/// </summary>
-	void set(i32 x, i32 y, i32 z, MapChipType type);
+	void set(i32 x, i32 y, i32 z, MapChipType type, u8 blockedFaces = ClayFace::None);
+
+	/// <summary>
+	/// 指定座標の粘土の伸ばせない面（ClayFace のビット、範囲外は None）
+	/// </summary>
+	u8 blocked_faces(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
 	/// ステージを新規作成する（全セル Empty）
@@ -124,6 +130,7 @@ private:
 	i32 sizeY{ 0 };
 	i32 sizeZ{ 0 };
 	std::vector<MapChipType> chips;
+	std::vector<u8> faces; // chips と同じ添字。粘土セルの伸ばせない面（ClayFace のビット）
 	i32 currentStageNumber{ 1 };
 	u32 changeVersion{ 0 };
 
