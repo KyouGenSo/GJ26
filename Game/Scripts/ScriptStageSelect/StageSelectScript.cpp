@@ -110,6 +110,7 @@ void StageSelectScript::prev_update() {
 	else {
 		update_selected_rotation(deltaSeconds);
 	}
+	update_preview_float_animation(deltaSeconds);
 }
 
 //============================================================================
@@ -124,6 +125,8 @@ void StageSelectScript::setup_json_asset() {
 	transitionDuration = parameter.get().value("TransitionDuration", nlohmann::json::object()).value("value", transitionDuration);
 	arrowAnimationPeriod = parameter.get().value("ArrowAnimationPeriod", nlohmann::json::object()).value("value", arrowAnimationPeriod);
 	arrowMoveAmplitude = parameter.get().value("ArrowMoveAmplitude", nlohmann::json::object()).value("value", arrowMoveAmplitude);
+	previewFloatAnimationPeriod = parameter.get().value("PreviewFloatAnimationPeriod", nlohmann::json::object()).value("value", previewFloatAnimationPeriod);
+	previewFloatAmplitude = parameter.get().value("PreviewFloatAmplitude", nlohmann::json::object()).value("value", previewFloatAmplitude);
 	transitionRotationDegrees = parameter.get().value("TransitionRotationDegrees", nlohmann::json::object()).value("value", transitionRotationDegrees);
 }
 
@@ -320,6 +323,30 @@ void StageSelectScript::update_arrow_animation(r32 deltaSeconds) {
 		Vector3 position = rightArrowBasePosition;
 		position.x += offset;
 		rightArrow->transform_mut().set_translate(position);
+	}
+}
+
+//============================================================================
+// ミニチュアモデルを上下にゆっくり往復させる
+//============================================================================
+void StageSelectScript::update_preview_float_animation(r32 deltaSeconds) {
+	previewFloatAnimationTime += deltaSeconds;
+	const r32 period = std::max(previewFloatAnimationPeriod, 0.001f);
+	const r32 phase = previewFloatAnimationTime * (2.0f * std::numbers::pi_v<r32> / period);
+	const r32 offset = std::sin(phase) * previewFloatAmplitude;
+
+	for (Preview& preview : previews) {
+		if (!preview.isUsed) {
+			continue;
+		}
+		Reference<szg::WorldInstance> root = preview.field.root_mut();
+		if (!root) {
+			continue;
+		}
+
+		Vector3 position = root->transform_imm().get_translate();
+		position.y = previewY + offset;
+		root->transform_mut().set_translate(position);
 	}
 }
 

@@ -74,6 +74,11 @@ private:
 	/// </summary>
 	void update_arrow_animation(r32 deltaSeconds);
 
+	/// <summary>
+	/// ミニチュアモデルを基準位置の上下でゆっくり往復させる
+	/// </summary>
+	void update_preview_float_animation(r32 deltaSeconds);
+
 	void update_selection_display();
 
 	/// <summary>
@@ -123,6 +128,7 @@ private:
 	i32 previousStickDirection{ 0 };
 	r32 transitionElapsed{ 0.0f };
 	r32 arrowAnimationTime{ 0.0f };
+	r32 previewFloatAnimationTime{ 0.0f };
 	bool isTransitioning{ false };
 
 	// プレビュー同士の間隔
@@ -150,4 +156,8 @@ private:
 	r32 arrowAnimationPeriod = 1.0f;
 	// 矢印が基準位置から動く最大距離
 	r32 arrowMoveAmplitude = 0.12f;
+	// ミニチュアモデルが上下に1往復する時間(秒)
+	r32 previewFloatAnimationPeriod = 1.8f;
+	// ミニチュアモデルが基準位置から上下に動く最大距離
+	r32 previewFloatAmplitude = 0.08f;
 };
