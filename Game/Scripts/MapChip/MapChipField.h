@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
+#include <Engine/Module/World/WorldInstance/WorldInstance.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
 #include <Library/Math/Vector3.h>
 #include <Library/Utility/Template/Reference.h>
@@ -97,6 +98,7 @@ struct ClayFaceRecord {
 /// <para>3Dマップチップ</para>
 /// <para>CSV : layer01.csv, layer02.csv, ... の N 番目が y=N-1、行=z(1行目が z=0)、列=x(左→右が +X)</para>
 /// <para>チップ(x,y,z)はワールド座標(x,y,z)を中心とする 1x1x1 の立方体</para>
+/// <para>立方体は root_mut()(ステージ中央の空 WorldInstance)の子。全体の縮小・移動は root の transform で行う(to_world / to_index は root が単位のときのグリッド配置)</para>
 /// </summary>
 class MapChipField {
 public:
@@ -123,9 +125,19 @@ public:
 	static i32 CountStages();
 
 	/// <summary>
-	/// Empty 以外のチップに表示用の立方体を生成する
+	/// ステージ中央に root を作り、Empty 以外のチップに表示用の立方体をその子として生成する
 	/// </summary>
 	void build(szg::WorldRoot& worldRoot_);
+
+	/// <summary>
+	/// 全立方体の親(ステージ中央に置いた空の WorldInstance)。build 前は null。子のローカル座標は中央基準
+	/// </summary>
+	Reference<szg::WorldInstance> root_mut() { return root; }
+
+	/// <summary>
+	/// ステージ全体の中央(グリッド座標系)。build 時の root の位置
+	/// </summary>
+	Vector3 center() const;
 
 	/// <summary>
 	/// チップの取得(範囲外は Empty = 0)
@@ -218,6 +230,7 @@ private:
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
 	void refresh_visual(i32 flat);
+	void destroy_root(); // root と子の立方体をまとめて破棄
 
 private:
 	i32 sizeX{ 0 };
@@ -229,5 +242,6 @@ private:
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
+	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の立方体も消える
 	u32 revision{ 0 };
 };
