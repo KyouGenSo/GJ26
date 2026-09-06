@@ -6,7 +6,10 @@
 	],
 	"Json": [],
 	"Mesh": [],
+	"Param": [],
 	"Shader": [],
 	"Skeleton": [],
-	"Texture": []
+	"Texture": [
+		".\\Game\\Assets\\Models\\TakeCEngine_Logo.png"
+	]
 }
