@@ -33,17 +33,6 @@ public:
 	/// </summary>
 	void prev_update() override;
 
-	/// <summary>
-	/// World更新後処理
-	/// カメラの更新や、UIの更新など
-	///　</summary>
-	void post_update() override;
-
-	/// <summary>
-	/// プレイヤーのY座標から接地状態を更新
-	/// </summary>
-	void update_grounded(float positionY) noexcept;
-
 public:
 
 	/// 入力設定を取得
@@ -66,7 +55,7 @@ public:
 	float get_move_speed() const noexcept;
 	/// 表示メッシュの方向追従速度を取得
 	float get_mesh_turn_speed() const noexcept;
-	/// 接地しているか
+	/// 足元に支え(ブロック上面または地面)があるか
 	bool is_grounded() const noexcept;
 	/// プレイヤーが向いているXZ平面上のワールド方向
 	const Vector3& get_direction() const noexcept;

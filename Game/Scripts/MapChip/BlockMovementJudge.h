@@ -90,6 +90,12 @@ public:
 	/// 指定セルがゴール条件オブジェクトか
 	bool is_goal_piece(const MapChipIndex& index) const noexcept;
 
+	/// <summary>
+	/// <para>ワールド座標のAABB [min, max] と重なるセルに固体(粘土・ゴール条件オブジェクト)があるか</para>
+	/// <para>ステージのXZ範囲外は固体(見えない壁)。Yの範囲外はEmpty(上へは飛べる。下は地面が受ける)</para>
+	/// </summary>
+	bool overlaps_solid(const Vector3& min, const Vector3& max) const noexcept;
+
 	/// 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 	BlockMoveResult judge(
 		const Vector3& playerPosition,
