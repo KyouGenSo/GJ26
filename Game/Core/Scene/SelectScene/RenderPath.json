@@ -44,14 +44,14 @@
 					"X": 1920.0,
 					"Y": 1080.0
 				},
-				"CameraId": 1,
+				"CameraId": 0,
 				"ClearDepthStencil": true,
 				"GBufferSize": {
 					"X": 1920.0,
 					"Y": 1080.0
 				},
 				"Height": 1080.0,
-				"LayerIndex": 1,
+				"LayerIndex": 0,
 				"Left": 0.0,
 				"MaxDepth": 1.0,
 				"MinDepth": 0.0,
@@ -65,12 +65,12 @@
 					"Y": 0.0
 				},
 				"Width": 1920.0,
-				"WorldIndex": 0
+				"WorldIndex": 1
 			},
 			"Debug": {
 				"Position": {
-					"X": 210.0,
-					"Y": 350.0
+					"X": 250.0,
+					"Y": 250.0
 				}
 			},
 			"Links": {
@@ -84,7 +84,7 @@
 		"Debug": {
 			"Position": {
 				"X": 600.0,
-				"Y": 370.0
+				"Y": 350.0
 			}
 		}
 	}

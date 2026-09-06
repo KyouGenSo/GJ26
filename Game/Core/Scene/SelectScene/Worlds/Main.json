@@ -2,242 +2,6 @@
 	"Instances": [
 		{
 			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 1.0,
-				"G": 1.0,
-				"R": 1.0
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": 0.008726545609533787,
-					"XYZ": {
-						"X": 0.0,
-						"Y": 0.9999619126319885,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 1.0,
-					"Y": 1.0000090599060059,
-					"Z": 1.0
-				},
-				"Translate": {
-					"X": 0.0,
-					"Y": -0.9809665679931641,
-					"Z": 0.0
-				}
-			},
-			"Name": "StageSelectTitle",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 0.4000000059604645,
-			"Text": "Stage Select",
-			"Type": 2003,
-			"Use runtime": false
-		},
-		{
-			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 1.0,
-				"G": 1.0,
-				"R": 1.0
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": -0.026176702231168747,
-					"XYZ": {
-						"X": 0.0,
-						"Y": -0.9996573328971863,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 1.0,
-						"Y": 1.0,
-					"Z": 1.0
-				},
-				"Translate": {
-					"X": 0.0,
-					"Y": 1.399999976158142,
-						"Z": 0.0
-					}
-				},
-			"Name": "StageNumber",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 0.6000000238418579,
-			"Text": "Stage1",
-			"Type": 2003,
-			"Use runtime": false
-		},
-		{
-			"Children": [],
-			"IsDraw": true,
-			"IsFlipY": false,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": -0.043619342148303986,
-					"XYZ": {
-						"X": 0.0,
-						"Y": -0.9990482330322266,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 0.999994158744812,
-					"Y": 1.0000004768371582,
-					"Z": 0.999994158744812
-				},
-				"Translate": {
-					"X": -2.0,
-					"Y": 0.0,
-					"Z": 0.0
-				}
-			},
-			"Material": {
-				"Color": {
-					"A": 1.0,
-					"B": 1.0,
-					"G": 1.0,
-					"R": 1.0
-				},
-				"LightingType": 0,
-				"Shininess": 50.0,
-				"Texture": "TakeCEngine_Logo.png",
-				"UV Transform": {
-					"Rotation": 0.0,
-					"Scale": {
-					"X": 1.0,
-						"Y": 1.0
-					},
-					"Translate": {
-						"X": 0.0,
-						"Y": 0.0
-					}
-				}
-			},
-			"Name": "SelectAllowSprite_Left",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": {
-				"X": 1.0,
-				"Y": 1.0
-			},
-			"Type": 2002,
-			"Use runtime": false
-		},
-		{
-			"Children": [],
-			"IsDraw": true,
-			"IsFlipY": false,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": -0.08715543150901794,
-					"XYZ": {
-						"X": 0.0,
-						"Y": -0.9961947798728943,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 1.0,
-					"Y": 1.0,
-					"Z": 1.0
-				},
-				"Translate": {
-					"X": 2.0,
-					"Y": 0.0,
-					"Z": 0.0
-				}
-			},
-			"Material": {
-				"Color": {
-					"A": 1.0,
-					"B": 1.0,
-					"G": 1.0,
-					"R": 1.0
-				},
-				"LightingType": 0,
-				"Shininess": 50.0,
-				"Texture": "TakeCEngine_Logo.png",
-				"UV Transform": {
-					"Rotation": 0.0,
-					"Scale": {
-						"X": 1.0,
-						"Y": 1.0
-					},
-					"Translate": {
-						"X": 0.0,
-						"Y": 0.0
-					}
-				}
-			},
-			"Name": "SelectAllowSprite_Right",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": {
-				"X": 1.0,
-				"Y": 1.0
-			},
-			"Type": 2002,
-			"Use runtime": false
-		},
-		{
-			"Children": [
-				{
-					"Children": [],
-					"Local transform": {
-						"Rotation": {
-							"W": 1.0,
-							"XYZ": {
-								"X": 0.0,
-								"Y": 0.0,
-								"Z": 0.0
-							}
-						},
-						"Scale": {
-							"X": 1.0,
-							"Y": 1.0,
-							"Z": 1.0
-						},
-						"Translate": {
-							"X": 0.0,
-							"Y": 0.0,
-							"Z": -10.0
-						}
-					},
-					"Name": "MainCamera",
-					"Projection": {
-						"Bottom": -5.400000095367432,
-						"FarClip": 100.0,
-						"Left": -9.600000381469727,
-						"NearClip": 0.0,
-						"Right": 9.600000381469727,
-						"Top": 5.400000095367432,
-						"Type": 1
-					},
-					"Type": 3000,
-					"Use runtime": true
-				}
-			],
 			"Local transform": {
 				"Rotation": {
 					"W": 1.0,
@@ -267,9 +31,47 @@
 				"Type": 0
 			},
 			"Type": 3000,
+			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"Color": {
+				"B": 1.0,
+				"G": 1.0,
+				"R": 1.0
+			},
+			"Direction": {
+				"X": -0.0,
+				"Y": -1.0,
+				"Z": -0.0
+			},
+			"Influence Layer": 3,
+			"Intensity": 1.0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "DirectionalLight",
+			"Type": 5000,
 			"Use runtime": false
 		}
 	],
 	"Name": "Main",
-	"NumLayer": 2
+	"NumLayer": 1
 }

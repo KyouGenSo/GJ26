@@ -1,0 +1,26 @@
+{
+	"CenterPreviewExtent": {
+		"type": "R32",
+		"value": 1.5
+	},
+	"SidePreviewExtent": {
+		"type": "R32",
+		"value": 1.0
+	},
+	"TransitionDuration": {
+		"type": "R32",
+		"value": 0.6000000238418579
+	},
+	"ArrowAnimationPeriod": {
+		"type": "R32",
+		"value": 1.0
+	},
+	"ArrowMoveAmplitude": {
+		"type": "R32",
+		"value": 0.11999999731779099
+	},
+	"TransitionRotationDegrees": {
+		"type": "R32",
+		"value": 190.0
+	}
+}
