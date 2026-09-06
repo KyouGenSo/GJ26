@@ -4,7 +4,7 @@
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 
 void AxisController::setup() {
-	axisInstance = 
+	axisInstance =
 		szg::RuntimeStorage::GetValue<Reference<szg::StaticMeshInstance>>(
 			"RuntimeInstance", "Axis"
 		)

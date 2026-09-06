@@ -13,13 +13,35 @@ namespace {
 constexpr float kGripMoveTriggerThreshold = 0.5f;
 constexpr float kGripMoveResetThreshold = 0.25f;
 
+Vector3 SnapToCardinalDirection(const Vector3& direction) noexcept {
+	if (std::abs(direction.x) > std::abs(direction.z)) {
+		return { direction.x < 0.0f ? -1.0f : 1.0f, 0.0f, 0.0f };
+	}
+	return { 0.0f, 0.0f, direction.z < 0.0f ? -1.0f : 1.0f };
+}
+
 std::optional<BlockMoveDirection> ResolveBlockMoveDirection(const PlayerContext& context) noexcept {
-	if (std::abs(context.input.move.y) >= std::abs(context.input.move.x)) {
-		return context.input.move.y >= 0.0f
+	const Vector3 cameraRelativeDirection =
+		context.moveRight * context.input.move.x +
+		context.moveForward * context.input.move.y;
+	if (cameraRelativeDirection.length() == 0.0f) {
+		return std::nullopt;
+	}
+
+	const Vector3 moveDirection = SnapToCardinalDirection(cameraRelativeDirection);
+	const Vector3 playerForward = SnapToCardinalDirection(context.direction);
+	const Vector3 playerRight{ playerForward.z, 0.0f, -playerForward.x };
+	const float forwardAlignment =
+		moveDirection.x * playerForward.x + moveDirection.z * playerForward.z;
+	if (std::abs(forwardAlignment) > 0.5f) {
+		return forwardAlignment > 0.0f
 			? BlockMoveDirection::Forward
 			: BlockMoveDirection::Backward;
 	}
-	return context.input.move.x >= 0.0f
+
+	const float rightAlignment =
+		moveDirection.x * playerRight.x + moveDirection.z * playerRight.z;
+	return rightAlignment > 0.0f
 		? BlockMoveDirection::Right
 		: BlockMoveDirection::Left;
 }

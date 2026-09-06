@@ -1,0 +1,16 @@
+{
+	"Animation": [],
+	"Audio": [],
+	"Font": [
+		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
+	],
+	"Json": [],
+	"Mesh": [
+		".\\Game\\Assets\\Models\\Cube.obj",
+		".\\SyzygyEngine\\Assets\\Models\\Misc\\bunny.obj",
+		".\\SyzygyEngine\\Assets\\Models\\Grid\\Grid.gltf"
+	],
+	"Shader": [],
+	"Skeleton": [],
+	"Texture": []
+}

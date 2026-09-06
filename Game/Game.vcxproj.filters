@@ -102,6 +102,12 @@
     <ClCompile Include="Scripts\ScriptStageEditor\AxisController.cpp">
       <Filter>Scripts\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Scripts\Scene\SelectScene.cpp">
+      <Filter>Scripts\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Scene\TitleScene.cpp">
+      <Filter>Scripts\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h">
@@ -178,6 +184,12 @@
     </ClInclude>
     <ClInclude Include="Scripts\ScriptStageEditor\AxisController.h">
       <Filter>Scripts\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Scene\SelectScene.h">
+      <Filter>Scripts\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Scene\TitleScene.h">
+      <Filter>Scripts\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
