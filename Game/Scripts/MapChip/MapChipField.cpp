@@ -67,12 +67,7 @@ i32 MapChipField::CountStages() {
 }
 
 bool MapChipField::load(const std::string& directory) {
-	for (auto& visual : visuals) {
-		if (visual) {
-			visual->destroy_self();
-		}
-	}
-	visuals.clear();
+	destroy_root();
 	++revision;
 
 	std::vector<szg::CSVAsset<i32>> layers;
@@ -144,12 +139,27 @@ bool MapChipField::load(const std::string& directory) {
 }
 
 void MapChipField::build(szg::WorldRoot& worldRoot_) {
+	destroy_root();
 	worldRoot = worldRoot_;
+	if (chips.empty()) {
+		return;
+	}
+
+	root = worldRoot->instantiate<szg::WorldInstance>(nullptr);
+	root->transform_mut().set_translate(center());
 	visuals.assign(chips.size(), Reference<szg::StaticMeshInstance>{});
 
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		refresh_visual(i);
 	}
+}
+
+void MapChipField::destroy_root() {
+	if (root) {
+		root->destroy_self();
+		root.reset();
+	}
+	visuals.clear();
 }
 
 MapChipType MapChipField::get(i32 x, i32 y, i32 z) const {
@@ -412,6 +422,10 @@ Vector3 MapChipField::to_world(i32 x, i32 y, i32 z) {
 	return Vector3{ static_cast<r32>(x), static_cast<r32>(y), static_cast<r32>(z) };
 }
 
+Vector3 MapChipField::center() const {
+	return to_world(sizeX - 1, sizeY - 1, sizeZ - 1) * 0.5f;
+}
+
 std::optional<MapChipIndex> MapChipField::to_index(const Vector3& position) const {
 	const MapChipIndex index{
 		static_cast<i32>(std::floor(position.x + 0.5f)),
@@ -487,17 +501,19 @@ void MapChipField::refresh_visual(i32 flat) {
 		return;
 	}
 	if (visuals[flat]) {
+		// destroy_self は親の children から自分を外さないので、root に無効な参照が残らないよう先に外す
+		visuals[flat]->reparent(nullptr, false);
 		visuals[flat]->destroy_self();
 		visuals[flat].reset();
 	}
 
-	if (chips[flat] == MapChipType::Empty || !worldRoot) {
+	if (chips[flat] == MapChipType::Empty || !root) {
 		return;
 	}
 
 	const MapChipIndex index = unflatten(flat);
-	Reference<szg::StaticMeshInstance> cube = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
-	cube->transform_mut().set_translate(to_world(index.x, index.y, index.z));
+	Reference<szg::StaticMeshInstance> cube = worldRoot->instantiate<szg::StaticMeshInstance>(root, "Cube.obj");
+	cube->transform_mut().set_translate(to_world(index.x, index.y, index.z) - center());
 	if (!cube->get_materials().empty()) {
 		cube->get_materials()[0].color = ChipColor(chips[flat], clayPiece[flat] != -1);
 	}
