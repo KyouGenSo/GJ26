@@ -21,8 +21,10 @@ struct PlayerContext {
 	float fallSpeed{ 20.0f };
 	/// ブロックを掴んでいる間の横移動速度
 	float gripMoveSpeed{ 2.5f };
+	/// 上方向の速度。重力で毎フレーム減り、着地・頭打ちで0になる
+	float verticalVelocity{ 0.0f };
 
-	/// Y座標が0のときtrue
+	/// 足元に支え(ブロック上面またはy=0の地面)があるときtrue
 	bool isGrounded{ false };
 	/// 現在掴めるブロックのインデックス
 	std::optional<MapChipIndex> gripTargetIndex;
@@ -33,6 +35,8 @@ struct PlayerContext {
 
 	/// Stateが操作するPlayerのWorldInstance
 	Reference<szg::WorldInstance> worldInstance;
+	/// 衝突判定に使うマップの仲介クラス(未設定なら衝突しない)
+	Reference<const BlockMovementJudge> judge;
 	/// 現在フレームの入力
 	PlayerInputFrame input;
 	/// 現在フレームの経過秒数

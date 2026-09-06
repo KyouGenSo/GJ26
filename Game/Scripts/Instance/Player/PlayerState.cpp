@@ -33,37 +33,24 @@ void PlayerMoveState::exit(PlayerContext&) {
 
 void PlayerJumpState::enter(PlayerContext& context) {
 	isRunning_ = context.worldInstance && context.isGrounded;
-	verticalVelocity_ = isRunning_ ? context.jumpPower : 0.0f;
+	if (isRunning_) {
+		context.verticalVelocity = context.jumpPower;
+	}
 }
 
 void PlayerJumpState::execute(PlayerContext& context) {
-	if (!isRunning_ || !context.worldInstance) {
+	// Yの更新と着地判定はPlayerMovement::apply_gravityが行う。上昇が終わって接地したら終了
+	if (!isRunning_ || !context.worldInstance ||
+		(context.isGrounded && context.verticalVelocity <= 0.0f)) {
 		isRunning_ = false;
 		return;
 	}
 
 	// JumpStateを維持したまま横移動を行う
 	PlayerMovement::move_horizontal(context, context.moveSpeed);
-
-	verticalVelocity_ -= context.fallSpeed * context.deltaSeconds;
-	auto& transform = context.worldInstance->transform_mut();
-	auto position = transform.get_translate();
-	position.y += verticalVelocity_ * context.deltaSeconds;
-
-	if (verticalVelocity_ <= 0.0f && position.y <= 0.0f) {
-		position.y = 0.0f;
-		transform.set_translate(position);
-		context.isGrounded = true;
-		isRunning_ = false;
-		return;
-	}
-
-	transform.set_translate(position);
-	context.isGrounded = position.y == 0.0f;
 }
 
 void PlayerJumpState::exit(PlayerContext&) {
-	verticalVelocity_ = 0.0f;
 	isRunning_ = false;
 }
 
@@ -79,7 +66,8 @@ void PlayerGripState::enter(PlayerContext& context) {
 }
 
 void PlayerGripState::execute(PlayerContext& context) {
-	if (!isRunning_ || !context.grippedBlockIndex || !context.input.gripPressed) {
+	// 支えの無いセルへ移動して落下し始めたら掴みを離す
+	if (!isRunning_ || !context.grippedBlockIndex || !context.input.gripPressed || !context.isGrounded) {
 		isRunning_ = false;
 		return;
 	}

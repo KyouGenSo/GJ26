@@ -6,6 +6,7 @@
 #include <Engine/Application/Logger.h>
 #include <Engine/Runtime/Clock/WorldClock.h>
 
+#include "PlayerMovement.h"
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 
 namespace {
@@ -94,6 +95,8 @@ void Player::prev_update() {
 	}
 	stateManager_.update(context_);
 	update_gripped_block_movement();
+	// グリッド移動でスナップした直後に足元の支えを確かめるため、この位置で重力を掛ける
+	PlayerMovement::apply_gravity(context_);
 	update_mesh_direction();
 
 	if (blockMovementJudge_ && context_.worldInstance && context_.grippedBlockIndex &&
@@ -109,29 +112,11 @@ void Player::prev_update() {
 }
 
 //================================
-// world更新後処理
-//================================
-void Player::post_update() {
-	if (!context_.worldInstance) {
-		context_.isGrounded = false;
-		return;
-	}
-
-	update_grounded(context_.worldInstance->world_position().y);
-}
-
-//================================
 // 操作対象のWorldInstanceを設定
 //================================
 void Player::set_world_instance(Reference<szg::WorldInstance> worldInstance_) noexcept {
 	context_.worldInstance = worldInstance_;
-
-	if (!context_.worldInstance) {
-		context_.isGrounded = false;
-		return;
-	}
-
-	update_grounded(context_.worldInstance->transform_imm().get_translate().y);
+	context_.isGrounded = false;
 }
 
 //================================
@@ -228,6 +213,7 @@ void Player::set_grip_target(const std::optional<MapChipIndex>& blockIndex) noex
 
 void Player::set_block_movement_judge(Reference<BlockMovementJudge> judge) noexcept {
 	blockMovementJudge_ = judge;
+	context_.judge = judge;
 }
 
 void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
@@ -248,13 +234,6 @@ float Player::get_move_speed() const noexcept {
 
 float Player::get_mesh_turn_speed() const noexcept {
 	return meshTurnSpeed_;
-}
-
-//================================
-// 接地状態の更新
-//================================
-void Player::update_grounded(float positionY) noexcept {
-	context_.isGrounded = positionY == 0.0f;
 }
 
 //================================

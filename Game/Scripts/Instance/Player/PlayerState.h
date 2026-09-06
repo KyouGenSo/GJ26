@@ -45,9 +45,6 @@ public:
 	void enter(PlayerContext& context) override;
 	void execute(PlayerContext& context) override;
 	void exit(PlayerContext& context) override;
-
-private:
-	float verticalVelocity_{ 0.0f };
 };
 
 /// <summary>
