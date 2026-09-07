@@ -7,9 +7,9 @@
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
-#include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
+#include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 #include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/Input/Input.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
@@ -411,7 +411,7 @@ r32 StageSelectScript::preview_scale(const Preview& preview, i32 relativeSlot) c
 		preview.field.width(),
 		preview.field.height(),
 		preview.field.depth(),
-	}));
+		}));
 	if (maxDimension <= 0.0f || std::abs(relativeSlot) > 1) {
 		return 0.0f;
 	}

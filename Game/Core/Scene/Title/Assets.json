@@ -1,5 +1,7 @@
 {
-	"Animation": [],
+	"Animation": [
+		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
+	],
 	"Audio": [],
 	"Font": [
 		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
@@ -18,6 +20,8 @@
 	"Param": [],
 	"Particle": [],
 	"Shader": [],
-	"Skeleton": [],
+	"Skeleton": [
+		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
+	],
 	"Texture": []
 }
