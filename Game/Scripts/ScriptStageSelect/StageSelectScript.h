@@ -118,6 +118,9 @@ private:
 	Vector3 rightArrowBasePosition{ CVector3::ZERO };
 	// 選択中のステージ番号の保存と復元に使う
 	szg::InputHandler<szg::KeyID> keys;
+	// ステージ決定入力
+	szg::InputHandler<szg::PadID> pad;
+	szg::InputHandler<szg::MouseID> mouse;
 	// 選択中のステージ番号
 	i32 selectedStage{ 1 };
 	// 循環境界をまたぐ移動補間に使う連続したインデックス
@@ -130,6 +133,7 @@ private:
 	r32 arrowAnimationTime{ 0.0f };
 	r32 previewFloatAnimationTime{ 0.0f };
 	bool isTransitioning{ false };
+	bool sceneTransitionRequested{ false };
 
 	// プレビュー同士の間隔
 	r32 slotSpacing = 4.0f;
