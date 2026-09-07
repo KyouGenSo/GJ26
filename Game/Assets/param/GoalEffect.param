@@ -1,0 +1,14 @@
+{
+	"FloatAmplitude": {
+		"type": "R32",
+		"value": 0.1
+	},
+	"FloatPeriod": {
+		"type": "R32",
+		"value": 1.5
+	},
+	"RotationSpeedDegrees": {
+		"type": "R32",
+		"value": 45.0
+	}
+}

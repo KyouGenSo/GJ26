@@ -35,8 +35,11 @@ struct ChipVisualSetting {
 const std::array<ChipVisualSetting, 3> CHIP_VISUAL_SETTINGS{ {
 	{ MapChipType::Clay, "[[game]]/clay/clay.obj", "clay.obj", 0.5f, -0.5f },
 	{ MapChipType::GoalPiece, "[[game]]/goalPiece/goalPiece.obj", "goalPiece.obj", 0.5f, -0.5f },
-	{ MapChipType::Goal, "[[game]]/goal/goal.obj", "goal.obj", 0.5f, -0.5f },
+	{ MapChipType::Goal, "[[game]]/goalOff/goalOff.obj", "goalOff.obj", 0.5f, -0.5f },
 } };
+
+constexpr const char* GOAL_ACTIVE_ASSET_PATH = "[[game]]/goal/goal.obj";
+constexpr const char* GOAL_ACTIVE_MESH_NAME = "goal.obj";
 
 /// <summary>
 /// チップ種類に対応する表示モデル設定を返す。
@@ -87,6 +90,7 @@ void MapChipField::RegisterVisualAssets() {
 	for (const ChipVisualSetting& setting : CHIP_VISUAL_SETTINGS) {
 		szg::PolygonMeshLibrary::RegisterLoadQue(setting.assetPath);
 	}
+	szg::PolygonMeshLibrary::RegisterLoadQue(GOAL_ACTIVE_ASSET_PATH);
 }
 
 bool MapChipField::load(const std::string& directory) {
@@ -462,6 +466,25 @@ Reference<szg::StaticMeshInstance> MapChipField::visual_mut(const MapChipIndex& 
 	return visuals[flat_index(index.x, index.y, index.z)];
 }
 
+bool MapChipField::set_goal_active(const MapChipIndex& index, bool active) {
+	if (get(index.x, index.y, index.z) != MapChipType::Goal) {
+		return false;
+	}
+	const i32 flat = flat_index(index.x, index.y, index.z);
+	const ChipVisualSetting* offSetting = FindVisualSetting(MapChipType::Goal);
+	const char* meshName = active ? GOAL_ACTIVE_MESH_NAME : (offSetting ? offSetting->meshName : "goalOff.obj");
+	if (visuals.empty()) {
+		return false;
+	}
+	if (visuals[flat] && visuals[flat]->key_id() == meshName) {
+		return true;
+	}
+
+	// 描画Executorはインスタンス生成時のメッシュ単位で登録されるため、reset_meshではなく再生成する。
+	refresh_visual(flat, active);
+	return static_cast<bool>(visuals[flat]);
+}
+
 Vector3 MapChipField::to_world(i32 x, i32 y, i32 z) {
 	return Vector3{ static_cast<r32>(x), static_cast<r32>(y), static_cast<r32>(z) };
 }
@@ -540,7 +563,7 @@ std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapC
 	return cells;
 }
 
-void MapChipField::refresh_visual(i32 flat) {
+void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 	if (visuals.empty()) {
 		return;
 	}
@@ -562,8 +585,11 @@ void MapChipField::refresh_visual(i32 flat) {
 	const ChipVisualSetting* setting = FindVisualSetting(chips[flat]);
 
 	// 見つからなければ Cube.obj で代替表示
-	Reference<szg::StaticMeshInstance> visual = 
-		worldRoot->instantiate<szg::StaticMeshInstance>(root,setting ? setting->meshName : "Cube.obj");
+	const char* meshName = chips[flat] == MapChipType::Goal && goalActive
+		? GOAL_ACTIVE_MESH_NAME
+		: (setting ? setting->meshName : "Cube.obj");
+	Reference<szg::StaticMeshInstance> visual =
+		worldRoot->instantiate<szg::StaticMeshInstance>(root, meshName);
 
 	// 親 root はステージ中央に置くので、子のローカル座標は中央基準
 	Vector3 localPosition = to_world(index.x, index.y, index.z) - center();

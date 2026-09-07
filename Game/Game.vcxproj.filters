@@ -84,6 +84,9 @@
     <ClCompile Include="Scripts\ScriptMapTest\MapTestScript.cpp">
       <Filter>Scripts\ScriptMapTest</Filter>
     </ClCompile>
+    <ClCompile Include="Scripts\Manager\GoalEffect.cpp">
+      <Filter>Scripts\Manager</Filter>
+    </ClCompile>
     <ClCompile Include="Scripts\Manager\GoalManager.cpp">
       <Filter>Scripts\Manager</Filter>
     </ClCompile>
@@ -180,6 +183,9 @@
     </ClInclude>
     <ClInclude Include="Scripts\ScriptMapTest\MapTestScript.h">
       <Filter>Scripts\ScriptMapTest</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Manager\GoalEffect.h">
+      <Filter>Scripts\Manager</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Manager\GoalManager.h">
       <Filter>Scripts\Manager</Filter>

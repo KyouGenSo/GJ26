@@ -8,6 +8,7 @@
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Library/Utility/Template/Reference.h>
 
+#include "GoalEffect.h"
 #include "Scripts/MapChip/MapChipField.h"
 
 class Player;
@@ -32,6 +33,7 @@ public:
 	/// </summary>
 	void set_player(Reference<const Player> player_);
 
+	void finalize() override;
 	void post_update() override;
 
 	/// <summary>
@@ -53,6 +55,7 @@ private:
 	Reference<MapChipField> field;
 	Reference<szg::WorldRoot> worldRoot;
 	Reference<const Player> player;
+	GoalEffect goalEffect;
 	std::vector<Reference<szg::StaticMeshInstance>> links; // ピース間の線
 	std::optional<MapChipIndex> goal;
 	u32 lastVersion{ 0 };

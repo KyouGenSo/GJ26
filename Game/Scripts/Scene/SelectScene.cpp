@@ -1,7 +1,6 @@
 #include "SelectScene.h"
 
 #include <Engine/Application/Logger.h>
-#include <Engine/Assets/PolygonMesh/PolygonMeshLibrary.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Light/DirectionalLight/DirectionalLightInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
@@ -10,6 +9,7 @@
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
+#include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/ScriptStageSelect/StageSelectScript.h"
 
 SelectScene::SelectScene() noexcept {
@@ -17,7 +17,7 @@ SelectScene::SelectScene() noexcept {
 }
 
 void SelectScene::custom_load_asset() {
-	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/Cube.obj");
+	MapChipField::RegisterVisualAssets();
 }
 
 void SelectScene::custom_setup() {
