@@ -4,9 +4,10 @@
 	"Font": [],
 	"Json": [],
 	"Mesh": [
-		".\\Game\\Assets\\Models\\Player_Model_ver2.0.gltf"
+		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
 	"Param": [],
+	"Particle": [],
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": []

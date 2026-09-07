@@ -34,147 +34,6 @@
 			"Use runtime": true
 		},
 		{
-			"Children": [
-				{
-					"IsDraw": true,
-					"Layer": 0,
-					"Local transform": {
-						"Rotation": {
-							"W": 1.0,
-							"XYZ": {
-								"X": 0.0,
-								"Y": 0.0,
-								"Z": 0.0
-							}
-						},
-						"Scale": {
-							"X": 0.10000000149011612,
-							"Y": 0.10000000149011612,
-							"Z": 0.10000000149011612
-						},
-						"Translate": {
-							"X": 0.0,
-							"Y": -0.5,
-							"Z": 0.0
-						}
-					},
-					"Materials": [
-						{
-							"Color": {
-								"B": 0.07485102117061615,
-								"G": 0.07485102117061615,
-								"R": 0.43627452850341797
-							},
-							"LightingType": 2,
-							"Shininess": 50.0,
-							"Texture": "White.png",
-							"UV Transform": {
-								"Rotation": 0.0,
-								"Scale": {
-									"X": 1.0,
-									"Y": 1.0
-								},
-								"Translate": {
-									"X": 0.0,
-									"Y": 0.0
-								}
-							}
-						},
-						{
-							"Color": {
-								"B": 0.7107843160629272,
-								"G": 0.5679305791854858,
-								"R": 0.6351557970046997
-							},
-							"LightingType": 2,
-							"Shininess": 50.0,
-							"Texture": "White.png",
-							"UV Transform": {
-								"Rotation": 0.0,
-								"Scale": {
-									"X": 1.0,
-									"Y": 1.0
-								},
-								"Translate": {
-									"X": 0.0,
-									"Y": 0.0
-								}
-							}
-						},
-						{
-							"Color": {
-								"B": 1.0,
-								"G": 0.7808535099029541,
-								"R": 0.06862747669219971
-							},
-							"LightingType": 2,
-							"Shininess": 50.0,
-							"Texture": "White.png",
-							"UV Transform": {
-								"Rotation": 0.0,
-								"Scale": {
-									"X": 1.0,
-									"Y": 1.0
-								},
-								"Translate": {
-									"X": 0.0,
-									"Y": 0.0
-								}
-							}
-						},
-						{
-							"Color": {
-								"B": 0.15751154720783234,
-								"G": 0.15751154720783234,
-								"R": 0.27941179275512695
-							},
-							"LightingType": 2,
-							"Shininess": 50.0,
-							"Texture": "TakeCEngine_Logo.png",
-							"UV Transform": {
-								"Rotation": 0.0,
-								"Scale": {
-									"X": 1.0,
-									"Y": 1.0
-								},
-								"Translate": {
-									"X": 0.0,
-									"Y": 0.0
-								}
-							}
-						}
-					],
-					"Mesh": "Player_Model_ver2.0.gltf",
-					"Name": "PlayerMesh",
-					"Type": 2000,
-					"Use runtime": true
-				}
-			],
-			"Local transform": {
-				"Rotation": {
-					"W": 1.0,
-					"XYZ": {
-						"X": 0.0,
-						"Y": 0.0,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 1.0,
-					"Y": 1.0,
-					"Z": 1.0
-				},
-				"Translate": {
-					"X": 0.0,
-					"Y": 0.0,
-					"Z": 0.5750190615653992
-				}
-			},
-			"Name": "Player",
-			"Type": 1000,
-			"Use runtime": true
-		},
-		{
 			"Children": [],
 			"Color": {
 				"B": 1.0,
@@ -235,6 +94,191 @@
 				}
 			},
 			"Name": "CameraFollowTarget",
+			"Type": 1000,
+			"Use runtime": true
+		},
+		{
+			"Children": [
+				{
+					"Animation": "",
+					"IsDraw": true,
+					"IsLoop": false,
+					"Layer": 0,
+					"Local transform": {
+						"Rotation": {
+							"W": 1.0,
+							"XYZ": {
+								"X": 0.0,
+								"Y": 0.0,
+								"Z": 0.0
+							}
+						},
+						"Scale": {
+							"X": 0.30000001192092896,
+							"Y": 0.30000001192092896,
+							"Z": 0.30000001192092896
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": -0.5,
+							"Z": 0.0
+						}
+					},
+					"Materials": [
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 2,
+							"Shininess": 50.0,
+							"Texture": "playerFace.png.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						},
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 2,
+							"Shininess": 50.0,
+							"Texture": "playerEyes.png.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						},
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 2,
+							"Shininess": 50.0,
+							"Texture": "playerShirt.png.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						},
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 2,
+							"Shininess": 50.0,
+							"Texture": "playerOveralls.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						},
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 2,
+							"Shininess": 50.0,
+							"Texture": "playerHand.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						},
+						{
+							"Color": {
+								"B": 1.0,
+								"G": 1.0,
+								"R": 1.0
+							},
+							"LightingType": 2,
+							"Shininess": 50.0,
+							"Texture": "playerShoes.png.png",
+							"UV Transform": {
+								"Rotation": 0.0,
+								"Scale": {
+									"X": 1.0,
+									"Y": 1.0
+								},
+								"Translate": {
+									"X": 0.0,
+									"Y": 0.0
+								}
+							}
+						}
+					],
+					"Mesh": "playerClear.gltf",
+					"Name": "PlayerMesh",
+					"Type": 2001,
+					"Use runtime": true
+				}
+			],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "Player",
 			"Type": 1000,
 			"Use runtime": true
 		}

@@ -42,16 +42,19 @@ void MapTestScene::custom_setup() {
 	mapTestRef->setup(worldRoot);
 
 	// マップ操作確認用の仮プレイヤー
-	Reference<szg::WorldInstance> playerInstance = worldRoot.instantiate<szg::WorldInstance>(nullptr);
-	Reference<szg::StaticMeshInstance> playerMesh =
-		worldRoot.instantiate<szg::StaticMeshInstance>(playerInstance, "Sphere.obj");
+	Reference<szg::WorldInstance> playerInstance = 
+		worldRoot.instantiate<szg::WorldInstance>(nullptr);
+
+	Reference<szg::SkinningMeshInstance> playerMesh =
+		worldRoot.instantiate<szg::SkinningMeshInstance>(playerInstance, "Sphere.obj");
+
 	playerMesh->transform_mut().set_scale(Vector3{ 0.35f, 0.35f, 0.35f });
 	playerMesh->transform_mut().set_translate(Vector3{ 0.0f, 0.35f, 0.0f });
 	if (!playerMesh->get_materials().empty()) {
 		playerMesh->get_materials()[0].color = ColorRGB{ 0.2f, 0.6f, 1.0f };
 	}
 
-	std::unique_ptr<Player> player = eps::CreateUnique<Player>(playerInstance);
+	std::unique_ptr<Player> player = eps::CreateUnique<Player>(playerInstance, playerMesh);
 	Reference<Player> playerRef = player;
 	playerRef->set_mesh_instance(playerMesh);
 	playerRef->set_block_movement_judge(mapTestRef->movement_judge_mut());

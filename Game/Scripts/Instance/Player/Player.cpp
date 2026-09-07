@@ -4,6 +4,10 @@
 #include <cmath>
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Assets/Animation/NodeAnimation/NodeAnimationLibrary.h>
+#include <Engine/Assets/Animation/NodeAnimation/NodeAnimationPlayer.h>
+#include <Engine/Assets/Json/JsonAsset.h>
+#include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/Clock/WorldClock.h>
 
 #include "PlayerMovement.h"
@@ -49,8 +53,15 @@ std::optional<BlockMoveDirection> ResolveBlockMoveDirection(const PlayerContext&
 
 } // namespace
 
-Player::Player(Reference<szg::WorldInstance> worldInstance_) noexcept {
+Player::Player() {
+	setup_json_asset();
+}
+
+Player::Player(
+	Reference<szg::WorldInstance> worldInstance_,
+ Reference<szg::SkinningMeshInstance> meshInstance) : Player() {
 	set_world_instance(worldInstance_);
+	set_mesh_instance(meshInstance);
 }
 
 //================================
@@ -59,9 +70,11 @@ Player::Player(Reference<szg::WorldInstance> worldInstance_) noexcept {
 void Player::finalize() {
 	stateManager_.reset(context_);
 	context_ = {};
+	context_.worldInstance.reset();
 	meshInstance_.reset();
 	followCamera_.reset();
 	blockMovementJudge_.reset();
+	animationState_.reset();
 	gripInputReady_ = true;
 	gripMoveInputReady_ = true;
 }
@@ -95,6 +108,7 @@ void Player::prev_update() {
 	}
 	stateManager_.update(context_);
 	update_gripped_block_movement();
+	update_animation();
 	// グリッド移動でスナップした直後に足元の支えを確かめるため、この位置で重力を掛ける
 	PlayerMovement::apply_gravity(context_);
 	update_mesh_direction();
@@ -220,9 +234,11 @@ void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
 	followCamera_ = followCamera;
 }
 
-void Player::set_mesh_instance(Reference<szg::WorldInstance> meshInstance) noexcept {
+void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance) {
 	meshInstance_ = meshInstance;
+	animationState_.reset();
 	update_mesh_direction(true);
+	update_animation();
 }
 
 //================================
@@ -261,6 +277,69 @@ const std::optional<BlockMoveResult>& Player::get_block_move_result() const noex
 
 bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept {
 	return context_.blockMoveResult && context_.blockMoveResult->can_move(direction);
+}
+
+//================================
+// Player用パラメータの読み込み
+//================================
+void Player::setup_json_asset() {
+	szg::JsonAsset parameter{ "[[game]]/PlayerInit.param" };
+	const nlohmann::json& json = parameter.cget();
+
+	const auto readString = [&json](const char* name, const std::string& fallback) {
+		return json.value(name, nlohmann::json::object()).value("value", fallback);
+	};
+
+	animationClipName_ = readString("AnimationClipName", animationClipName_);
+	idleAnimation_.fileName = readString("IdleAnimationFile", idleAnimation_.fileName);
+	moveAnimation_.fileName = readString("MoveAnimationFile", moveAnimation_.fileName);
+	jumpAnimation_.fileName = readString("JumpAnimationFile", jumpAnimation_.fileName);
+	gripAnimation_.fileName = readString("GripAnimationFile", gripAnimation_.fileName);
+}
+
+//================================
+// PlayerStateに対応するアニメーションへ切り替える
+//================================
+void Player::update_animation() {
+	if (!meshInstance_) {
+		return;
+	}
+
+	const PlayerState state = stateManager_.get_current_state();
+	if (animationState_ && *animationState_ == state) {
+		return;
+	}
+
+	const AnimationSetting& setting = resolve_animation_setting(state);
+	const std::string animationKey = setting.fileName + '-' + animationClipName_;
+	if (!szg::NodeAnimationLibrary::IsRegistered(animationKey)) {
+		szgWarning("Player: animation is not registered. Name-'{}'.", animationKey);
+		animationState_ = state;
+		return;
+	}
+
+	meshInstance_->reset_animation(
+		setting.fileName,
+		animationClipName_,
+		setting.isLoop);
+	if (szg::NodeAnimationPlayer* animation = meshInstance_->get_animation()) {
+		animation->restart();
+	}
+	animationState_ = state;
+}
+
+const Player::AnimationSetting& Player::resolve_animation_setting(PlayerState state) const noexcept {
+	switch (state) {
+	case PlayerState::Move:
+		return moveAnimation_;
+	case PlayerState::Jump:
+		return jumpAnimation_;
+	case PlayerState::Grip:
+		return gripAnimation_;
+	case PlayerState::Idle:
+	default:
+		return idleAnimation_;
+	}
 }
 
 //================================

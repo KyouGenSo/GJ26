@@ -1,6 +1,10 @@
 #pragma once
 
-#include "PlayerState.h"
+#include "State/IPlayerState.h"
+#include "State/PlayerIdleState.h"
+#include "State/PlayerMoveState.h"
+#include "State/PlayerJumpState.h"
+#include "State/PlayerGripState.h"
 
 /// <summary>
 /// PlayerStateの遷移と実行を管理する
