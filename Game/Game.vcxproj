@@ -20,6 +20,7 @@
     <ClCompile Include="Scripts\Instance\Player\State\PlayerJumpState.cpp" />
     <ClCompile Include="Scripts\Instance\Player\State\PlayerMoveState.cpp" />
     <ClCompile Include="Scripts\ScriptStageEditor\AxisController.cpp" />
+    <ClCompile Include="Scripts\ScriptGamePlay\GamePlayScript.cpp" />
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp" />
     <ClCompile Include="Scripts\Instance\Player\Player.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerInput.cpp" />
@@ -40,7 +41,7 @@
     <ClCompile Include="Scripts\Scene\StageEditorScene.cpp" />
     <ClCompile Include="Scripts\ScriptStageEditor\StageEditorCameraScript.cpp" />
     <ClCompile Include="Scripts\ScriptStageEditor\StageEditorScript.cpp" />
-    <ClCompile Include="Scripts\Scene\PlayerDevScene.cpp" />
+    <ClCompile Include="Scripts\Scene\GamePlayScene.cpp" />
     <ClCompile Include="Scripts\Scene\SelectScene.cpp" />
     <ClCompile Include="Scripts\ScriptStageSelect\StageSelectScript.cpp" />
     <ClCompile Include="Scripts\Scene\TitleScene.cpp" />
@@ -51,6 +52,7 @@
     <ClInclude Include="Scripts\Instance\Player\State\PlayerJumpState.h" />
     <ClInclude Include="Scripts\Instance\Player\State\PlayerMoveState.h" />
     <ClInclude Include="Scripts\ScriptStageEditor\AxisController.h" />
+    <ClInclude Include="Scripts\ScriptGamePlay\GamePlayScript.h" />
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
     <ClInclude Include="Scripts\InputMapper.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerContext.h" />
@@ -74,7 +76,7 @@
     <ClInclude Include="Scripts\Scene\StageEditorScene.h" />
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorCameraScript.h" />
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorScript.h" />
-    <ClInclude Include="Scripts\Scene\PlayerDevScene.h" />
+    <ClInclude Include="Scripts\Scene\GamePlayScene.h" />
     <ClInclude Include="Scripts\Scene\SelectScene.h" />
     <ClInclude Include="Scripts\ScriptStageSelect\StageSelectScript.h" />
     <ClInclude Include="Scripts\Scene\TitleScene.h" />

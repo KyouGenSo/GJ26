@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <string>
 
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Module/World/WorldInstance/WorldInstance.h>
@@ -11,13 +12,17 @@
 
 class FollowCamera;
 
+namespace szg {
+class SkinningMeshInstance;
+}
+
 /// <summary>
 /// プレイヤー
 /// </summary>
 class Player : public szg::ISceneScript {
 public:
-	Player() = default;
-	explicit Player(Reference<szg::WorldInstance> worldInstance) noexcept;
+	Player();
+	explicit Player(Reference<szg::WorldInstance> worldInstance, Reference<szg::SkinningMeshInstance> meshInstance);
 	virtual ~Player() = default;
 	SZG_CLASS_MOVE_ONLY(Player)
 
@@ -90,18 +95,32 @@ public:
 	void set_block_movement_judge(Reference<BlockMovementJudge> judge) noexcept;
 	/// Playerが操作する追従カメラを設定
 	void set_follow_camera(Reference<FollowCamera> followCamera) noexcept;
-
-	/// directionに合わせて回転させる表示メッシュを設定
-	void set_mesh_instance(Reference<szg::WorldInstance> meshInstance) noexcept;
+	/// direction追従とアニメーション再生に使うスキニングメッシュを設定
+	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
 
 private:
+	struct AnimationSetting {
+		std::string fileName;
+		bool isLoop{ false };
+	};
+
+	void setup_json_asset();
+	void update_animation();
+	const AnimationSetting& resolve_animation_setting(PlayerState state) const noexcept;
 	void update_gripped_block_movement();
 	void update_mesh_direction(bool snap = false) noexcept;
 
 private:
-	Reference<szg::WorldInstance> meshInstance_;
+
+	Reference<szg::SkinningMeshInstance> meshInstance_;
 	Reference<FollowCamera> followCamera_;
 	Reference<BlockMovementJudge> blockMovementJudge_;
+	std::optional<PlayerState> animationState_;
+	std::string animationClipName_{ "アーマチュアアクション" };
+	AnimationSetting idleAnimation_{ "playerStand.gltf", true };
+	AnimationSetting moveAnimation_{ "playerWalk.gltf", true };
+	AnimationSetting jumpAnimation_{ "playerJump.gltf", false };
+	AnimationSetting gripAnimation_{ "playerGrab.gltf", true };
 	bool gripInputReady_{ true };
 	bool gripMoveInputReady_{ true };
 	float meshTurnSpeed_{ 12.0f };

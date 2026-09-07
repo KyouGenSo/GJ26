@@ -2,7 +2,7 @@
 
 #include "MapTestScene.h"
 #include "StageEditorScene.h"
-#include "PlayerDevScene.h"
+#include "GamePlayScene.h"
 #include "SelectScene.h"
 #include "TitleScene.h"
 
@@ -14,8 +14,8 @@ std::unique_ptr<szg::Scene> FactoryGJ26::create_scene2(i32 next) const {
 	case SceneListGJ26::StageEditor:
 		return std::make_unique<StageEditorScene>();
 
-	case SceneListGJ26::PlayerDev:
-		return std::make_unique<PlayerDevScene>();
+	case SceneListGJ26::GamePlay:
+		return std::make_unique<GamePlayScene>();
 
 	case SceneListGJ26::Title:
 		return std::make_unique<TitleScene>();

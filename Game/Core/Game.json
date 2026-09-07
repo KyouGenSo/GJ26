@@ -1,7 +1,7 @@
 {
 	"SceneList": [
+		"GamePlay",
 		"MapTest",
-		"PlayerDev",
 		"SelectScene",
 		"StageEditor",
 		"Title"

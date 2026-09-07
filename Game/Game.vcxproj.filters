@@ -37,6 +37,9 @@
     <Filter Include="Scripts\Instance\Player\State">
       <UniqueIdentifier>{ce5850bc-7ed8-4a12-abe5-22a5f1d4e13b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\ScriptGamePlay">
+      <UniqueIdentifier>{bf4f764e-d904-457b-ae68-a8fe08a24ae6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp">
@@ -99,8 +102,11 @@
     <ClCompile Include="Scripts\ScriptStageEditor\StageEditorScript.cpp">
       <Filter>Scripts\ScriptStageEditor</Filter>
     </ClCompile>
-    <ClCompile Include="Scripts\Scene\PlayerDevScene.cpp">
+    <ClCompile Include="Scripts\Scene\GamePlayScene.cpp">
       <Filter>Scripts\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\ScriptGamePlay\GamePlayScript.cpp">
+      <Filter>Scripts\ScriptGamePlay</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\ScriptStageEditor\AxisController.cpp">
       <Filter>Scripts\Editor</Filter>
@@ -190,8 +196,11 @@
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorScript.h">
       <Filter>Scripts\ScriptStageEditor</Filter>
     </ClInclude>
-    <ClInclude Include="Scripts\Scene\PlayerDevScene.h">
+    <ClInclude Include="Scripts\Scene\GamePlayScene.h">
       <Filter>Scripts\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\ScriptGamePlay\GamePlayScript.h">
+      <Filter>Scripts\ScriptGamePlay</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\ScriptStageEditor\AxisController.h">
       <Filter>Scripts\Editor</Filter>

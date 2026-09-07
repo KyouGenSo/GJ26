@@ -1,0 +1,22 @@
+{
+	"AnimationClipName": {
+		"type": "String",
+		"value": "アーマチュアアクション"
+	},
+	"IdleAnimationFile": {
+		"type": "String",
+		"value": "playerStand.gltf"
+	},
+	"MoveAnimationFile": {
+		"type": "String",
+		"value": "playerWalk.gltf"
+	},
+	"JumpAnimationFile": {
+		"type": "String",
+		"value": "playerJump.gltf"
+	},
+	"GripAnimationFile": {
+		"type": "String",
+		"value": "playerGrab.gltf"
+	}
+}
