@@ -13,6 +13,7 @@
 #include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/Input/Input.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
+#include <Engine/Runtime/Scene/SceneManager2.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
 
 #include <Engine/Assets/Json/JsonAsset.h>
@@ -22,6 +23,8 @@
 
 #include <Library/Math/ColorRGB.h>
 #include <Library/Math/Quaternion.h>
+
+#include "Scripts/Scene/FactoryGJ26.h"
 
 namespace {
 
@@ -52,7 +55,11 @@ void StageSelectScript::setup(
 	}
 
 	// 左右移動の入力を登録
-	keys.initialize({ szg::KeyID::A, szg::KeyID::D }, szg::InputInitializeMode::Current);
+	keys.initialize(
+		{ szg::KeyID::A, szg::KeyID::D, szg::KeyID::Space, szg::KeyID::Escape },
+		szg::InputInitializeMode::Current);
+	pad.initialize({ szg::PadID::A, szg::PadID::Start }, szg::InputInitializeMode::Current);
+	mouse.initialize({ szg::MouseID::Left }, szg::InputInitializeMode::Current);
 
 	// ステージの総数を取得
 	stageCount = MapChipField::CountStages();
@@ -80,9 +87,32 @@ void StageSelectScript::setup(
 
 void StageSelectScript::prev_update() {
 	keys.update();
+	pad.update();
+	mouse.update();
 	const r32 deltaSeconds = szg::WorldClock::DeltaSeconds();
 	update_arrow_animation(deltaSeconds);
+
+	const bool backTriggered =
+		keys.trigger(szg::KeyID::Escape) ||
+		pad.trigger(szg::PadID::Start);
+	if (!sceneTransitionRequested && backTriggered) {
+		sceneTransitionRequested = true;
+		szg::SceneManager2::SceneChange(SceneListGJ26::Title, 0.0f);
+		return;
+	}
+
 	if (stageCount <= 0) {
+		return;
+	}
+
+	const bool selectTriggered =
+		keys.trigger(szg::KeyID::Space) ||
+		pad.trigger(szg::PadID::A) ||
+		mouse.trigger(szg::MouseID::Left);
+	if (!isTransitioning && !sceneTransitionRequested && selectTriggered) {
+		sceneTransitionRequested = true;
+		szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", i32{ selectedStage });
+		szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
 		return;
 	}
 

@@ -93,7 +93,7 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	ground->get_materials()[0].color = ColorRGB{ 0.3f, 0.3f, 0.3f };
 
 	// プレイヤー代わりのマーカー
-	marker = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
+	marker = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "thumbtack.obj");
 	marker->transform_mut().set_scale(Vector3{ 0.5f, 0.5f, 0.5f });
 	marker->get_materials()[0].color = CColorRGB::BLUE;
 

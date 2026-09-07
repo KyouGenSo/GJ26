@@ -1,5 +1,10 @@
 {
-	"Animation": [],
+	"Animation": [
+		".\\Game\\Assets\\Models\\player\\playerStand.gltf",
+		".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
+        ".\\Game\\Assets\\Models\\player\\playerJump.gltf",
+        ".\\Game\\Assets\\Models\\player\\playerGrab.gltf"
+	],
 	"Audio": [],
 	"Font": [],
 	"Json": [],
@@ -9,6 +14,8 @@
 	"Param": [],
 	"Particle": [],
 	"Shader": [],
-	"Skeleton": [],
+	"Skeleton": [
+		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
+	],
 	"Texture": []
 }

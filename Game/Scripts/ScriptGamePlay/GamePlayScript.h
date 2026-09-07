@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Runtime/Input/InputHandler.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Runtime/SceneScript/SceneScriptManager.h>
 #include <Library/Utility/Template/Reference.h>
@@ -42,6 +43,9 @@ private:
 	Reference<Player> player_;
 	Reference<FollowCamera> followCamera_;
 	Reference<GoalManager> goalManager_;
+	szg::InputHandler<szg::KeyID> keyInput_;
+	szg::InputHandler<szg::PadID> padInput_;
 
 	bool isSetup_{ false };
+	bool sceneTransitionRequested_{ false };
 };

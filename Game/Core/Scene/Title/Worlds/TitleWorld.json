@@ -72,13 +72,13 @@
 					}
 				},
 				"Scale": {
-					"X": 2.0,
-					"Y": 2.0,
+					"X": 1.0,
+					"Y": 1.0,
 					"Z": 1.0
 				},
 				"Translate": {
 					"X": 0.0,
-					"Y": 1.1790000200271606,
+					"Y": -0.009562075138092041,
 					"Z": 1.1319999694824219
 				}
 			},
@@ -91,7 +91,7 @@
 					},
 					"LightingType": 2,
 					"Shininess": 50.0,
-					"Texture": "White.png",
+					"Texture": "clay.png",
 					"UV Transform": {
 						"Rotation": 0.0,
 						"Scale": {
@@ -105,59 +105,8 @@
 					}
 				}
 			],
-			"Mesh": "Cube.obj",
+			"Mesh": "clay.obj",
 			"Name": "ClayBlock",
-			"Type": 2000,
-			"Use runtime": false
-		},
-		{
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": 1.0,
-					"XYZ": {
-						"X": 0.0,
-						"Y": 0.0,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 1.0,
-					"Y": 1.0,
-					"Z": 1.0
-				},
-				"Translate": {
-					"X": 0.0,
-					"Y": 0.0,
-					"Z": -0.22860068082809448
-				}
-			},
-			"Materials": [
-				{
-					"Color": {
-						"B": 1.0,
-						"G": 1.0,
-						"R": 1.0
-					},
-					"LightingType": 2,
-					"Shininess": 50.0,
-					"Texture": "uvChecker.png",
-					"UV Transform": {
-						"Rotation": 0.0,
-						"Scale": {
-							"X": 1.0,
-							"Y": 1.0
-						},
-						"Translate": {
-							"X": 0.0,
-							"Y": 0.0
-						}
-					}
-				}
-			],
-			"Mesh": "bunny.obj",
-			"Name": "PlayerModel",
 			"Type": 2000,
 			"Use runtime": false
 		},
@@ -268,9 +217,9 @@
 			"Layer": 0,
 			"Local transform": {
 				"Rotation": {
-					"W": 1.0,
+					"W": 0.748955488204956,
 					"XYZ": {
-						"X": 0.0,
+						"X": 0.6626203060150146,
 						"Y": 0.0,
 						"Z": 0.0
 					}
@@ -281,60 +230,9 @@
 					"Z": 1.0
 				},
 				"Translate": {
-					"X": -2.5999999046325684,
-					"Y": 1.00600004196167,
-					"Z": -0.8999999761581421
-				}
-			},
-			"Materials": [
-				{
-					"Color": {
-						"B": 0.1362456977367401,
-						"G": 0.1362456977367401,
-						"R": 0.9264705777168274
-					},
-					"LightingType": 2,
-					"Shininess": 50.0,
-					"Texture": "White.png",
-					"UV Transform": {
-						"Rotation": 0.0,
-						"Scale": {
-							"X": 1.0,
-							"Y": 1.0
-						},
-						"Translate": {
-							"X": 0.0,
-							"Y": 0.0
-						}
-					}
-				}
-			],
-			"Mesh": "Cube.obj",
-			"Name": "Sissor",
-			"Type": 2000,
-			"Use runtime": false
-		},
-		{
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": 0.9770550727844238,
-					"XYZ": {
-						"X": 0.0,
-						"Y": 0.21298711001873016,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 2.000007152557373,
-					"Y": 0.10000082105398178,
-					"Z": 2.000007152557373
-				},
-				"Translate": {
-					"X": 3.0,
-					"Y": 0.0,
-					"Z": -1.100000023841858
+					"X": -3.3796987533569336,
+					"Y": 2.369077682495117,
+					"Z": -0.9000007510185242
 				}
 			},
 			"Materials": [
@@ -346,7 +244,49 @@
 					},
 					"LightingType": 2,
 					"Shininess": 50.0,
-					"Texture": "White.png",
+					"Texture": "scissorsBlade.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "scissorsHandle.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "scissorsTag.png",
 					"UV Transform": {
 						"Rotation": 0.0,
 						"Scale": {
@@ -360,8 +300,8 @@
 					}
 				}
 			],
-			"Mesh": "Cube.obj",
-			"Name": "Paper01",
+			"Mesh": "scissors.obj",
+			"Name": "Sissor",
 			"Type": 2000,
 			"Use runtime": false
 		},
@@ -370,10 +310,61 @@
 			"Layer": 0,
 			"Local transform": {
 				"Rotation": {
-					"W": 1.0,
+					"W": 0.9184637665748596,
 					"XYZ": {
 						"X": 0.0,
-						"Y": 0.0,
+						"Y": 0.3955051302909851,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 2.0000128746032715,
+					"Y": 0.10000139474868774,
+					"Z": 2.0000128746032715
+				},
+				"Translate": {
+					"X": 2.02827787399292,
+					"Y": 0.05901211500167847,
+					"Z": -1.7732043266296387
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "drawingPaper2.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "drawingPaper2.obj",
+			"Name": "Paper02",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.9953962564468384,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.09584575146436691,
 						"Z": 0.0
 					}
 				},
@@ -384,7 +375,7 @@
 				},
 				"Translate": {
 					"X": 2.0,
-					"Y": 0.0,
+					"Y": 0.003727465867996216,
 					"Z": -3.0
 				}
 			},
@@ -397,7 +388,7 @@
 					},
 					"LightingType": 2,
 					"Shininess": 50.0,
-					"Texture": "White.png",
+					"Texture": "drawingPaper.png",
 					"UV Transform": {
 						"Rotation": 0.0,
 						"Scale": {
@@ -411,91 +402,9 @@
 					}
 				}
 			],
-			"Mesh": "Cube.obj",
-			"Name": "Paper02",
+			"Mesh": "drawingPaper.obj",
+			"Name": "Paper01",
 			"Type": 2000,
-			"Use runtime": false
-		},
-		{
-			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 0.021025575697422028,
-				"G": 0.021025575697422028,
-				"R": 0.6127451062202454
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": -2.811227375332237e-07,
-					"XYZ": {
-						"X": 2.7551230186162456e-09,
-						"Y": 0.9999520778656006,
-						"Z": -0.009798611514270306
-					}
-				},
-				"Scale": {
-					"X": 1.0000494718551636,
-					"Y": 1.0000253915786743,
-					"Z": 1.0000194311141968
-				},
-				"Translate": {
-					"X": -2.8421753476117265e-14,
-					"Y": 1.999996542930603,
-					"Z": -2.0
-				}
-			},
-			"Name": "TitleText",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 1.0,
-			"Text": "Title",
-			"Type": 2003,
-			"Use runtime": false
-		},
-		{
-			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 1.0,
-				"G": 1.0,
-				"R": 1.0
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": -0.00017279094026889652,
-					"XYZ": {
-						"X": 0.0,
-						"Y": 1.0,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 0.9999988079071045,
-					"Y": 1.0000025033950806,
-					"Z": 0.9999988079071045
-				},
-				"Translate": {
-					"X": 1.3742829985119442e-08,
-					"Y": 0.3951513469219208,
-					"Z": -3.79994535446167
-				}
-			},
-			"Name": "StartButtonText",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 0.4000000059604645,
-			"Text": "A",
-			"Type": 2003,
 			"Use runtime": false
 		},
 		{
@@ -511,7 +420,7 @@
 				"Z": 0.0
 			},
 			"Influence Layer": 1,
-			"Intensity": 0.8999999761581421,
+			"Intensity": 0.800000011920929,
 			"Local transform": {
 				"Rotation": {
 					"W": 1.0,
@@ -534,6 +443,215 @@
 			},
 			"Name": "DirectionalLight",
 			"Type": 5000,
+			"Use runtime": false
+		},
+		{
+			"Animation": "playerTitle.gltf-アーマチュアアクション",
+			"IsDraw": true,
+			"IsLoop": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 0.30000004172325134,
+					"Y": 0.30000004172325134,
+					"Z": 0.30000004172325134
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.5697447657585144,
+					"Z": -0.824898898601532
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerFace.png.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerEyes.png.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerShirt.png.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerOveralls.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerHand.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerShoes.png.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "playerTitle.gltf",
+			"Name": "PlayerModel",
+			"Type": 2001,
+			"Use runtime": true
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.7880105972290039,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.6156616806983948,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.600000023841858,
+					"Y": 1.0000016689300537,
+					"Z": 1.5000003576278687
+				},
+				"Translate": {
+					"X": 2.4178619384765625,
+					"Y": 0.06603223085403442,
+					"Z": -1.315908670425415
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "drawingPaper3.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "drawingPaper3.obj",
+			"Name": "Paper03",
+			"Type": 2000,
 			"Use runtime": false
 		}
 	],

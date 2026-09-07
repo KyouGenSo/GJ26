@@ -1,16 +1,26 @@
 #include "GamePlayScript.h"
 
+#include <algorithm>
+
 #include <Engine/Application/Logger.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
+#include <Engine/Runtime/Scene/SceneManager2.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
+#include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
+
+namespace {
+
+constexpr r32 kBackHoldDurationSeconds = 1.0f;
+
+} // namespace
 
 void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	if (isSetup_) {
@@ -21,6 +31,8 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
+	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
+	padInput_.initialize({ szg::PadID::Start }, szg::InputInitializeMode::Current);
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	mapTest_ = mapTest;
@@ -96,6 +108,20 @@ void GamePlayScript::finalize() {
 
 void GamePlayScript::prev_update() {
 	if (!isSetup_) {
+		return;
+	}
+	keyInput_.update();
+	padInput_.update();
+
+	// EscapeキーまたはStartボタンが一定時間押され続けた場合、ステージ選択画面へ遷移する
+	const r32 backHoldSeconds = std::max(
+		keyInput_.press_timer(szg::KeyID::Escape),
+		padInput_.press_timer(szg::PadID::Start));
+	if (!sceneTransitionRequested_ && backHoldSeconds >= kBackHoldDurationSeconds) {
+		sceneTransitionRequested_ = true;
+
+		// ステージ選択画面へ遷移する
+		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
 		return;
 	}
 
