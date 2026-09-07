@@ -11,11 +11,17 @@
 	"Mesh": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
-	"Param": [],
-	"Particle": [],
+	"Param": [
+		".\\Game\\Assets\\param\\GoalEffect.param"
+	],
+	"Particle": [
+		".\\Game\\Assets\\particle\\GoalEffect.particle"
+	],
 	"Shader": [],
 	"Skeleton": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
-	"Texture": []
+	"Texture": [
+		".\\Game\\Assets\\textures\\Cross.png"
+	]
 }

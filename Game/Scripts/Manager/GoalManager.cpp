@@ -18,10 +18,15 @@ constexpr r32 kLinkThickness = 0.2f;
 void GoalManager::setup(Reference<MapChipField> field_, Reference<szg::WorldRoot> worldRoot_) {
 	field = field_;
 	worldRoot = worldRoot_;
+	goalEffect.setup(field, worldRoot);
 }
 
 void GoalManager::set_player(Reference<const Player> player_) {
 	player = player_;
+}
+
+void GoalManager::finalize() {
+	goalEffect.finalize();
 }
 
 void GoalManager::post_update() {
@@ -31,6 +36,7 @@ void GoalManager::post_update() {
 	if (field->version() != lastVersion) {
 		rebuild();
 	}
+	goalEffect.update();
 
 	// 操作対象は後から差し替えられるので毎フレーム取り直す
 	const Reference<const szg::WorldInstance> instance = player ? player->get_world_instance_imm() : nullptr;
@@ -93,10 +99,8 @@ void GoalManager::rebuild() {
 	goal.reset();
 	if (!goals.empty()) {
 		goal = goals.front();
-		if (Reference<szg::StaticMeshInstance> visual = field->visual_mut(*goal)) {
-			visual->set_active(goalOpen);
-		}
 	}
+	goalEffect.set_goal(goal, goalOpen);
 }
 
 bool GoalManager::is_connected(const MapChipIndex& a, const MapChipIndex& b) const {

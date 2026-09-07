@@ -9,7 +9,13 @@
 		".\\SyzygyEngine\\Assets\\Models\\Camera\\CameraAxis.obj"
 	],
 	"Param": [],
+	"Particle": [
+		".\\Game\\Assets\\particle\\Emitter.particle",
+		".\\Game\\Assets\\particle\\GoalEffect.particle"
+	],
 	"Shader": [],
 	"Skeleton": [],
-	"Texture": []
+	"Texture": [
+		".\\Game\\Assets\\textures\\Cross.png"
+	]
 }

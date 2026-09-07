@@ -205,6 +205,12 @@ public:
 	Reference<szg::StaticMeshInstance> visual_mut(const MapChipIndex& index);
 
 	/// <summary>
+	/// Goalセルの表示モデルをActive(goal.obj) / Off(goalOff.obj)へ切り替える
+	/// </summary>
+	/// <returns>Goalセルであり、表示モデルを切り替えられた場合はtrue</returns>
+	bool set_goal_active(const MapChipIndex& index, bool active);
+
+	/// <summary>
 	/// セルデータの複製(表示・root は含まない)。restore で戻す
 	/// </summary>
 	struct Cells {
@@ -251,7 +257,7 @@ private:
 	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
-	void refresh_visual(i32 flat);
+	void refresh_visual(i32 flat, bool goalActive = false);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
 private:
