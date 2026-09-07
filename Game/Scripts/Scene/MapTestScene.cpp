@@ -15,6 +15,7 @@
 
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
+#include "Scripts/Manager/UndoManager.h"
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
@@ -77,7 +78,13 @@ void MapTestScene::custom_setup() {
 
 	mapTestRef->set_player(playerRef);
 
-	// ステージ更新 → Player移動 → 追従カメラ更新の順に実行する
+	std::unique_ptr<UndoManager> undoManager = eps::CreateUnique<UndoManager>();
+	Reference<UndoManager> undoManagerRef = undoManager;
+	undoManagerRef->setup(mapTestRef->field_mut(), playerRef);
+	mapTestRef->set_undo_manager(undoManagerRef);
+
+	// Undo → ステージ更新 → Player移動 → 追従カメラ更新の順に実行する
+	sceneScriptManager.register_script(std::move(undoManager));
 	sceneScriptManager.register_script(std::move(mapTest));
 	sceneScriptManager.register_script(std::move(player));
 	if (followCamera) {
