@@ -10,10 +10,11 @@
 
 class Player;
 class FollowCamera;
+class UndoManager;
 
 /// <summary>
 /// <para>マップチップの表示確認用スクリプト</para>
-/// <para>起動時は Temp/StageNumber のステージ(無ければ 1)を読み、← →(LB / RB)で前後のステージに切り替える</para>
+/// <para>起動時は Temp/StageNumber のステージ(無ければ 1)を読み、← → で前後のステージに切り替える</para>
 /// <para>↑ ↓ でマーカーに隣接するゴール条件オブジェクトを押す / 引く(Player の Push / Pull 実装確認用の一時操作)</para>
 /// </summary>
 class MapTestScript final : public szg::ISceneScript {
@@ -27,6 +28,10 @@ public:
 	void setup(Reference<szg::WorldRoot> worldRoot_);
 	void set_player(Reference<Player> player_);
 	void set_follow_camera(Reference<FollowCamera> followCamera_);
+	/// <summary>
+	/// ステージ再ロード時に履歴を捨てる Undo
+	/// </summary>
+	void set_undo_manager(Reference<UndoManager> undoManager_);
 	void prev_update() override;
 
 	MapChipField& field_mut() { return field; }
@@ -52,8 +57,8 @@ private:
 	Reference<szg::StaticMeshInstance> marker;
 	Reference<Player> player;
 	Reference<FollowCamera> followCamera;
+	Reference<UndoManager> undoManager;
 	szg::InputHandler<szg::KeyID> keys;
-	szg::InputHandler<szg::PadID> pad;
 	i32 stageNumber{ 1 };
 	i32 stageCount{ 0 };
 };

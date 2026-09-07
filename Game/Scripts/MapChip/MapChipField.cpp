@@ -179,6 +179,25 @@ void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type) {
 	refresh_visual(i);
 }
 
+void MapChipField::restore(const Cells& source) {
+	if (source.chips.size() != chips.size()) {
+		szgWarning("MapChipField: restore size mismatch ({} != {})", source.chips.size(), chips.size());
+		return;
+	}
+	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == source.chips[i] && clayOrigin[i] == source.clayOrigin[i] &&
+			clayPiece[i] == source.clayPiece[i] && clayBlockedFaces[i] == source.clayBlockedFaces[i]) {
+			continue;
+		}
+		chips[i] = source.chips[i];
+		clayOrigin[i] = source.clayOrigin[i];
+		clayPiece[i] = source.clayPiece[i];
+		clayBlockedFaces[i] = source.clayBlockedFaces[i];
+		refresh_visual(i);
+	}
+	++revision;
+}
+
 bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to) {
 	if (!is_inside(from.x, from.y, from.z) || !is_inside(to.x, to.y, to.z)) {
 		return false;
