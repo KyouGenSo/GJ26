@@ -520,8 +520,8 @@ void MapChipField::refresh_visual(i32 flat) {
 		return;
 	}
 	if (visuals[flat]) {
-		// destroy_self は親の children から自分を外さないので、root に無効な参照が残らないよう先に外す
-		visuals[flat]->reparent(nullptr, false);
+		// destroy_self は親の children から自分を外さないので、root に無効な参照が残らないよう先に外す。
+		visuals[flat]->reparent(nullptr, true);
 		visuals[flat]->destroy_self();
 		visuals[flat].reset();
 	}
