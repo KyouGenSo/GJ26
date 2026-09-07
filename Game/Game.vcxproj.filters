@@ -84,6 +84,9 @@
     <ClCompile Include="Scripts\Manager\GoalManager.cpp">
       <Filter>Scripts\Manager</Filter>
     </ClCompile>
+    <ClCompile Include="Scripts\Manager\UndoManager.cpp">
+      <Filter>Scripts\Manager</Filter>
+    </ClCompile>
     <ClCompile Include="Scripts\Editor\StageEditorDocument.cpp">
       <Filter>Scripts\Editor</Filter>
     </ClCompile>
@@ -168,6 +171,9 @@
       <Filter>Scripts\ScriptMapTest</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Manager\GoalManager.h">
+      <Filter>Scripts\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Manager\UndoManager.h">
       <Filter>Scripts\Manager</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Editor\StageEditorDocument.h">

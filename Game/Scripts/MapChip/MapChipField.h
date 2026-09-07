@@ -200,7 +200,24 @@ public:
 	Reference<szg::StaticMeshInstance> visual_mut(const MapChipIndex& index);
 
 	/// <summary>
-	/// load / set / stretch_clay / move_goal_piece のたびに増える。他システムが再判定するためのトリガー
+	/// セルデータの複製(表示・root は含まない)。restore で戻す
+	/// </summary>
+	struct Cells {
+		std::vector<MapChipType> chips;
+		std::vector<i32> clayOrigin;
+		std::vector<i32> clayPiece;
+		std::vector<u8> clayBlockedFaces;
+	};
+
+	Cells cells() const { return Cells{ chips, clayOrigin, clayPiece, clayBlockedFaces }; }
+
+	/// <summary>
+	/// cells() の内容に戻し、変わったセルだけ表示を作り直す。サイズが違えば警告して無視。version は進む
+	/// </summary>
+	void restore(const Cells& source);
+
+	/// <summary>
+	/// load / set / stretch_clay / move_goal_piece / restore のたびに増える。他システムが再判定するためのトリガー
 	/// </summary>
 	u32 version() const { return revision; }
 

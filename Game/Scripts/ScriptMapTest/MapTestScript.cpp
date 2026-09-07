@@ -10,6 +10,7 @@
 
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
+#include "Scripts/Manager/UndoManager.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 
 namespace {
@@ -79,7 +80,6 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	blockMovementJudge.set_field(field);
 
 	keys.initialize({ szg::KeyID::Left, szg::KeyID::Right, szg::KeyID::Up, szg::KeyID::Down, szg::KeyID::F5 }, szg::InputInitializeMode::Current);
-	pad.initialize({ szg::PadID::LShoulder, szg::PadID::RShoulder }, szg::InputInitializeMode::Current);
 
 	stageCount = MapChipField::CountStages();
 	if (stageCount == 0) {
@@ -113,9 +113,12 @@ void MapTestScript::set_follow_camera(Reference<FollowCamera> followCamera_) {
 	update_camera_framing();
 }
 
+void MapTestScript::set_undo_manager(Reference<UndoManager> undoManager_) {
+	undoManager = undoManager_;
+}
+
 void MapTestScript::prev_update() {
 	keys.update();
-	pad.update();
 
 	if (keys.trigger(szg::KeyID::F5)) {
 		szg::SceneManager2::SceneChange(SceneListGJ26::StageEditor, 0.0f);
@@ -131,10 +134,10 @@ void MapTestScript::prev_update() {
 		return;
 	}
 	i32 step = 0;
-	if (keys.trigger(szg::KeyID::Left) || pad.trigger(szg::PadID::LShoulder)) {
+	if (keys.trigger(szg::KeyID::Left)) {
 		step = -1;
 	}
-	if (keys.trigger(szg::KeyID::Right) || pad.trigger(szg::PadID::RShoulder)) {
+	if (keys.trigger(szg::KeyID::Right)) {
 		step = 1;
 	}
 	if (step == 0) {
@@ -156,6 +159,9 @@ void MapTestScript::reload() {
 
 	update_camera_framing();
 	reset_player_position();
+	if (undoManager) {
+		undoManager->clear();
+	}
 	szgInformation("MapTestScript: stage {}/{} ({}x{}x{})", stageNumber, stageCount, field.width(), field.height(), field.depth());
 }
 

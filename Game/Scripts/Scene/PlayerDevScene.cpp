@@ -14,6 +14,7 @@
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
+#include "Scripts/Manager/UndoManager.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 
 PlayerDevScene::PlayerDevScene() noexcept {
@@ -78,12 +79,18 @@ void PlayerDevScene::custom_setup() {
 
 	mapTestRef->set_player(playerRef);
 
+	std::unique_ptr<UndoManager> undoManager = eps::CreateUnique<UndoManager>();
+	Reference<UndoManager> undoManagerRef = undoManager;
+	undoManagerRef->setup(mapTestRef->field_mut(), playerRef);
+	mapTestRef->set_undo_manager(undoManagerRef);
+
 	std::unique_ptr<GoalManager> goalManager = eps::CreateUnique<GoalManager>();
 	Reference<GoalManager> goalManagerRef = goalManager;
 	goalManagerRef->setup(mapTestRef->field_mut(), worldRoot);
 	goalManagerRef->set_player(playerRef);
 
-	// ステージ更新 → Player移動 → 追従カメラ更新 → ゴール判定の順に実行する
+	// Undo → ステージ更新 → Player移動 → 追従カメラ更新 → ゴール判定の順に実行する
+	sceneScriptManager.register_script(std::move(undoManager));
 	sceneScriptManager.register_script(std::move(mapTest));
 	sceneScriptManager.register_script(std::move(playerScript));
 	if (followCameraScript) {
