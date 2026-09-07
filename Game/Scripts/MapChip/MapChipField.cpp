@@ -13,25 +13,40 @@
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/CSV/CSVAssetBuilder.h>
 #include <Engine/Assets/IAssetBuilder.h>
+#include <Engine/Assets/PolygonMesh/PolygonMeshLibrary.h>
 #include <Library/Math/ColorRGB.h>
 
 namespace {
 
 /// <summary>
-/// チップ種類ごとの表示色(attached はゴール条件オブジェクトにつながった粘土)
+/// チップ種類ごとの表示モデル設定
 /// </summary>
-ColorRGB ChipColor(MapChipType type, bool attached) {
-	switch (type) {
-	case MapChipType::Clay:
-		// ライトで白く飛ぶので、つながった粘土は暗い赤茶にして差を出す
-		return attached ? ColorRGB{ 0.30f, 0.05f, 0.00f } : ColorRGB{ 0.55f, 0.35f, 0.20f };
-	case MapChipType::GoalPiece:
-		return CColorRGB::RED;
-	case MapChipType::Goal:
-		return CColorRGB::GREEN;
-	default:
-		return CColorRGB::WHITE;
-	}
+struct ChipVisualSetting {
+	MapChipType type;
+	const char* assetPath;
+	const char* meshName;
+	r32 scale;
+	r32 yOffset;
+};
+
+/// <summary>
+/// チップ種類ごとの表示モデル設定の配列
+/// </summary>
+const std::array<ChipVisualSetting, 3> CHIP_VISUAL_SETTINGS{ {
+	{ MapChipType::Clay, "[[game]]/clay/clay.obj", "clay.obj", 0.5f, -0.5f },
+	{ MapChipType::GoalPiece, "[[game]]/goalPiece/goalPiece.obj", "goalPiece.obj", 0.5f, -0.5f },
+	{ MapChipType::Goal, "[[game]]/goal/goal.obj", "goal.obj", 0.5f, -0.5f },
+} };
+
+/// <summary>
+/// チップ種類に対応する表示モデル設定を返す。
+/// </summary>
+const ChipVisualSetting* FindVisualSetting(MapChipType type) {
+	const auto setting = std::find_if(
+		CHIP_VISUAL_SETTINGS.begin(),
+		CHIP_VISUAL_SETTINGS.end(),
+		[type](const ChipVisualSetting& entry) { return entry.type == type; });
+	return setting != CHIP_VISUAL_SETTINGS.end() ? &*setting : nullptr;
 }
 
 /// <summary>
@@ -64,6 +79,14 @@ i32 MapChipField::CountStages() {
 		++count;
 	}
 	return count;
+}
+
+void MapChipField::RegisterVisualAssets() {
+	// Cube は不明なチップの代替表示、粘土の塞がれた面、GoalManager の接続線でも使用する。
+	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/Cube.obj");
+	for (const ChipVisualSetting& setting : CHIP_VISUAL_SETTINGS) {
+		szg::PolygonMeshLibrary::RegisterLoadQue(setting.assetPath);
+	}
 }
 
 bool MapChipField::load(const std::string& directory) {
@@ -414,15 +437,17 @@ bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::ve
 }
 
 void MapChipField::AttachFacePlates(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces) {
-	constexpr r32 THICKNESS = 0.05f;
-	constexpr r32 SIZE = 0.9f; // 立方体の面より少し小さくして同一平面のちらつきを避ける
+	// Clay モデルの親スケール 0.5 を適用した後に、厚さ 0.05 / 一辺 0.9 になるローカル寸法。
+	const r32 FACE_DISTANCE = 1.0f;
+	const r32 THICKNESS = 0.1f;
+	const r32 SIZE = 1.8f;
 	for (const ClayFace::Entry& face : ClayFace::Table) {
 		if (!(blockedFaces & face.bit)) {
 			continue;
 		}
 		Reference<szg::StaticMeshInstance> plate = worldRoot_.instantiate<szg::StaticMeshInstance>(parent, "Cube.obj");
 		const Vector3 direction = to_world(face.direction.x, face.direction.y, face.direction.z);
-		plate->transform_mut().set_translate(direction * 0.5f); // 親ローカルで面の中心
+		plate->transform_mut().set_translate(direction * FACE_DISTANCE); // 親ローカルで面の中心
 		plate->transform_mut().set_scale(face.direction.x != 0 ? Vector3{ THICKNESS, SIZE, SIZE } : Vector3{ SIZE, SIZE, THICKNESS });
 		if (!plate->get_materials().empty()) {
 			plate->get_materials()[0].color = ColorRGB{ 0.05f, 0.05f, 0.05f };
@@ -530,16 +555,27 @@ void MapChipField::refresh_visual(i32 flat) {
 		return;
 	}
 
+	//マップチップのグリッド座標を取得
 	const MapChipIndex index = unflatten(flat);
-	Reference<szg::StaticMeshInstance> cube = worldRoot->instantiate<szg::StaticMeshInstance>(root, "Cube.obj");
-	cube->transform_mut().set_translate(to_world(index.x, index.y, index.z) - center());
-	if (!cube->get_materials().empty()) {
-		cube->get_materials()[0].color = ChipColor(chips[flat], clayPiece[flat] != -1);
+
+	// チップ種類ごとの表示モデル設定を探す。見つからなければ Cube.obj で代替表示
+	const ChipVisualSetting* setting = FindVisualSetting(chips[flat]);
+
+	// 見つからなければ Cube.obj で代替表示
+	Reference<szg::StaticMeshInstance> visual = 
+		worldRoot->instantiate<szg::StaticMeshInstance>(root,setting ? setting->meshName : "Cube.obj");
+
+	// 親 root はステージ中央に置くので、子のローカル座標は中央基準
+	Vector3 localPosition = to_world(index.x, index.y, index.z) - center();
+	if (setting) {
+		visual->transform_mut().set_scale(Vector3{ setting->scale, setting->scale, setting->scale });
+		localPosition.y += setting->yOffset;
 	}
+	visual->transform_mut().set_translate(localPosition);
 	// 塞がれた面の板は元セルにだけ付ける
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {
-		AttachFacePlates(*worldRoot, cube, clayBlockedFaces[flat]);
+		AttachFacePlates(*worldRoot, visual, clayBlockedFaces[flat]);
 	}
 
-	visuals[flat] = cube;
+	visuals[flat] = visual;
 }

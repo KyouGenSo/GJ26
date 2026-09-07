@@ -16,6 +16,7 @@
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
 #include "Scripts/Manager/UndoManager.h"
+#include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
@@ -25,7 +26,7 @@ MapTestScene::MapTestScene() {
 }
 
 void MapTestScene::custom_load_asset() {
-	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/Cube.obj");
+	MapChipField::RegisterVisualAssets();
 	szg::PolygonMeshLibrary::RegisterLoadQue("[[szg]]/Primitive/Sphere.obj");
 }
 

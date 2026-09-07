@@ -15,9 +15,10 @@
 
 namespace {
 
-constexpr float kGripMoveTriggerThreshold = 0.5f;
-constexpr float kGripMoveResetThreshold = 0.25f;
+const float kGripMoveTriggerThreshold = 0.5f;
+const float kGripMoveResetThreshold = 0.25f;
 
+/// プレイヤーの向きベクトルを、X軸またはZ軸のいずれかにスナップする処理
 Vector3 SnapToCardinalDirection(const Vector3& direction) noexcept {
 	if (std::abs(direction.x) > std::abs(direction.z)) {
 		return { direction.x < 0.0f ? -1.0f : 1.0f, 0.0f, 0.0f };
@@ -25,6 +26,7 @@ Vector3 SnapToCardinalDirection(const Vector3& direction) noexcept {
 	return { 0.0f, 0.0f, direction.z < 0.0f ? -1.0f : 1.0f };
 }
 
+/// プレイヤーの向きベクトルと入力方向から、ブロックを押す方向を決定する
 std::optional<BlockMoveDirection> ResolveBlockMoveDirection(const PlayerContext& context) noexcept {
 	const Vector3 cameraRelativeDirection =
 		context.moveRight * context.input.move.x +
@@ -304,20 +306,25 @@ void Player::update_animation() {
 	if (!meshInstance_) {
 		return;
 	}
-
+	
+	// 現在のPlayerStateに対応するアニメーションが再生中なら何もしない
 	const PlayerState state = stateManager_.get_current_state();
 	if (animationState_ && *animationState_ == state) {
 		return;
 	}
 
+	// PlayerStateに対応するアニメーションを再生する
 	const AnimationSetting& setting = resolve_animation_setting(state);
 	const std::string animationKey = setting.fileName + '-' + animationClipName_;
+
+	// アニメーションが登録されていない場合は警告を出して終了
 	if (!szg::NodeAnimationLibrary::IsRegistered(animationKey)) {
 		szgWarning("Player: animation is not registered. Name-'{}'.", animationKey);
 		animationState_ = state;
 		return;
 	}
 
+	// アニメーションを切り替える
 	meshInstance_->reset_animation(
 		setting.fileName,
 		animationClipName_,
@@ -328,6 +335,9 @@ void Player::update_animation() {
 	animationState_ = state;
 }
 
+//================================
+// PlayerStateに対応するアニメーション設定を取得
+//================================
 const Player::AnimationSetting& Player::resolve_animation_setting(PlayerState state) const noexcept {
 	switch (state) {
 	case PlayerState::Move:
@@ -346,12 +356,15 @@ const Player::AnimationSetting& Player::resolve_animation_setting(PlayerState st
 // Grip中の入力でPlayerと対象ブロックを1マス操作する
 //================================
 void Player::update_gripped_block_movement() {
+
+	// Grip中でない、またはブロック移動判定が設定されていない場合は何もしない
 	if (stateManager_.get_current_state() != PlayerState::Grip ||
 		!blockMovementJudge_ || !context_.worldInstance || !context_.grippedBlockIndex) {
 		gripMoveInputReady_ = true;
 		return;
 	}
 
+	// Grip中の入力が小さい場合は、次の大きな入力を待つ
 	const float inputLength = context_.input.move.length();
 	if (inputLength <= kGripMoveResetThreshold) {
 		gripMoveInputReady_ = true;
@@ -361,12 +374,14 @@ void Player::update_gripped_block_movement() {
 		return;
 	}
 
+	// Grip中の入力が大きい場合は、ブロック移動判定を行う
 	gripMoveInputReady_ = false;
 	const std::optional<BlockMoveDirection> moveDirection = ResolveBlockMoveDirection(context_);
 	if (!moveDirection) {
 		return;
 	}
 
+	// 粘土の伸縮判定を行う
 	const std::optional<ClayDeformationResult> deformation = blockMovementJudge_->try_deform_clay(
 		context_.worldInstance->world_position(),
 		*context_.grippedBlockIndex,
@@ -378,6 +393,7 @@ void Player::update_gripped_block_movement() {
 			deformation->playerIndex.y,
 			deformation->playerIndex.z));
 
+		// 粘土を伸ばした場合は、プレイヤーと粘土の両方が移動するので、グリップ状態を解除する
 		if (deformation->type == ClayDeformationType::Connect) {
 			gripInputReady_ = false;
 			context_.input.gripPressed = false;
@@ -387,6 +403,7 @@ void Player::update_gripped_block_movement() {
 			context_.grippedBlockIndex = deformation->clayIndex;
 		}
 
+		// 粘土の伸縮操作をログに出力する
 		const char* operation = deformation->type == ClayDeformationType::Stretch
 			? "stretched"
 			: "connected";
@@ -402,19 +419,24 @@ void Player::update_gripped_block_movement() {
 		return;
 	}
 
+	// ゴール条件オブジェクトの移動判定を行う
 	const std::optional<BlockMoveDestination> move = blockMovementJudge_->try_move_goal_piece(
 		context_.worldInstance->world_position(),
 		*context_.grippedBlockIndex,
 		context_.direction,
 		*moveDirection);
+	// 移動できない場合は何もしない
 	if (!move) {
 		return;
 	}
 
+	// ゴール条件オブジェクトを移動する
 	context_.worldInstance->transform_mut().set_translate(MapChipField::to_world(
 		move->playerIndex.x,
 		move->playerIndex.y,
 		move->playerIndex.z));
+
+	// グリップ中のブロックのインデックスを更新する
 	context_.grippedBlockIndex = move->blockIndex;
 	szgInformation(
 		"Player: moved grabbed GoalPiece. player=({}, {}, {}), block=({}, {}, {})",
