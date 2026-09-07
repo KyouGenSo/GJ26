@@ -34,6 +34,9 @@
     <Filter Include="Scripts\ScriptStageEditor">
       <UniqueIdentifier>{D45DF7E8-6D8E-480D-98C0-308377A9584F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\Instance\Player\State">
+      <UniqueIdentifier>{ce5850bc-7ed8-4a12-abe5-22a5f1d4e13b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp">
@@ -52,9 +55,6 @@
       <Filter>Scripts\Instance\Player</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp">
-      <Filter>Scripts\Instance\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="Scripts\Instance\Player\PlayerState.cpp">
       <Filter>Scripts\Instance\Player</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp">
@@ -109,11 +109,19 @@
       <Filter>Scripts\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\ScriptStageSelect\StageSelectScript.cpp">
-	  <Filter>Scripts\ScriptStageSelect</Filter>
+      <Filter>Scripts\ScriptStageSelect</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\Scene\TitleScene.cpp">
       <Filter>Scripts\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerIdleState.cpp">
+      <Filter>Scripts\Instance\Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerMoveState.cpp">
+      <Filter>Scripts\Instance\Player\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerJumpState.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerGripState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h">
@@ -141,9 +149,6 @@
       <Filter>Scripts\Instance\Player</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Instance\Player\PlayerPadInput.h">
-      <Filter>Scripts\Instance\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="Scripts\Instance\Player\PlayerState.h">
       <Filter>Scripts\Instance\Player</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h">
@@ -195,10 +200,25 @@
       <Filter>Scripts\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\ScriptStageSelect\StageSelectScript.h">
-	  <Filter>Scripts\ScriptStageSelect</Filter>
+      <Filter>Scripts\ScriptStageSelect</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Scene\TitleScene.h">
       <Filter>Scripts\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Instance\Player\State\IPlayerState.h">
+      <Filter>Scripts\Instance\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerIdleState.h">
+      <Filter>Scripts\Instance\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerMoveState.h">
+      <Filter>Scripts\Instance\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerJumpState.h">
+      <Filter>Scripts\Instance\Player\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerGripState.h">
+      <Filter>Scripts\Instance\Player\State</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

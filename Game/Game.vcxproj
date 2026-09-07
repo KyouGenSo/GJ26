@@ -15,6 +15,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerGripState.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerIdleState.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerJumpState.cpp" />
+    <ClCompile Include="Scripts\Instance\Player\State\PlayerMoveState.cpp" />
     <ClCompile Include="Scripts\ScriptStageEditor\AxisController.cpp" />
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp" />
     <ClCompile Include="Scripts\Instance\Player\Player.cpp" />
@@ -22,7 +26,6 @@
     <ClCompile Include="Scripts\Instance\Player\PlayerKeyInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerMovement.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp" />
-    <ClCompile Include="Scripts\Instance\Player\PlayerState.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
     <ClCompile Include="Scripts\MapChip\BlockMovementJudge.cpp" />
     <ClCompile Include="Scripts\main.cpp" />
@@ -43,6 +46,10 @@
     <ClCompile Include="Scripts\Scene\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerGripState.h" />
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerIdleState.h" />
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerJumpState.h" />
+    <ClInclude Include="Scripts\Instance\Player\State\PlayerMoveState.h" />
     <ClInclude Include="Scripts\ScriptStageEditor\AxisController.h" />
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
     <ClInclude Include="Scripts\InputMapper.h" />
@@ -53,7 +60,7 @@
     <ClInclude Include="Scripts\Instance\Player\PlayerKeyInput.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerMovement.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerPadInput.h" />
-    <ClInclude Include="Scripts\Instance\Player\PlayerState.h" />
+    <ClInclude Include="Scripts\Instance\Player\State\IPlayerState.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
     <ClInclude Include="Scripts\MapChip\BlockMovementJudge.h" />
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
@@ -68,7 +75,7 @@
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorCameraScript.h" />
     <ClInclude Include="Scripts\ScriptStageEditor\StageEditorScript.h" />
     <ClInclude Include="Scripts\Scene\PlayerDevScene.h" />
-	<ClInclude Include="Scripts\Scene\SelectScene.h" />
+    <ClInclude Include="Scripts\Scene\SelectScene.h" />
     <ClInclude Include="Scripts\ScriptStageSelect\StageSelectScript.h" />
     <ClInclude Include="Scripts\Scene\TitleScene.h" />
   </ItemGroup>
