@@ -13,6 +13,8 @@ ColorRGB StageEditorScript::ChipColor(MapChipType type) {
 		return ColorRGB{ 0.55f, 0.35f, 0.20f };
 	case MapChipType::GoalPiece:
 		return CColorRGB::YELLOW;
+	case MapChipType::Goal:
+		return CColorRGB::GREEN;
 	default:
 		return CColorRGB::WHITE;
 	}

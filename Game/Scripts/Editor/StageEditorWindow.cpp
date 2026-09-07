@@ -24,6 +24,8 @@ const char* ChipLabel(MapChipType type) {
 	case MapChipType::Clay:
 		return "粘土";
 	case MapChipType::GoalPiece:
+		return "ゴールピース";
+	case MapChipType::Goal:
 		return "ゴール";
 	default:
 		return "?";
@@ -39,6 +41,8 @@ ImVec4 ChipColor(MapChipType type) {
 		return ImVec4{ 0.55f, 0.35f, 0.20f, 1.0f };
 	case MapChipType::GoalPiece:
 		return ImVec4{ 1.0f, 1.0f, 0.0f, 1.0f };
+	case MapChipType::Goal:
+		return ImVec4{ 0.0f, 1.0f, 0.0f, 1.0f };
 	default:
 		return ImVec4{ 0.15f, 0.15f, 0.15f, 1.0f };
 	}
@@ -226,7 +230,8 @@ void StageEditorWindow::draw_chip_select() {
 
 	changed |= ImGui::RadioButton("消去 (0)", &selected, chip_to_int(MapChipType::Empty));
 	changed |= ImGui::RadioButton("粘土 (1)", &selected, chip_to_int(MapChipType::Clay));
-	changed |= ImGui::RadioButton("ゴール (2)", &selected, chip_to_int(MapChipType::GoalPiece));
+	changed |= ImGui::RadioButton("ゴールピース (2)", &selected, chip_to_int(MapChipType::GoalPiece));
+	changed |= ImGui::RadioButton("ゴール (3)", &selected, chip_to_int(MapChipType::Goal));
 
 	if (changed) {
 		selectedChip = int_to_chip(selected);
