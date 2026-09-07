@@ -1,10 +1,10 @@
 #include "GamePlayScene.h"
 
 #include <Engine/Application/Logger.h>
-#include <Engine/Assets/PolygonMesh/PolygonMeshLibrary.h>
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
+#include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/ScriptGamePlay/GamePlayScript.h"
 
 GamePlayScene::GamePlayScene() noexcept {
@@ -14,7 +14,7 @@ GamePlayScene::GamePlayScene() noexcept {
 GamePlayScene::~GamePlayScene() noexcept = default;
 
 void GamePlayScene::custom_load_asset() {
-	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/Cube.obj");
+	MapChipField::RegisterVisualAssets();
 }
 
 void GamePlayScene::custom_setup() {
