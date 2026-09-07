@@ -118,7 +118,7 @@ void StageSelectScript::prev_update() {
 //============================================================================
 void StageSelectScript::setup_json_asset() {
 
-	szg::JsonAsset parameter{ "[[game]]/StageSelect.param", "param" };
+	szg::JsonAsset parameter{ "[[game]]/StageSelect.param" };
 
 	centerPreviewExtent = parameter.get().value("CenterPreviewExtent", nlohmann::json::object()).value("value", centerPreviewExtent);
 	sidePreviewExtent = parameter.get().value("SidePreviewExtent", nlohmann::json::object()).value("value", sidePreviewExtent);
