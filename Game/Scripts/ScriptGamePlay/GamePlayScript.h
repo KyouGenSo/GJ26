@@ -48,4 +48,6 @@ private:
 
 	bool isSetup_{ false };
 	bool sceneTransitionRequested_{ false };
+	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
+	bool resetHoldConsumed_{ false };
 };

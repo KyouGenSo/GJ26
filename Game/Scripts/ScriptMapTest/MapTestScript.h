@@ -34,6 +34,11 @@ public:
 	void set_undo_manager(Reference<UndoManager> undoManager_);
 	void prev_update() override;
 
+	/// <summary>
+	/// 現在のステージを CSV から読み直して初期状態に戻す(Undo 履歴も捨てる)
+	/// </summary>
+	void reload();
+
 	MapChipField& field_mut() { return field; }
 	Reference<BlockMovementJudge> movement_judge_mut() { return blockMovementJudge; }
 	Reference<const BlockMovementJudge> movement_judge_imm() const { return blockMovementJudge; }
@@ -44,7 +49,6 @@ public:
 	Reference<szg::WorldInstance> marker_mut() { return marker; }
 
 private:
-	void reload();
 	void update_camera_framing();
 	void debug_move_goal_piece(bool push);
 	void reset_player_position();

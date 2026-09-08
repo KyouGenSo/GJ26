@@ -159,6 +159,11 @@ void MapTestScript::prev_update() {
 void MapTestScript::reload() {
 	if (player) {
 		player->cancel_grip_move_interpolation();
+		// 掴んでいたセルは読み直した盤面では無効
+		PlayerContext& context = player->get_context_mut();
+		context.grippedBlockIndex.reset();
+		context.blockMoveResult.reset();
+		context.verticalVelocity = 0.0f;
 	}
 	field.load_stage(stageNumber);
 	field.build(*worldRoot);
