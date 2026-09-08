@@ -6,6 +6,8 @@
 #include <Engine/Runtime/SceneScript/SceneScriptManager.h>
 #include <Library/Utility/Template/Reference.h>
 
+#include "Scripts/MapChip/MapChipField.h"
+
 namespace szg {
 class WorldRoot;
 }
@@ -53,6 +55,8 @@ private:
 	Reference<UndoManager> undoManager_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
 	Reference<szg::BloomPipeline::Data> clayGlow_;
+	/// 掴める対象の輪郭の見た目(GripHighlight.param)
+	MapChipField::HighlightStyle gripHighlight_;
 	szg::InputHandler<szg::KeyID> keyInput_;
 	szg::InputHandler<szg::PadID> padInput_;
 

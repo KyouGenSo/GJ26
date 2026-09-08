@@ -118,6 +118,20 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgWarning("GamePlayScript: ClayGlow bloom not found.");
 	}
 
+	// 掴める対象の輪郭の色と太さ
+	{
+		szg::JsonAsset parameter{ "[[game]]/GripHighlight.param" };
+		const nlohmann::json& json = parameter.cget();
+		const auto readR32 = [&json](const char* name, r32 fallback) {
+			return json.value(name, nlohmann::json::object()).value("value", fallback);
+		};
+		gripHighlight_.color.red = readR32("ColorR", gripHighlight_.color.red);
+		gripHighlight_.color.green = readR32("ColorG", gripHighlight_.color.green);
+		gripHighlight_.color.blue = readR32("ColorB", gripHighlight_.color.blue);
+		gripHighlight_.thickness = readR32("Thickness", gripHighlight_.thickness);
+		mapTest_->field_mut().set_highlight_style(gripHighlight_);
+	}
+
 	isSetup_ = true;
 }
 
@@ -175,6 +189,15 @@ void GamePlayScript::prev_update() {
 		ImGui::DragFloat("Weight", &clayGlow_->weight, 0.01f, 0.0f, 2.0f);
 		ImGui::End();
 	}
+	{
+		ImGui::Begin("GripHighlight");
+		bool changed = ImGui::ColorEdit3("Color", &gripHighlight_.color.red);
+		changed |= ImGui::DragFloat("Thickness", &gripHighlight_.thickness, 0.005f, 0.0f, 0.5f);
+		if (changed) {
+			mapTest_->field_mut().set_highlight_style(gripHighlight_);
+		}
+		ImGui::End();
+	}
 #endif // DEBUG_FEATURES_ENABLE
 
 	// ポーズなど、各要素の更新後に行うインゲーム全体処理をここへ追加する。
@@ -186,6 +209,12 @@ void GamePlayScript::post_update() {
 	}
 
 	inGameScriptManager_.post_update();
+
+	// 目の前の掴める対象(Grip 中は掴んでいるブロック)に輪郭を出す
+	if (player_) {
+		const std::optional<MapChipIndex>& gripped = player_->get_gripped_block_index();
+		mapTest_->field_mut().set_highlight(gripped ? gripped : player_->get_grip_target_index());
+	}
 
 	if (!clearCameraEffectStarted_ && goalManager_ && goalManager_->is_cleared() &&
 		followCamera_ && player_) {
