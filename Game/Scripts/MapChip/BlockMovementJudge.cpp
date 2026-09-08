@@ -85,6 +85,19 @@ std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
 	if (type != MapChipType::GoalPiece && type != MapChipType::Clay) {
 		return std::nullopt;
 	}
+	if (type == MapChipType::Clay && field_->is_clay_core(target)) {
+		const MapChipIndex playerToClay = cardinal_direction(playerDirection);
+		const MapChipIndex grippedFaceDirection{
+			-playerToClay.x,
+			0,
+			-playerToClay.z,
+		};
+		// コアのプレイヤー側を向く面が伸長不可なら、その面から掴むこともできない。
+		// 子Clayはコアの面設定に関係なくGripできる。
+		if (field_->blocked_faces(target) & ClayFace::FromDirection(grippedFaceDirection)) {
+			return std::nullopt;
+		}
+	}
 	return target;
 }
 

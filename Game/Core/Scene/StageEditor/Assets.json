@@ -6,13 +6,11 @@
 	],
 	"Json": [],
 	"Mesh": [
-		".\\SyzygyEngine\\Assets\\Models\\Camera\\CameraAxis.obj"
+		".\\SyzygyEngine\\Assets\\Models\\Camera\\CameraAxis.obj",
+		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj"
 	],
 	"Param": [],
-	"Particle": [
-		".\\Game\\Assets\\particle\\Emitter.particle",
-		".\\Game\\Assets\\particle\\GoalEffect.particle"
-	],
+	"Particle": [],
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": [

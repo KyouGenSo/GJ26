@@ -1,0 +1,15 @@
+{
+	"Clay": [
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 0,
+			"Position": [
+				2,
+				0,
+				2
+			]
+		}
+	]
+}

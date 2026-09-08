@@ -518,6 +518,14 @@ std::vector<MapChipIndex> MapChipField::find_all(MapChipType type) const {
 	return result;
 }
 
+bool MapChipField::is_clay_core(const MapChipIndex& index) const {
+	if (!is_inside(index.x, index.y, index.z)) {
+		return false;
+	}
+	const i32 flat = flat_index(index.x, index.y, index.z);
+	return chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat;
+}
+
 u8 MapChipField::blocked_faces(const MapChipIndex& index) const {
 	if (!is_inside(index.x, index.y, index.z)) {
 		return ClayFace::None;

@@ -197,6 +197,11 @@ public:
 		r32 visualMoveDuration = 0.0f);
 
 	/// <summary>
+	/// 指定セルが粘土ブロックのコアか（子Clay・粘土以外・範囲外は false）
+	/// </summary>
+	bool is_clay_core(const MapChipIndex& index) const;
+
+	/// <summary>
 	/// セルが属する粘土ブロックの伸ばせない面(ClayFace のビット。粘土でない / 範囲外は None)
 	/// </summary>
 	u8 blocked_faces(const MapChipIndex& index) const;
