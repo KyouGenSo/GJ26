@@ -13,6 +13,6 @@
 	},
 	"Thickness": {
 		"type": "R32",
-		"value": 0.06
+		"value": 0.075
 	}
 }
