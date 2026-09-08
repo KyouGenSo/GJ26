@@ -126,15 +126,16 @@ void GoalManager::rebuild() {
 }
 
 bool GoalManager::is_connected(const MapChipIndex& a, const MapChipIndex& b) const {
-	// 同じ高さで、X か Z のどちらか一方だけが揃っている
+	// 同じ高さで、X か Z のどちらか一方だけが揃っている。間の遮蔽は星のある上段(y+1)で見る
 	if (a.y != b.y || (a.x == b.x) == (a.z == b.z)) {
 		return false;
 	}
 	const bool alongX = a.z == b.z;
 	const i32 begin = std::min(alongX ? a.x : a.z, alongX ? b.x : b.z);
 	const i32 end = std::max(alongX ? a.x : a.z, alongX ? b.x : b.z);
+	const i32 upperY = a.y + 1;
 	for (i32 i = begin + 1; i < end; ++i) {
-		const MapChipType chip = alongX ? field->get(i, a.y, a.z) : field->get(a.x, a.y, i);
+		const MapChipType chip = alongX ? field->get(i, upperY, a.z) : field->get(a.x, upperY, i);
 		if (chip != MapChipType::Empty && chip != MapChipType::Goal) {
 			return false;
 		}
