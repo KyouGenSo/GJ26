@@ -30,6 +30,8 @@
 namespace {
 
 constexpr r32 kFloorTextureGridSize = 5.0f;
+// 画面外スロットの縮小率。0 だとワールド行列が非可逆になりエンジンが毎フレーム警告するので、見えない程度の正の値にする
+constexpr r32 kHiddenPreviewScale = 0.001f;
 
 r32 NearestEquivalentDegrees(r32 targetDegrees, r32 referenceDegrees) {
 	return targetDegrees +
@@ -329,10 +331,8 @@ void StageSelectScript::finish_transition() {
 			continue;
 		}
 
-		// MapChipFieldは次にこの予備枠を再利用するときrootごと破棄する。
-		if (Reference<szg::WorldInstance> root = preview.field.root_mut()) {
-			root->transform_mut().set_scale(CVector3::ZERO);
-		}
+		// 退場したプレビューはここで破棄する(枠は次の切り替えで再利用)。破棄後も次フレームまで描かれるが、scale は kHiddenPreviewScale なので見えない
+		preview.field.destroy_root();
 		preview.isUsed = false;
 	}
 	isTransitioning = false;
@@ -485,7 +485,7 @@ r32 StageSelectScript::preview_scale(const Preview& preview, i32 relativeSlot) c
 		preview.field.depth(),
 		}));
 	if (maxDimension <= 0.0f || std::abs(relativeSlot) > 1) {
-		return 0.0f;
+		return kHiddenPreviewScale;
 	}
 	const r32 targetExtent = relativeSlot == 0 ? centerPreviewExtent : sidePreviewExtent;
 	return targetExtent / maxDimension;
