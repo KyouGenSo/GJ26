@@ -445,10 +445,21 @@ bool MapChipField::stretch_clay(
 		}
 		const i32 piece = chips[target] == MapChipType::GoalPiece ? target : *shifted(target, MapChipIndex{ 0, -1, 0 });
 		cancel_visual_interpolation();
-		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
-			if (chips[i] == MapChipType::Clay && clayOrigin[i] == root) {
-				clayPiece[i] = piece;
-				refresh_visual(i);
+		// 伸ばしたブロックと、粘土づたいに面で接している未接続の粘土を全部このピースにつなぐ(上下も含む 6 方向)
+		constexpr std::array<MapChipIndex, 6> kNeighbors{ {
+			{ 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 },
+		} };
+		std::vector<i32> open{ source };
+		clayPiece[source] = piece;
+		while (!open.empty()) {
+			const i32 cell = open.back();
+			open.pop_back();
+			for (const MapChipIndex& direction : kNeighbors) {
+				const std::optional<i32> next = shifted(cell, direction);
+				if (next && chips[*next] == MapChipType::Clay && clayPiece[*next] == -1) {
+					clayPiece[*next] = piece;
+					open.push_back(*next);
+				}
 			}
 		}
 		++revision;
