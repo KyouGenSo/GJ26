@@ -17,7 +17,7 @@ class Player;
 
 /// <summary>
 /// <para>ゴール条件オブジェクトの接続判定と、ゴールの出現・クリア判定</para>
-/// <para>同じ高さで X か Z 方向に並び、間に障害物(粘土・別ピース)が無いピース同士がつながる</para>
+/// <para>同じ高さで X か Z 方向に並び、間の上段(星の高さ)に障害物(粘土・別ピース)が無いピース同士がつながる</para>
 /// <para>全ピースが 1 つにつながるとゴールを表示し、そのセルにプレイヤーが入るとクリア</para>
 /// </summary>
 class GoalManager final : public szg::ISceneScript {
