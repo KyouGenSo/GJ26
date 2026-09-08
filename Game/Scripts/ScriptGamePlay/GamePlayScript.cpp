@@ -19,6 +19,7 @@
 namespace {
 
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
+constexpr r32 kResetHoldDurationSeconds = 1.0f;
 
 } // namespace
 
@@ -32,7 +33,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		return;
 	}
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
-	padInput_.initialize({ szg::PadID::Start }, szg::InputInitializeMode::Current);
+	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	mapTest_ = mapTest;
@@ -123,6 +124,15 @@ void GamePlayScript::prev_update() {
 		// ステージ選択画面へ遷移する
 		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
 		return;
+	}
+
+	// Yボタンが一定時間押され続けた場合、ステージを初期状態に戻す
+	if (padInput_.release(szg::PadID::Y)) {
+		resetHoldConsumed_ = false;
+	}
+	if (!resetHoldConsumed_ && padInput_.press_timer(szg::PadID::Y) >= kResetHoldDurationSeconds) {
+		resetHoldConsumed_ = true;
+		mapTest_->reload();
 	}
 
 	inGameScriptManager_.prev_update();
