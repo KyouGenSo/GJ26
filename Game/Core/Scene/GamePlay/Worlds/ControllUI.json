@@ -1,0 +1,341 @@
+{
+	"Instances": [
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "Camera",
+			"Projection": {
+				"Bottom": -5.900000095367432,
+				"FarClip": 10.0,
+				"Left": -9.800000190734863,
+				"NearClip": 0.0,
+				"Right": 9.800000190734863,
+				"Top": 5.900000095367432,
+				"Type": 1
+			},
+			"Type": 3000,
+			"Use runtime": true
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "ui.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ContollerUI1",
+			"Pivot": {
+				"X": 0.0,
+				"Y": 0.0
+			},
+			"Size": {
+				"X": 1.0,
+				"Y": 1.0
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "ui2.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ControllerUI2",
+			"Pivot": {
+				"X": 0.0,
+				"Y": 0.0
+			},
+			"Size": {
+				"X": 1.0,
+				"Y": 1.0
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "toSelect.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ToSelect",
+			"Pivot": {
+				"X": 0.0,
+				"Y": 0.0
+			},
+			"Size": {
+				"X": 1.0,
+				"Y": 1.0
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "gageBrown.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ResetGage_Back",
+			"Pivot": {
+				"X": 1.0,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 1.0,
+				"Y": 1.0
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "gageWhite.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ResetGage_front",
+			"Pivot": {
+				"X": 0.0,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 1.0,
+				"Y": 1.0
+			},
+			"Type": 2002,
+			"Use runtime": false
+		}
+	],
+	"Name": "ControllUI",
+	"NumLayer": 1
+}

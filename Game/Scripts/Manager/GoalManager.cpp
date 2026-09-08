@@ -70,6 +70,19 @@ void GoalManager::post_update() {
 	}
 }
 
+bool GoalManager::start_clear_effect(const Vector3& playerWorldPosition) {
+	return cleared && goalEffect.start_clear_effect(playerWorldPosition);
+}
+
+void GoalManager::stop_clear_effect() {
+	goalEffect.stop_clear_effect();
+	cleared = false;
+}
+
+bool GoalManager::is_clear_effect_finished() const noexcept {
+	return goalEffect.is_clear_effect_finished();
+}
+
 void GoalManager::rebuild() {
 	destroy_links();
 	destroy_piece_emitters();

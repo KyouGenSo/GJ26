@@ -1,11 +1,17 @@
 #pragma once
 
+#include <array>
+#include <optional>
+
+#include <Engine/Runtime/Particle/EmitterSettings.h>
 #include <Engine/Runtime/Input/InputHandler.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Runtime/SceneScript/SceneScriptManager.h>
 #include <Library/Utility/Template/Reference.h>
 
 namespace szg {
+class EmitterInstance;
+class StringRectInstance;
 class WorldRoot;
 }
 
@@ -40,6 +46,13 @@ public:
 
 private:
 	void setup_json_asset();
+	void setup_clear_presentation();
+	void create_confetti_emitters();
+	void destroy_confetti_emitters();
+	void start_confetti_effect();
+	void start_clear_ui();
+	void update_clear_ui();
+	void reset_clear_sequence();
 
 	/// 登録順が各インゲームスクリプトの更新順になる
 	szg::SceneScriptManager inGameScriptManager_;
@@ -50,12 +63,19 @@ private:
 	Reference<FollowCamera> followCamera_;
 	Reference<GoalManager> goalManager_;
 	Reference<UndoManager> undoManager_;
+	Reference<szg::WorldRoot> worldRoot_;
+	Reference<szg::StringRectInstance> clearText_;
+	std::array<Reference<szg::EmitterInstance>, 2> confettiEmitters_;
+	std::optional<szg::EmitterInstanceSettings> confettiSettings_;
 	szg::InputHandler<szg::KeyID> keyInput_;
 	szg::InputHandler<szg::PadID> padInput_;
 
 	bool isSetup_{ false };
 	bool sceneTransitionRequested_{ false };
+	bool clearSequenceStarted_{ false };
 	bool clearCameraEffectStarted_{ false };
+	bool goalClearEffectStarted_{ false };
+	bool clearPresentationStarted_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
 
@@ -64,4 +84,10 @@ private:
 	r32 clearCameraElevationDegrees_{ 38.0f };
 	r32 clearCameraTargetHeight_{ 0.8f };
 	r32 clearCameraBounceStrength_{ 1.1f };
+	r32 confettiHorizontalOffset_{ 2.5f };
+	r32 confettiVerticalOffset_{ 0.8f };
+	r32 clearTextStartX_{ -14.0f };
+	r32 clearTextTargetX_{ 0.0f };
+	r32 clearTextSlideDuration_{ 0.65f };
+	r32 clearTextElapsed_{ 0.0f };
 };

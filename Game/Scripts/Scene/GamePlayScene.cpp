@@ -15,7 +15,7 @@ GamePlayScene::~GamePlayScene() noexcept = default;
 
 void GamePlayScene::custom_load_asset() {
 	MapChipField::RegisterVisualAssets();
-	
+	szg::TextureLibrary::RegisterLoadQue("./Game/Assets/Models/floor/floor.png");
 }
 
 void GamePlayScene::custom_setup() {

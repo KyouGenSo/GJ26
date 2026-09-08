@@ -1,11 +1,17 @@
 #include "GamePlayScript.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/Json/JsonAsset.h>
+#include <Engine/Loader/EmitterInstanceLoader.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
+#include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
+#include <Engine/Module/World/Particle/EmitterInstance.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
+#include <Engine/Runtime/Clock/WorldClock.h>
+#include <Engine/Runtime/Particle/ParticlePool.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 #include <Engine/Runtime/Scene/SceneManager2.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
@@ -34,7 +40,9 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
+	worldRoot_ = worldRoot;
 	setup_json_asset();
+	setup_clear_presentation();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
 	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
 
@@ -111,12 +119,17 @@ void GamePlayScript::finalize() {
 		return;
 	}
 
+	destroy_confetti_emitters();
 	inGameScriptManager_.finalize();
 	mapTest_.reset();
 	player_.reset();
 	followCamera_.reset();
 	goalManager_.reset();
 	undoManager_.reset();
+	clearText_.reset();
+	worldRoot_.reset();
+	confettiSettings_.reset();
+	isSetup_ = false;
 }
 
 void GamePlayScript::prev_update() {
@@ -144,10 +157,7 @@ void GamePlayScript::prev_update() {
 	}
 	if (!resetHoldConsumed_ && padInput_.press_timer(szg::PadID::Y) >= kResetHoldDurationSeconds) {
 		resetHoldConsumed_ = true;
-		clearCameraEffectStarted_ = false;
-		if (followCamera_) {
-			followCamera_->stop_goal_effect();
-		}
+		reset_clear_sequence();
 		mapTest_->reload();
 	}
 
@@ -163,23 +173,38 @@ void GamePlayScript::post_update() {
 
 	inGameScriptManager_.post_update();
 
-	if (!clearCameraEffectStarted_ && goalManager_ && goalManager_->is_cleared() &&
-		followCamera_ && player_) {
+	if (!clearSequenceStarted_ && goalManager_ && goalManager_->is_cleared() && player_) {
+		clearSequenceStarted_ = true;
+		player_->set_input_enabled(false);
+
 		const Reference<const szg::WorldInstance> playerInstance = player_->get_world_instance_imm();
 		if (playerInstance) {
+			goalClearEffectStarted_ = goalManager_->start_clear_effect(playerInstance->world_position());
 			Vector3 targetPosition = playerInstance->world_position();
 			targetPosition.y += clearCameraTargetHeight_;
-			clearCameraEffectStarted_ = followCamera_->start_goal_effect(
-				targetPosition,
-				clearCameraDuration_,
-				clearCameraDistance_,
-				clearCameraElevationDegrees_,
-				clearCameraBounceStrength_);
+			if (followCamera_) {
+				clearCameraEffectStarted_ = followCamera_->start_goal_effect(
+					targetPosition,
+					clearCameraDuration_,
+					clearCameraDistance_,
+					clearCameraElevationDegrees_,
+					clearCameraBounceStrength_);
+			}
 		}
 	}
 
-	// カメラ演出完了後もゲーム画面に留まる。クリアUIは
-	// is_clear_camera_effect_finished() を使って後から表示できる。
+	const bool cameraFinished = !clearCameraEffectStarted_ ||
+		(followCamera_ && followCamera_->is_goal_effect_finished());
+	const bool goalFinished = !goalClearEffectStarted_ ||
+		(goalManager_ && goalManager_->is_clear_effect_finished());
+	if (clearSequenceStarted_ && !clearPresentationStarted_ && cameraFinished && goalFinished) {
+		clearPresentationStarted_ = true;
+		start_confetti_effect();
+		start_clear_ui();
+	}
+	if (clearPresentationStarted_) {
+		update_clear_ui();
+	}
 }
 
 bool GamePlayScript::is_clear_camera_effect_finished() const noexcept {
@@ -204,4 +229,164 @@ void GamePlayScript::setup_json_asset() {
 	clearCameraTargetHeight_ = readR32("ClearCameraTargetHeight", clearCameraTargetHeight_);
 	clearCameraBounceStrength_ = std::max(
 		readR32("ClearCameraBounceStrength", clearCameraBounceStrength_), 0.0f);
+	confettiHorizontalOffset_ = std::max(
+		readR32("ConfettiHorizontalOffset", confettiHorizontalOffset_), 0.0f);
+	confettiVerticalOffset_ = readR32("ConfettiVerticalOffset", confettiVerticalOffset_);
+	clearTextStartX_ = readR32("ClearTextStartX", clearTextStartX_);
+	clearTextTargetX_ = readR32("ClearTextTargetX", clearTextTargetX_);
+	clearTextSlideDuration_ = std::max(
+		readR32("ClearTextSlideDuration", clearTextSlideDuration_), 0.001f);
+}
+
+void GamePlayScript::setup_clear_presentation() {
+	clearText_ = szg::RuntimeStorage::GetValue<Reference<szg::StringRectInstance>>(
+		"RuntimeInstance", "StageClearText").value_or(nullptr);
+	if (clearText_) {
+		Vector3 position = clearText_->transform_imm().get_translate();
+		position.x = clearTextStartX_;
+		clearText_->transform_mut().set_translate(position);
+		clearText_->set_draw(false);
+	}
+	else {
+		szgWarning("GamePlayScript: StageClearText runtime instance not found.");
+	}
+
+	szg::JsonAsset particle{ "[[game]]/confettiEffect.particle" };
+	confettiSettings_ = szg::EmitterInstanceLoader::Load(particle.cget());
+	if (!confettiSettings_) {
+		szgWarning("GamePlayScript: confettiEffect.particle could not be loaded.");
+		return;
+	}
+	// クリア時の一度だけの紙吹雪として使う。
+	confettiSettings_->schedule.infinite = false;
+	confettiSettings_->schedule.cycles = 1;
+	create_confetti_emitters();
+}
+
+void GamePlayScript::create_confetti_emitters() {
+	if (!worldRoot_ || !confettiSettings_) {
+		return;
+	}
+	for (Reference<szg::EmitterInstance>& emitter : confettiEmitters_) {
+		emitter = worldRoot_->instantiate<szg::EmitterInstance>(nullptr);
+		emitter->setup_settings(*confettiSettings_);
+		Reference<szg::ParticlePool> pool = worldRoot_->create_particle_pool(
+			emitter,
+			confettiSettings_->capacity == 0 ? 1 : confettiSettings_->capacity,
+			confettiSettings_->overflowPolicy);
+		emitter->setup_pool(pool);
+		if (pool) {
+			pool->setup_draw_spec(confettiSettings_->drawSpec);
+			pool->setup_updaters(
+				szg::EmitterInstance::BuildUpdaterMask(*confettiSettings_),
+				confettiSettings_->rotation.rotationKind);
+		}
+		emitter->set_active(false);
+	}
+}
+
+void GamePlayScript::destroy_confetti_emitters() {
+	for (Reference<szg::EmitterInstance>& emitter : confettiEmitters_) {
+		if (!emitter) {
+			continue;
+		}
+		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
+			pool->clear();
+		}
+		if (!emitter->is_marked_destroy()) {
+			emitter->destroy_self();
+		}
+		emitter.reset();
+	}
+}
+
+void GamePlayScript::start_confetti_effect() {
+	if (!confettiSettings_ || !followCamera_ || !player_) {
+		return;
+	}
+	const Reference<szg::CameraInstance> camera = followCamera_->get_camera_instance_mut();
+	const Reference<const szg::WorldInstance> playerInstance = player_->get_world_instance_imm();
+	if (!camera || !playerInstance) {
+		return;
+	}
+
+	Vector3 focus = playerInstance->world_position();
+	focus.y += clearCameraTargetHeight_;
+	const Vector3 forward = (focus - camera->transform_imm().get_translate()).normalize_safe(CVector3::BASIS_Z);
+	const Vector3 right = Vector3::Cross(CVector3::BASIS_Y, forward).normalize_safe(CVector3::BASIS_X);
+	const Vector3 up = Vector3::Cross(forward, right).normalize_safe(CVector3::BASIS_Y);
+	const Vector3 center = focus + up * confettiVerticalOffset_;
+
+	for (size_t i = 0; i < confettiEmitters_.size(); ++i) {
+		Reference<szg::EmitterInstance> emitter = confettiEmitters_[i];
+		if (!emitter) {
+			continue;
+		}
+		const r32 side = i == 0 ? -1.0f : 1.0f;
+		szg::EmitterInstanceSettings settings = *confettiSettings_;
+		// 画面の外側から中央方向へ紙吹雪を飛ばす。
+		settings.emissionShape.coneDirection = right * -side;
+		emitter->setup_settings(settings);
+		emitter->transform_mut().set_translate(
+			center + right * (confettiHorizontalOffset_ * side));
+		emitter->update_affine();
+		emitter->restart_schedule();
+		emitter->set_active(true);
+	}
+}
+
+void GamePlayScript::start_clear_ui() {
+	clearTextElapsed_ = 0.0f;
+	if (!clearText_) {
+		return;
+	}
+	Vector3 position = clearText_->transform_imm().get_translate();
+	position.x = clearTextStartX_;
+	clearText_->transform_mut().set_translate(position);
+	clearText_->set_draw(true);
+}
+
+void GamePlayScript::update_clear_ui() {
+	if (!clearText_) {
+		return;
+	}
+	clearTextElapsed_ += std::max(szg::WorldClock::DeltaSeconds(), 0.0f);
+	const r32 t = std::clamp(clearTextElapsed_ / clearTextSlideDuration_, 0.0f, 1.0f);
+	const r32 eased = 1.0f - std::pow(1.0f - t, 3.0f);
+	Vector3 position = clearText_->transform_imm().get_translate();
+	position.x = clearTextStartX_ + (clearTextTargetX_ - clearTextStartX_) * eased;
+	clearText_->transform_mut().set_translate(position);
+}
+
+void GamePlayScript::reset_clear_sequence() {
+	clearSequenceStarted_ = false;
+	clearCameraEffectStarted_ = false;
+	goalClearEffectStarted_ = false;
+	clearPresentationStarted_ = false;
+	clearTextElapsed_ = 0.0f;
+	if (followCamera_) {
+		followCamera_->stop_goal_effect();
+	}
+	if (goalManager_) {
+		goalManager_->stop_clear_effect();
+	}
+	if (player_) {
+		player_->set_input_enabled(true);
+	}
+	if (clearText_) {
+		Vector3 position = clearText_->transform_imm().get_translate();
+		position.x = clearTextStartX_;
+		clearText_->transform_mut().set_translate(position);
+		clearText_->set_draw(false);
+	}
+	for (Reference<szg::EmitterInstance> emitter : confettiEmitters_) {
+		if (!emitter) {
+			continue;
+		}
+		emitter->set_active(false);
+		emitter->restart_schedule();
+		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
+			pool->clear();
+		}
+	}
 }

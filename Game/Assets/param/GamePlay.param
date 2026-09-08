@@ -18,5 +18,25 @@
 	"ClearCameraBounceStrength": {
 		"type": "R32",
 		"value": 1.1
+	},
+	"ConfettiHorizontalOffset": {
+		"type": "R32",
+		"value": 2.5
+	},
+	"ConfettiVerticalOffset": {
+		"type": "R32",
+		"value": 0.8
+	},
+	"ClearTextStartX": {
+		"type": "R32",
+		"value": -14.0
+	},
+	"ClearTextTargetX": {
+		"type": "R32",
+		"value": 0.0
+	},
+	"ClearTextSlideDuration": {
+		"type": "R32",
+		"value": 0.65
 	}
 }

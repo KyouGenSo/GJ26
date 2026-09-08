@@ -48,6 +48,11 @@ public:
 	/// </summary>
 	bool is_cleared() const { return cleared; }
 
+	/// Goal本体を上空からプレイヤーの頭上へ移動させる
+	bool start_clear_effect(const Vector3& playerWorldPosition);
+	void stop_clear_effect();
+	bool is_clear_effect_finished() const noexcept;
+
 private:
 	void rebuild();
 	bool is_connected(const MapChipIndex& a, const MapChipIndex& b) const;

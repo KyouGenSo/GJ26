@@ -74,6 +74,8 @@ public:
 	bool can_move_gripped_block(BlockMoveDirection direction) const noexcept;
 	/// Grip中の1マス移動補間を破棄する（Undo・ステージ再読込用）
 	void cancel_grip_move_interpolation() noexcept;
+	/// ゲームプレイ入力が有効か
+	bool is_input_enabled() const noexcept;
 
 public:
 
@@ -99,6 +101,8 @@ public:
 	void set_follow_camera(Reference<FollowCamera> followCamera) noexcept;
 	/// direction追従とアニメーション再生に使うスキニングメッシュを設定
 	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
+	/// 移動・ジャンプ・Grip・カメラ回転入力の有効/無効を切り替える
+	void set_input_enabled(bool enabled) noexcept;
 
 private:
 	struct AnimationSetting {
@@ -144,6 +148,7 @@ private:
 	bool gripInputReady_{ true };
 	bool gripWarnReady_{ true }; // 塞がれた面への Grip 拒否演出を押しっぱなしで繰り返さないためのゲート
 	bool gripMoveInputReady_{ true };
+	bool inputEnabled_{ true };
 	float meshTurnSpeed_{ 12.0f };
 
 	PlayerInput playerInput_;

@@ -14,5 +14,21 @@
 	"StateTransitionDuration": {
 		"type": "R32",
 		"value": 0.4
+	},
+	"ClearRiseHeight": {
+		"type": "R32",
+		"value": 3.0
+	},
+	"ClearRiseDuration": {
+		"type": "R32",
+		"value": 0.55
+	},
+	"ClearFallDuration": {
+		"type": "R32",
+		"value": 0.75
+	},
+	"ClearHeadOffset": {
+		"type": "R32",
+		"value": 1.8
 	}
 }

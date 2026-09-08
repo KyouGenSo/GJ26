@@ -1,17 +1,16 @@
 {
 	"Animation": [],
 	"Audio": [],
-	"Font": [],
+	"Font": [
+		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
+	],
 	"Json": [],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
-	"Particle": [
-		".\\Game\\Assets\\particle\\GoalEffect.particle",
-		".\\Game\\Assets\\particle\\GoalEffect2.particle"
-	],
+	"Particle": [],
 	"Shader": [
 		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
 	],
@@ -19,7 +18,10 @@
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
 	"Texture": [
-		".\\Game\\Assets\\textures\\Cross.png",
-		".\\Game\\Assets\\textures\\texture_Star_512px (1).png"
+		".\\Game\\Assets\\textures\\ui\\ui.png",
+		".\\Game\\Assets\\textures\\ui\\ui2.png",
+		".\\Game\\Assets\\textures\\ui\\toSelect.png",
+		".\\Game\\Assets\\textures\\ui\\gageWhite.png",
+		".\\Game\\Assets\\textures\\ui\\gageBrown.png"
 	]
 }
