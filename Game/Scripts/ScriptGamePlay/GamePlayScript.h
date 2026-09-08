@@ -35,7 +35,12 @@ public:
 	void prev_update() override;
 	void post_update() override;
 
+	/// クリアカメラ演出が最終位置へ到着済みか（クリアUI表示開始の判定用）
+	bool is_clear_camera_effect_finished() const noexcept;
+
 private:
+	void setup_json_asset();
+
 	/// 登録順が各インゲームスクリプトの更新順になる
 	szg::SceneScriptManager inGameScriptManager_;
 
@@ -50,6 +55,13 @@ private:
 
 	bool isSetup_{ false };
 	bool sceneTransitionRequested_{ false };
+	bool clearCameraEffectStarted_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
+
+	r32 clearCameraDuration_{ 1.4f };
+	r32 clearCameraDistance_{ 4.5f };
+	r32 clearCameraElevationDegrees_{ 38.0f };
+	r32 clearCameraTargetHeight_{ 0.8f };
+	r32 clearCameraBounceStrength_{ 1.1f };
 };

@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Assets/Json/JsonAsset.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
@@ -33,11 +34,14 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
+	setup_json_asset();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
 	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	mapTest_ = mapTest;
+	// Goalだけを専用レイヤーへ描画し、Grayscale後に通常レイヤーと合成する。
+	mapTest_->field_mut().set_goal_visual_layer(1);
 	mapTest_->setup(worldRoot);
 
 	const auto playerInstance =
@@ -140,6 +144,10 @@ void GamePlayScript::prev_update() {
 	}
 	if (!resetHoldConsumed_ && padInput_.press_timer(szg::PadID::Y) >= kResetHoldDurationSeconds) {
 		resetHoldConsumed_ = true;
+		clearCameraEffectStarted_ = false;
+		if (followCamera_) {
+			followCamera_->stop_goal_effect();
+		}
 		mapTest_->reload();
 	}
 
@@ -155,5 +163,45 @@ void GamePlayScript::post_update() {
 
 	inGameScriptManager_.post_update();
 
-	// ステージクリア後の遷移など、判定後の処理をここへ追加する。
+	if (!clearCameraEffectStarted_ && goalManager_ && goalManager_->is_cleared() &&
+		followCamera_ && player_) {
+		const Reference<const szg::WorldInstance> playerInstance = player_->get_world_instance_imm();
+		if (playerInstance) {
+			Vector3 targetPosition = playerInstance->world_position();
+			targetPosition.y += clearCameraTargetHeight_;
+			clearCameraEffectStarted_ = followCamera_->start_goal_effect(
+				targetPosition,
+				clearCameraDuration_,
+				clearCameraDistance_,
+				clearCameraElevationDegrees_,
+				clearCameraBounceStrength_);
+		}
+	}
+
+	// カメラ演出完了後もゲーム画面に留まる。クリアUIは
+	// is_clear_camera_effect_finished() を使って後から表示できる。
+}
+
+bool GamePlayScript::is_clear_camera_effect_finished() const noexcept {
+	return clearCameraEffectStarted_ && followCamera_ && followCamera_->is_goal_effect_finished();
+}
+
+void GamePlayScript::setup_json_asset() {
+	szg::JsonAsset parameter{ "[[game]]/GamePlay.param" };
+	const nlohmann::json& json = parameter.cget();
+	if (!json.is_object()) {
+		szgWarning("GamePlayScript: GamePlay.param could not be loaded. Default values are used.");
+		return;
+	}
+
+	const auto readR32 = [&json](const char* name, r32 fallback) {
+		return json.value(name, nlohmann::json::object()).value("value", fallback);
+	};
+	clearCameraDuration_ = std::max(readR32("ClearCameraDuration", clearCameraDuration_), 0.001f);
+	clearCameraDistance_ = std::max(readR32("ClearCameraDistance", clearCameraDistance_), 0.1f);
+	clearCameraElevationDegrees_ = std::clamp(
+		readR32("ClearCameraElevationDegrees", clearCameraElevationDegrees_), 0.0f, 89.0f);
+	clearCameraTargetHeight_ = readR32("ClearCameraTargetHeight", clearCameraTargetHeight_);
+	clearCameraBounceStrength_ = std::max(
+		readR32("ClearCameraBounceStrength", clearCameraBounceStrength_), 0.0f);
 }

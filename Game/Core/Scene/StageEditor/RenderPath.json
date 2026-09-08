@@ -31,12 +31,32 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": -700.0,
-					"Y": -0.0
+					"X": -240.0,
+					"Y": -260.0
 				}
 			},
 			"Links": {},
 			"Type": 0
+		},
+		{
+			"Data": {
+				"EffectTag": null,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Type": 4
+			},
+			"Debug": {
+				"Position": {
+					"X": 90.0,
+					"Y": -140.0
+				}
+			},
+			"Links": {
+				"Base": 0
+			},
+			"Type": 1
 		},
 		{
 			"Data": {
@@ -69,48 +89,8 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": -320.0,
-					"Y": -0.0
-				}
-			},
-			"Links": {
-				"Base": 0
-			},
-			"Type": 0
-		},
-		{
-			"Data": {
-				"BottomRight": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"CameraId": 0,
-				"ClearDepthStencil": true,
-				"GBufferSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Height": 1080.0,
-				"LayerIndex": 0,
-				"Left": 0.0,
-				"MaxDepth": 1.0,
-				"MinDepth": 0.0,
-				"OutputSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Top": 0.0,
-				"TopLeft": {
-					"X": 0.0,
-					"Y": 0.0
-				},
-				"Width": 1920.0,
-				"WorldIndex": 1
-			},
-			"Debug": {
-				"Position": {
-					"X": 60.0,
-					"Y": -0.0
+					"X": 390.0,
+					"Y": 60.0
 				}
 			},
 			"Links": {
@@ -123,8 +103,8 @@
 		"Connect": 3,
 		"Debug": {
 			"Position": {
-				"X": 400.0,
-				"Y": 0.0
+				"X": 810.0,
+				"Y": -10.0
 			}
 		}
 	}

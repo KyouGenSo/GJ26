@@ -10,12 +10,12 @@
 		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj"
 	],
 	"Param": [],
-	"Particle": [
-		".\\Game\\Assets\\particle\\GoalGlowEffect.particle"
+	"Particle": [],
+	"Shader": [
+		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
 	],
-	"Shader": [],
 	"Skeleton": [],
 	"Texture": [
-		".\\Game\\Assets\\textures\\texture_SolarGlow_512px.png"
+		".\\Game\\Assets\\textures\\texture_Star_512px (1).png"
 	]
 }

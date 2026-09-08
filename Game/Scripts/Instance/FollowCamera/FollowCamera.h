@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 
@@ -42,6 +44,19 @@ public:
 	/// 指定した直方体が画面内に収まる距離へ調整する
 	void fit_to_bounds(const Vector3& boundsSize, float padding = 1.1f) noexcept;
 
+	/// <summary>
+	/// プレイヤーの斜め上空へズームし、到着時に一度バウンドするゴール演出を開始する
+	/// </summary>
+	bool start_goal_effect(
+		const Vector3& targetPosition,
+		float duration,
+		float distance,
+		float elevationDegrees,
+		float bounceStrength) noexcept;
+	/// ゴール演出を終了し、通常のステージ追従へ戻す
+	void stop_goal_effect() noexcept;
+	bool is_goal_effect_finished() const noexcept;
+
 public:
 	Reference<szg::CameraInstance> get_camera_instance_mut() noexcept;
 	Reference<szg::WorldInstance> get_owner_mut() noexcept;
@@ -62,6 +77,18 @@ private:
 	Vector3 calculate_desired_position(const Vector3& targetPosition) const noexcept;
 	void update_rotation(float deltaSeconds) noexcept;
 	void update_position(const Vector3& desiredPosition, float deltaSeconds) noexcept;
+	void update_goal_effect(float deltaSeconds) noexcept;
+
+	struct GoalCameraEffect {
+		Vector3 startPosition{ CVector3::ZERO };
+		Vector3 startTarget{ CVector3::ZERO };
+		Vector3 targetPosition{ CVector3::ZERO };
+		Vector3 destinationPosition{ CVector3::ZERO };
+		float elapsed{ 0.0f };
+		float duration{ 1.0f };
+		float bounceStrength{ 1.0f };
+		bool finished{ false };
+	};
 
 private:
 	Reference<szg::CameraInstance> cameraInstance_;
@@ -78,5 +105,6 @@ private:
 	float minPitch_{ 0.0f };
 	float maxPitch_{ 1.2f };
 	bool shouldSnap_{ true };
+	std::optional<GoalCameraEffect> goalEffect_;
 };
 

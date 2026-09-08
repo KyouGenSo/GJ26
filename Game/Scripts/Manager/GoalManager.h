@@ -44,7 +44,7 @@ public:
 	bool is_goal_open() const { return goalOpen; }
 
 	/// <summary>
-	/// 出現したゴールのセルにプレイヤーがいるか
+	/// 出現したゴールのセルに、着地中のプレイヤーがいるか
 	/// </summary>
 	bool is_cleared() const { return cleared; }
 

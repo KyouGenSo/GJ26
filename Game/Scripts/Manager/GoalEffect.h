@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <optional>
 
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 #include <Engine/Module/World/Particle/EmitterInstance.h>
+#include <Engine/Module/Render/RenderPipeline/Posteffect/Grayscale/GrayscalePipeline.h>
 #include <Engine/Runtime/Particle/EmitterSettings.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
 #include <Library/Math/Quaternion.h>
@@ -33,15 +35,16 @@ public:
 	void set_goal(const std::optional<MapChipIndex>& goalIndex_, bool active);
 
 	/// <summary>
-	/// Active中の上下移動と回転を更新する
+	/// 回転を常時更新し、Active中だけ上下移動を更新する
 	/// </summary>
 	void update();
 
 private:
 	void setup_json_asset();
 	void load_particle_settings();
-	void create_emitter();
-	void destroy_emitter();
+	void create_emitters();
+	void destroy_emitters();
+	void sync_emitter_transforms();
 	void apply_active_state(bool active);
 	void restore_visual_transform();
 
@@ -49,14 +52,18 @@ private:
 	Reference<MapChipField> field;
 	Reference<szg::WorldRoot> worldRoot;
 	Reference<szg::StaticMeshInstance> goalVisual;
-	Reference<szg::EmitterInstance> emitter;
-	std::optional<szg::EmitterInstanceSettings> emitterSettings;
+	std::array<Reference<szg::EmitterInstance>, 2> emitters;
+	Reference<szg::GrayscalePipeline::Data> grayscaleData;
+	std::array<std::optional<szg::EmitterInstanceSettings>, 2> emitterSettings;
 	std::optional<MapChipIndex> goalIndex;
 	Vector3 basePosition{ CVector3::ZERO };
 	Quaternion baseRotation{ CQuaternion::IDENTITY };
-	r32 animationTime{ 0.0f };
+	r32 floatAnimationTime{ 0.0f };
+	r32 currentYawDegrees{ 0.0f };
+	r32 activeBlend{ 0.0f };
 	r32 floatAmplitude{ 0.1f };
 	r32 floatPeriod{ 1.5f };
 	r32 rotationSpeedDegrees{ 45.0f };
+	r32 stateTransitionDuration{ 0.4f };
 	bool isActive{ false };
 };

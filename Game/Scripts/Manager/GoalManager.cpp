@@ -63,7 +63,8 @@ void GoalManager::post_update() {
 	// 操作対象は後から差し替えられるので毎フレーム取り直す
 	const Reference<const szg::WorldInstance> instance = player ? player->get_world_instance_imm() : nullptr;
 	const bool wasCleared = cleared;
-	cleared = goalOpen && instance && goal && field->to_index(instance->world_position()) == *goal;
+	cleared = goalOpen && player && player->is_grounded() && instance && goal &&
+		field->to_index(instance->world_position()) == *goal;
 	if (cleared && !wasCleared) {
 		szgInformation("GoalManager: stage clear");
 	}
