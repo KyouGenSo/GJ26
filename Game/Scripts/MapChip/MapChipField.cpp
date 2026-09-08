@@ -516,6 +516,7 @@ void MapChipField::restore(const Cells& source) {
 		return;
 	}
 	cancel_visual_interpolation();
+	std::vector<i32> changed;
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		if (chips[i] == source.chips[i] && clayOrigin[i] == source.clayOrigin[i] &&
 			clayPiece[i] == source.clayPiece[i] && clayBlockedFaces[i] == source.clayBlockedFaces[i] &&
@@ -527,7 +528,19 @@ void MapChipField::restore(const Cells& source) {
 		clayPiece[i] = source.clayPiece[i];
 		clayBlockedFaces[i] = source.clayBlockedFaces[i];
 		clayColor[i] = source.clayColor[i];
+		changed.push_back(i);
+	}
+	// 表示は全セルを戻し終えてから作り直す(ピースの光は粘土の接続を逆引きする)
+	for (const i32 i : changed) {
 		refresh_visual(i);
+	}
+	// 粘土の接続だけが変わったピースは自分のセルが差分にならないので、残りのピースも作り直す
+	if (!changed.empty()) {
+		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+			if (chips[i] == MapChipType::GoalPiece && std::find(changed.begin(), changed.end(), i) == changed.end()) {
+				refresh_visual(i);
+			}
+		}
 	}
 	++revision;
 }
@@ -589,6 +602,7 @@ bool MapChipField::stretch_clay(
 			return false;
 		}
 		const i32 piece = chips[target] == MapChipType::GoalPiece ? target : *shifted(target, MapChipIndex{ 0, -1, 0 });
+		const bool pieceWasConnected = has_connected_clay(piece);
 		cancel_visual_interpolation();
 		// 伸ばしたブロックと、粘土づたいに面で接している未接続の粘土を全部このピースにつなぐ(上下も含む 6 方向)
 		constexpr std::array<MapChipIndex, 6> kNeighbors{ {
@@ -599,6 +613,10 @@ bool MapChipField::stretch_clay(
 		while (!open.empty()) {
 			const i32 cell = open.back();
 			open.pop_back();
+			// 表示は作り直さず、つながったセルに光る複製だけ足す(新規接続なので二重には付かない)
+			if (!visuals.empty()) {
+				AttachGlow(*worldRoot, visuals[cell]);
+			}
 			for (const MapChipIndex& direction : kNeighbors) {
 				const std::optional<i32> next = shifted(cell, direction);
 				if (next && chips[*next] == MapChipType::Clay && clayPiece[*next] == -1) {
@@ -606,6 +624,10 @@ bool MapChipField::stretch_clay(
 					open.push_back(*next);
 				}
 			}
+		}
+		// ピース側は最初のブロックがつながった時だけ光らせる(表示は GoalManager のエミッタが子に付いているので作り直さない)
+		if (!pieceWasConnected && !visuals.empty()) {
+			AttachGlow(*worldRoot, visuals[piece]);
 		}
 		++revision;
 		return true;
@@ -702,6 +724,9 @@ std::vector<i32> MapChipField::relocate_cells(const std::vector<i32>& cells, con
 		clayPiece[m.target] = m.piece == -1 ? -1 : *shifted(m.piece, delta);
 		clayBlockedFaces[m.target] = m.faces;
 		clayColor[m.target] = m.color;
+	}
+	// ピースの表示は粘土の接続を逆引きするので、全セルを置き終えてから作り直す
+	for (const Moved& m : moved) {
 		refresh_visual(m.target);
 	}
 	std::vector<i32> targetCells;
@@ -888,6 +913,29 @@ std::array<Reference<szg::StaticMeshInstance>, 4> MapChipField::AttachFaceCrosse
 	return crosses;
 }
 
+void MapChipField::AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual) {
+	if (!visual || visual->get_materials().empty()) {
+		return;
+	}
+	Reference<szg::StaticMeshInstance> glow = worldRoot_.instantiate<szg::StaticMeshInstance>(visual, visual->key_id());
+	// レイヤーは初回描画登録時に固定されるので生成直後に設定する
+	glow->set_layer(1);
+	glow->transform_mut().set_scale(Vector3{ 1.03f, 1.03f, 1.03f });
+	glow->get_materials() = visual->get_materials();
+	for (auto& material : glow->get_materials()) {
+		material.lightingType = szg::LighingType::None;
+	}
+}
+
+bool MapChipField::has_connected_clay(i32 piece) const {
+	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == MapChipType::Clay && clayPiece[i] == piece) {
+			return true;
+		}
+	}
+	return false;
+}
+
 Reference<szg::StaticMeshInstance> MapChipField::visual_mut(const MapChipIndex& index) {
 	if (visuals.empty() || !is_inside(index.x, index.y, index.z)) {
 		return nullptr;
@@ -1059,6 +1107,13 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		else if (clayColor[flat] != 0) {
 			visual->get_materials()[0].texture = szg::TextureLibrary::GetTexture(ClayColor::Textures[clayColor[flat]]);
 		}
+	}
+	// つながっている粘土と、粘土がつながったゴール条件オブジェクトは光らせる
+	const bool glow =
+		(chips[flat] == MapChipType::Clay && clayPiece[flat] != -1) ||
+		(chips[flat] == MapChipType::GoalPiece && has_connected_clay(flat));
+	if (glow) {
+		AttachGlow(*worldRoot, visual);
 	}
 	// 塞がれた面のバツ印は元セルにだけ付ける(clay.obj ローカルは半幅 1・底面 0)
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {

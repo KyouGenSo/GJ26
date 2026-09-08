@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Assets/Json/JsonAsset.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
@@ -17,10 +18,15 @@
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 
+#ifdef DEBUG_FEATURES_ENABLE
+#include <imgui.h>
+#endif // DEBUG_FEATURES_ENABLE
+
 namespace {
 
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
 constexpr r32 kResetHoldDurationSeconds = 1.0f;
+constexpr r32 kClayGlowWeightDefault = 0.3f;
 
 } // namespace
 
@@ -99,6 +105,16 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	}
 	inGameScriptManager_.register_script(std::move(goalManager));
 
+	// Bloom の既定 weight(1.0)は粘土の質感が飛ぶので ClayGlow.param の値に下げる
+	clayGlow_ = szg::RuntimeStorage::GetValue<Reference<szg::BloomPipeline::Data>>("PostEffect", "ClayGlow").value_or(nullptr);
+	if (clayGlow_) {
+		szg::JsonAsset parameter{ "[[game]]/ClayGlow.param" };
+		clayGlow_->weight = parameter.cget().value("Weight", nlohmann::json::object()).value("value", kClayGlowWeightDefault);
+	}
+	else {
+		szgWarning("GamePlayScript: ClayGlow bloom not found.");
+	}
+
 	isSetup_ = true;
 }
 
@@ -113,6 +129,7 @@ void GamePlayScript::finalize() {
 	followCamera_.reset();
 	goalManager_.reset();
 	undoManager_.reset();
+	clayGlow_.reset();
 }
 
 void GamePlayScript::prev_update() {
@@ -144,6 +161,14 @@ void GamePlayScript::prev_update() {
 	}
 
 	inGameScriptManager_.prev_update();
+
+#ifdef DEBUG_FEATURES_ENABLE
+	if (clayGlow_) {
+		ImGui::Begin("ClayGlow");
+		ImGui::DragFloat("Weight", &clayGlow_->weight, 0.01f, 0.0f, 2.0f);
+		ImGui::End();
+	}
+#endif // DEBUG_FEATURES_ENABLE
 
 	// ポーズなど、各要素の更新後に行うインゲーム全体処理をここへ追加する。
 }
