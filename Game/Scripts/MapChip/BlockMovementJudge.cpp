@@ -61,22 +61,31 @@ void BlockMovementJudge::set_field(Reference<MapChipField> field) noexcept {
 //===========================================
 // プレイヤーの現在マスに隣接する、向いている方向のブロックを取得
 //===========================================
-std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
+std::optional<MapChipIndex> BlockMovementJudge::front_cell(
 	const Vector3& playerPosition,
 	const Vector3& playerDirection) const noexcept {
 	if (!field_) {
 		return std::nullopt;
 	}
-
 	const std::optional<MapChipIndex> playerIndex = field_->to_index(playerPosition);
 	if (!playerIndex) {
 		return std::nullopt;
 	}
-
 	const MapChipIndex target = Add(*playerIndex, cardinal_direction(playerDirection));
 	if (!field_->contains(target)) {
 		return std::nullopt;
 	}
+	return target;
+}
+
+std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
+	const Vector3& playerPosition,
+	const Vector3& playerDirection) const noexcept {
+	const std::optional<MapChipIndex> front = front_cell(playerPosition, playerDirection);
+	if (!front) {
+		return std::nullopt;
+	}
+	const MapChipIndex target = *front;
 	const MapChipType type = field_->get(target.x, target.y, target.z);
 	if (type == MapChipType::GoalPieceUpper) {
 		// 上段を掴んでも対象はピース本体(下段)
@@ -99,6 +108,20 @@ std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
 		}
 	}
 	return target;
+}
+
+bool BlockMovementJudge::warn_blocked_grip(const Vector3& playerPosition, const Vector3& playerDirection) {
+	const std::optional<MapChipIndex> front = front_cell(playerPosition, playerDirection);
+	if (!front || !field_->is_clay_core(*front)) {
+		return false;
+	}
+	const MapChipIndex playerToClay = cardinal_direction(playerDirection);
+	const MapChipIndex grippedFaceDirection{ -playerToClay.x, 0, -playerToClay.z };
+	if (!(field_->blocked_faces(*front) & ClayFace::FromDirection(grippedFaceDirection))) {
+		return false;
+	}
+	field_->warn_blocked_face(*front, grippedFaceDirection);
+	return true;
 }
 
 bool BlockMovementJudge::is_clay(const MapChipIndex& index) const noexcept {

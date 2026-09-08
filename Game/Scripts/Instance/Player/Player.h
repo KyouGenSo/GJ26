@@ -142,6 +142,7 @@ private:
 	AnimationSetting pushLeftAnimation_{ "playerPush_left.gltf", false };
 	AnimationSetting pushRightAnimation_{ "playerPush_right.gltf", false };
 	bool gripInputReady_{ true };
+	bool gripWarnReady_{ true }; // 塞がれた面への Grip 拒否演出を押しっぱなしで繰り返さないためのゲート
 	bool gripMoveInputReady_{ true };
 	float meshTurnSpeed_{ 12.0f };
 

@@ -84,6 +84,12 @@ public:
 		const Vector3& playerPosition,
 		const Vector3& playerDirection) const noexcept;
 
+	/// <summary>
+	/// 向いている先が粘土のコアで、プレイヤー側の面が塞がれていれば、その面の cross の演出を始める(掴み拒否の通知)
+	/// </summary>
+	/// <returns>演出を始めたら true</returns>
+	bool warn_blocked_grip(const Vector3& playerPosition, const Vector3& playerDirection);
+
 	/// 指定セルが粘土か
 	bool is_clay(const MapChipIndex& index) const noexcept;
 
@@ -130,6 +136,8 @@ private:
 
 	/// プレイヤーの向きベクトルから、前方方向のグリッド座標オフセットを取得
 	static MapChipIndex cardinal_direction(const Vector3& direction) noexcept;
+	/// プレイヤーの現在マスに隣接する、向いている方向のセル(フィールド外は nullopt)
+	std::optional<MapChipIndex> front_cell(const Vector3& playerPosition, const Vector3& playerDirection) const noexcept;
 	static MapChipIndex relative_direction(
 		const Vector3& playerDirection,
 		BlockMoveDirection moveDirection) noexcept;

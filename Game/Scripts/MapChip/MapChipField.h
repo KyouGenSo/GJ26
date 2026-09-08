@@ -240,7 +240,7 @@ public:
 	/// <para>粘土を from から隣接する空セル to へ伸ばす。コアは前後左右へ分岐でき、子はコアから外向きの直線方向にだけ伸ばせる。塞がれた面(stage.json)からは伸ばせない</para>
 	/// <para>to がゴール条件オブジェクトなら伸びずに、その粘土ブロックと粘土づたいに面で接している(上下含む)未接続の粘土ブロック全部がつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
 	/// </summary>
-	/// <returns>from が粘土でない / to が空でもピースでもない / 許可された伸長方向でない / その面が塞がれている / 既につながっている ときは false</returns>
+	/// <returns>from が粘土でない / to が空でもピースでもない / 許可された伸長方向でない / その面が塞がれている(このとき warn_blocked_face の演出を始める) / 既につながっている ときは false</returns>
 	bool stretch_clay(
 		const MapChipIndex& from,
 		const MapChipIndex& to,
@@ -255,6 +255,16 @@ public:
 	/// セルが属する粘土ブロックの伸ばせない面(ClayFace のビット。粘土でない / 範囲外は None)
 	/// </summary>
 	u8 blocked_faces(const MapChipIndex& index) const;
+
+	/// <summary>
+	/// index が属する粘土ブロックのコアの direction 側の面が塞がれていれば、その面の cross を一定時間 赤点滅・振動させる(塞がれていなければ何もしない)
+	/// </summary>
+	void warn_blocked_face(const MapChipIndex& index, const MapChipIndex& direction);
+
+	/// <summary>
+	/// warn_blocked_face / stretch_clay で始めた cross の演出を更新する
+	/// </summary>
+	void update_blocked_face_warning(r32 deltaSeconds);
 
 	/// <summary>
 	/// セルの粘土の色番号(ClayColor の添字。粘土でない / 範囲外は 0)
@@ -290,7 +300,8 @@ public:
 	/// <para>parent(粘土の元セルの立方体)の塞がれた各面に cross.obj を子として付ける。親の destroy_self で一緒に消える</para>
 	/// <para>halfSize は親ローカルでの面の半幅、bottomY は親ローカルでの底面の高さ</para>
 	/// </summary>
-	static void AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY);
+	/// <returns>付けた cross(ClayFace::Table と同じ並び、付けなかった面は null)</returns>
+	static std::array<Reference<szg::StaticMeshInstance>, 4> AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY);
 
 	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
@@ -392,6 +403,8 @@ private:
 		const std::vector<i32>& targetCells,
 		const std::vector<VisualMove>& moves); // moves を順に再生する。表示は現在位置を最終位置として moves の合計分だけ戻した所から始まる
 	void cancel_visual_interpolation();
+	void begin_blocked_face_warning(i32 root, u8 bit); // root(コア)の bit の面の cross で演出を始める(再生中なら先に戻す。cross が無ければ何もしない)
+	void end_blocked_face_warning(); // cross の色と位置を戻して演出を終える
 	void refresh_visual(i32 flat, bool goalActive = false);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
@@ -417,6 +430,16 @@ private:
 	};
 	std::deque<VisualInterpolationStep> visualInterpolationSteps; // front が再生中
 	r32 visualInterpolationElapsed{ 0.0f };
+	std::vector<std::array<Reference<szg::StaticMeshInstance>, 4>> faceCrosses; // chips と同じ添字。粘土のコアにだけ入る ClayFace::Table 並びの cross(無い面は null)
+	struct BlockedFaceWarning {
+		i32 flat; // cross を付けたコアの flat_index
+		Reference<szg::StaticMeshInstance> cross;
+		Vector3 basePosition; // 親(clay.obj)ローカルでの cross の位置
+		Vector3 shakeAxis; // 面に沿った水平方向
+		std::vector<ColorRGB> baseColors; // マテリアルごとの元の色
+		r32 elapsed{ 0.0f };
+	};
+	std::optional<BlockedFaceWarning> blockedFaceWarning; // 再生中の cross の演出
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
 	u32 revision{ 0 };

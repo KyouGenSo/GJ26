@@ -80,6 +80,7 @@ void Player::finalize() {
 	gripMoveInterpolation_.reset();
 	gripMoveAnimationDirection_.reset();
 	gripInputReady_ = true;
+	gripWarnReady_ = true;
 	gripMoveInputReady_ = true;
 }
 
@@ -90,6 +91,7 @@ void Player::prev_update() {
 	context_.input = playerInput_.update();
 	if (!context_.input.gripPressed) {
 		gripInputReady_ = true;
+		gripWarnReady_ = true;
 	}
 	if (!gripInputReady_) {
 		context_.input.gripPressed = false;
@@ -109,6 +111,11 @@ void Player::prev_update() {
 	if (!gripMoveInterpolation_ && blockMovementJudge_ && context_.worldInstance && !context_.grippedBlockIndex) {
 		context_.gripTargetIndex = blockMovementJudge_->find_grip_target(
 			context_.worldInstance->world_position(), context_.direction);
+		// 塞がれた面に向かって Grip を押したら、その面の cross で拒否を知らせる(押しっぱなしでは 1 回だけ)
+		if (gripWarnReady_ && context_.input.gripPressed && !context_.gripTargetIndex &&
+			blockMovementJudge_->warn_blocked_grip(context_.worldInstance->world_position(), context_.direction)) {
+			gripWarnReady_ = false;
+		}
 	}
 	if (gripMoveInterpolation_) {
 		update_grip_move_interpolation();

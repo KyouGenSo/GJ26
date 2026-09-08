@@ -7,6 +7,7 @@
 #include <format>
 #include <fstream>
 #include <iomanip>
+#include <numbers>
 
 #include <json.hpp>
 
@@ -42,6 +43,12 @@ const std::array<ChipVisualSetting, 3> CHIP_VISUAL_SETTINGS{ {
 
 constexpr const char* GOAL_ACTIVE_ASSET_PATH = "[[game]]/goal/goal.obj";
 constexpr const char* GOAL_ACTIVE_MESH_NAME = "goal.obj";
+
+// 塞がれた面の cross の演出(振幅は親 clay.obj のローカル単位。親 scale 0.5 なのでワールドでは半分)
+constexpr r32 BLOCKED_FACE_WARN_DURATION = 0.5f;
+constexpr r32 BLOCKED_FACE_BLINK_PERIOD = 0.1f;
+constexpr r32 BLOCKED_FACE_SHAKE_FREQUENCY = 40.0f;
+constexpr r32 BLOCKED_FACE_SHAKE_AMPLITUDE = 0.05f;
 
 /// <summary>
 /// チップ種類に対応する表示モデル設定を返す。
@@ -260,6 +267,7 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 	root = worldRoot->instantiate<szg::WorldInstance>(nullptr);
 	root->transform_mut().set_translate(center());
 	visuals.assign(chips.size(), Reference<szg::StaticMeshInstance>{});
+	faceCrosses.assign(chips.size(), {});
 
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		refresh_visual(i);
@@ -273,6 +281,77 @@ void MapChipField::destroy_root() {
 		root.reset();
 	}
 	visuals.clear();
+	faceCrosses.clear();
+	blockedFaceWarning.reset();
+}
+
+void MapChipField::warn_blocked_face(const MapChipIndex& index, const MapChipIndex& direction) {
+	if (!is_inside(index.x, index.y, index.z)) {
+		return;
+	}
+	const i32 root = clayOrigin[flat_index(index.x, index.y, index.z)];
+	const u8 bit = ClayFace::FromDirection(direction);
+	if (root >= 0 && root < static_cast<i32>(chips.size()) && (clayBlockedFaces[root] & bit)) {
+		begin_blocked_face_warning(root, bit);
+	}
+}
+
+void MapChipField::update_blocked_face_warning(r32 deltaSeconds) {
+	if (!blockedFaceWarning) {
+		return;
+	}
+	BlockedFaceWarning& warning = *blockedFaceWarning;
+	warning.elapsed += std::max(deltaSeconds, 0.0f);
+	if (warning.elapsed >= BLOCKED_FACE_WARN_DURATION) {
+		end_blocked_face_warning();
+		return;
+	}
+
+	const bool red = std::fmod(warning.elapsed, BLOCKED_FACE_BLINK_PERIOD) < BLOCKED_FACE_BLINK_PERIOD * 0.5f;
+	std::vector<szg::IMultiMeshInstance::Material>& materials = warning.cross->get_materials();
+	for (size_t i = 0; i < materials.size() && i < warning.baseColors.size(); ++i) {
+		materials[i].color = red ? CColorRGB::RED : warning.baseColors[i];
+	}
+	const r32 shake = std::sin(warning.elapsed * 2.0f * std::numbers::pi_v<r32> * BLOCKED_FACE_SHAKE_FREQUENCY) * BLOCKED_FACE_SHAKE_AMPLITUDE;
+	warning.cross->transform_mut().set_translate(warning.basePosition + warning.shakeAxis * shake);
+}
+
+void MapChipField::begin_blocked_face_warning(i32 root, u8 bit) {
+	end_blocked_face_warning();
+	if (root < 0 || root >= static_cast<i32>(faceCrosses.size())) {
+		return;
+	}
+	for (size_t i = 0; i < ClayFace::Table.size(); ++i) {
+		Reference<szg::StaticMeshInstance> cross = faceCrosses[root][i];
+		if (ClayFace::Table[i].bit != bit || !cross) {
+			continue;
+		}
+		const MapChipIndex direction = ClayFace::Table[i].direction;
+		BlockedFaceWarning warning{
+			.flat = root,
+			.cross = cross,
+			.basePosition = cross->transform_imm().get_translate(),
+			.shakeAxis = Vector3{ static_cast<r32>(std::abs(direction.z)), 0.0f, static_cast<r32>(std::abs(direction.x)) },
+		};
+		for (const szg::IMultiMeshInstance::Material& material : cross->get_materials()) {
+			warning.baseColors.push_back(material.color);
+		}
+		blockedFaceWarning = std::move(warning);
+		return;
+	}
+}
+
+void MapChipField::end_blocked_face_warning() {
+	if (!blockedFaceWarning) {
+		return;
+	}
+	BlockedFaceWarning& warning = *blockedFaceWarning;
+	std::vector<szg::IMultiMeshInstance::Material>& materials = warning.cross->get_materials();
+	for (size_t i = 0; i < materials.size() && i < warning.baseColors.size(); ++i) {
+		materials[i].color = warning.baseColors[i];
+	}
+	warning.cross->transform_mut().set_translate(warning.basePosition);
+	blockedFaceWarning.reset();
 }
 
 void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
@@ -433,7 +512,9 @@ bool MapChipField::stretch_clay(
 		stretchDirection = { stretchX, 0, stretchZ };
 	}
 	// 塞がれた面からは伸びず、ゴール条件オブジェクトにもつながらない
-	if (clayBlockedFaces[root] & ClayFace::FromDirection(stretchDirection)) {
+	const u8 stretchFace = ClayFace::FromDirection(stretchDirection);
+	if (clayBlockedFaces[root] & stretchFace) {
+		begin_blocked_face_warning(root, stretchFace);
 		return false;
 	}
 
@@ -725,9 +806,11 @@ bool MapChipField::SaveStageJsonPlayerSpawn(const std::string& directory, const 
 	return WriteStageJsonRoot(file, root);
 }
 
-void MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY) {
+std::array<Reference<szg::StaticMeshInstance>, 4> MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY) {
+	std::array<Reference<szg::StaticMeshInstance>, 4> crosses{};
 	// cross.obj は底面原点・幅 2・高さ 2 で +Z を向く。親の面と同じ枠なので halfSize で等倍し、面の外向きへ回す
-	for (const ClayFace::Entry& face : ClayFace::Table) {
+	for (size_t i = 0; i < ClayFace::Table.size(); ++i) {
+		const ClayFace::Entry& face = ClayFace::Table[i];
 		if (!(blockedFaces & face.bit)) {
 			continue;
 		}
@@ -736,7 +819,9 @@ void MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::
 		cross->transform_mut().set_scale(Vector3{ halfSize, halfSize, halfSize });
 		cross->transform_mut().set_translate(direction * halfSize + Vector3{ 0.0f, bottomY, 0.0f });
 		cross->transform_mut().set_quaternion(Quaternion::LookForward(direction));
+		crosses[i] = cross;
 	}
+	return crosses;
 }
 
 Reference<szg::StaticMeshInstance> MapChipField::visual_mut(const MapChipIndex& index) {
@@ -857,6 +942,11 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		visuals[flat]->destroy_self();
 		visuals[flat].reset();
 	}
+	// cross は親ごと消えるので、その演出中なら参照を捨てる(復元は不要)
+	faceCrosses[flat] = {};
+	if (blockedFaceWarning && blockedFaceWarning->flat == flat) {
+		blockedFaceWarning.reset();
+	}
 
 	// 上段はピースのモデル(下段)に含まれるので表示を持たない
 	if (chips[flat] == MapChipType::Empty || chips[flat] == MapChipType::GoalPieceUpper || !root) {
@@ -889,7 +979,7 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 	}
 	// 塞がれた面のバツ印は元セルにだけ付ける(clay.obj ローカルは半幅 1・底面 0)
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {
-		AttachFaceCrosses(*worldRoot, visual, clayBlockedFaces[flat], 1.0f, 0.0f);
+		faceCrosses[flat] = AttachFaceCrosses(*worldRoot, visual, clayBlockedFaces[flat], 1.0f, 0.0f);
 	}
 
 	visuals[flat] = visual;
