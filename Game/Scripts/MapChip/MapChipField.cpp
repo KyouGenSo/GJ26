@@ -970,7 +970,7 @@ std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapC
 	return cells;
 }
 
-void MapChipField::refresh_visual(i32 flat) {
+void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 	if (visuals.empty()) {
 		return;
 	}
