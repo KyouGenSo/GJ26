@@ -87,6 +87,30 @@ constexpr u8 FromName(std::string_view name) {
 	return None;
 }
 
+/// <summary>
+/// ビット → グリッド方向(該当なしは +Z)
+/// </summary>
+constexpr MapChipIndex ToDirection(u8 bit) {
+	for (const Entry& entry : Table) {
+		if (entry.bit == bit) {
+			return entry.direction;
+		}
+	}
+	return { 0, 0, 1 };
+}
+
+/// <summary>
+/// ビット → stage.json の表記(該当なしは "+Z")
+/// </summary>
+constexpr const char* ToName(u8 bit) {
+	for (const Entry& entry : Table) {
+		if (entry.bit == bit) {
+			return entry.name;
+		}
+	}
+	return "+Z";
+}
+
 } // namespace ClayFace
 
 /// <summary>
@@ -124,6 +148,32 @@ struct ClayRecord {
 	u8 blockedFaces;
 	u8 color{ 0 }; // ClayColor の番号
 };
+
+/// <summary>
+/// stage.json の "PlayerSpawn"(プレイヤーの初期セルと向き)
+/// </summary>
+struct PlayerSpawnRecord {
+	MapChipIndex position;
+	u8 direction{ ClayFace::PosZ }; // ClayFace のビット 1 つ
+};
+
+/// <summary>
+/// (x, z) の列で y を床に合わせる。埋まっていれば上の最初の空セルへ、浮いていれば下が空でなくなるまで下げる(y=0 が地面)。空セルが無ければ nullopt
+/// </summary>
+/// <param name="get">(x, y, z) → MapChipType。範囲外は Empty を返すこと</param>
+template<typename GetChip>
+std::optional<i32> SnapToFloorY(i32 x, i32 y, i32 z, i32 height, GetChip get) {
+	while (y < height && get(x, y, z) != MapChipType::Empty) {
+		++y;
+	}
+	if (y >= height) {
+		return std::nullopt;
+	}
+	while (y > 0 && get(x, y - 1, z) == MapChipType::Empty) {
+		--y;
+	}
+	return y;
+}
 
 /// <summary>
 /// <para>3Dマップチップ</para>
@@ -188,7 +238,7 @@ public:
 
 	/// <summary>
 	/// <para>粘土を from から隣接する空セル to へ伸ばす。コアは前後左右へ分岐でき、子はコアから外向きの直線方向にだけ伸ばせる。塞がれた面(stage.json)からは伸ばせない</para>
-	/// <para>to がゴール条件オブジェクトなら伸びずにその粘土ブロックがつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
+	/// <para>to がゴール条件オブジェクトなら伸びずに、その粘土ブロックと粘土づたいに面で接している(上下含む)未接続の粘土ブロック全部がつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
 	/// </summary>
 	/// <returns>from が粘土でない / to が空でもピースでもない / 許可された伸長方向でない / その面が塞がれている / 既につながっている ときは false</returns>
 	bool stretch_clay(
@@ -222,6 +272,21 @@ public:
 	static bool SaveStageJsonClay(const std::string& directory, const std::vector<ClayRecord>& records);
 
 	/// <summary>
+	/// directory/stage.json の "PlayerSpawn" を読む。ファイルかキーが無ければ nullopt(警告なし)、壊れていれば警告して nullopt。セルが空かの検証は呼び出し側
+	/// </summary>
+	static std::optional<PlayerSpawnRecord> LoadStageJsonPlayerSpawn(const std::string& directory);
+
+	/// <summary>
+	/// directory/stage.json の "PlayerSpawn" を spawn で書き換える(nullopt ならキーを消す。他のキーは維持、無ければ作る)
+	/// </summary>
+	static bool SaveStageJsonPlayerSpawn(const std::string& directory, const std::optional<PlayerSpawnRecord>& spawn);
+
+	/// <summary>
+	/// stage.json のプレイヤー初期位置(無い / 空セルでない場合は nullopt)
+	/// </summary>
+	const std::optional<PlayerSpawnRecord>& player_spawn() const { return playerSpawn; }
+
+	/// <summary>
 	/// <para>parent(粘土の元セルの立方体)の塞がれた各面に cross.obj を子として付ける。親の destroy_self で一緒に消える</para>
 	/// <para>halfSize は親ローカルでの面の半幅、bottomY は親ローカルでの底面の高さ</para>
 	/// </summary>
@@ -248,6 +313,11 @@ public:
 	/// stretch_clay / move_goal_piece で開始した表示モデルの移動補間を更新する
 	/// </summary>
 	void update_visual_interpolation(r32 deltaSeconds);
+
+	/// <summary>
+	/// 表示モデルの移動補間が再生中か
+	/// </summary>
+	bool is_visual_interpolating() const { return !visualInterpolationSteps.empty(); }
 
 	/// <summary>
 	/// 指定種類の全セル
@@ -334,6 +404,7 @@ private:
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<u8> clayColor; // chips と同じ添字。粘土の色番号(ClayColor の添字)、他は 0
+	std::optional<PlayerSpawnRecord> playerSpawn;
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	struct VisualInterpolation {
 		Reference<szg::StaticMeshInstance> visual;

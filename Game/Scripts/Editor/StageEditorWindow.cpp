@@ -227,20 +227,35 @@ void StageEditorWindow::draw_resize() {
 void StageEditorWindow::draw_chip_select() {
 	ImGui::Text("チップ選択");
 
-	int selected = chip_to_int(selectedChip);
+	constexpr int kSpawnTool = -1; // MapChipType と重ならないラジオ値
+	int selected = spawnTool ? kSpawnTool : chip_to_int(selectedChip);
 	bool changed = false;
 
 	changed |= ImGui::RadioButton("消去 (0)", &selected, chip_to_int(MapChipType::Empty));
 	changed |= ImGui::RadioButton("粘土 (1)", &selected, chip_to_int(MapChipType::Clay));
 	changed |= ImGui::RadioButton("ゴールピース (2)", &selected, chip_to_int(MapChipType::GoalPiece));
 	changed |= ImGui::RadioButton("ゴール (3)", &selected, chip_to_int(MapChipType::Goal));
+	changed |= ImGui::RadioButton("プレイヤー初期位置 (P)", &selected, kSpawnTool);
 
 	if (changed) {
-		selectedChip = int_to_chip(selected);
+		spawnTool = selected == kSpawnTool;
+		if (!spawnTool) {
+			selectedChip = int_to_chip(selected);
+		}
 	}
 
+	if (spawnTool) {
+		ImGui::Text("向き");
+		int direction = spawnDirection;
+		for (const ClayFace::Entry& face : ClayFace::Table) {
+			ImGui::RadioButton(face.name, &direction, face.bit);
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+		spawnDirection = static_cast<u8>(direction);
+	}
 	// 粘土を塗るときの伸ばせない面。既存の粘土はチェックを変えて塗り直すと上書きされる
-	if (selectedChip == MapChipType::Clay) {
+	else if (selectedChip == MapChipType::Clay) {
 		ImGui::Text("伸ばせない面");
 		int flags = selectedFaces;
 		for (const ClayFace::Entry& face : ClayFace::Table) {
@@ -303,6 +318,7 @@ void StageEditorWindow::draw_grid() {
 	}
 
 	ImGui::Text("レイヤー編集（左クリック：設置 / 右クリック：消去 / ドラッグ：連続）");
+	ImGui::Text("プレイヤー初期位置ツール（左クリック：設置、Y は列の床に自動で合う / 右クリック：解除 / セルに P 表示）");
 
 	const i32 y = doc.current_layer() - 1;
 	const float cellSize = 28.0f;
@@ -321,8 +337,12 @@ void StageEditorWindow::draw_grid() {
 			// 粘土の代表色は淡いので文字を暗くする
 			ImGui::PushStyleColor(ImGuiCol_Text, chip == MapChipType::Clay ? ImVec4{ 0.1f, 0.1f, 0.1f, 1.0f } : ImGui::GetStyleColorVec4(ImGuiCol_Text));
 
-			// 伸ばせない面のある粘土は "1*" のように印を付ける
-			const std::string label = std::format("{}{}", static_cast<i32>(chip), doc.blocked_faces(x, y, z) != ClayFace::None ? "*" : "");
+			// 伸ばせない面のある粘土は "1*"、プレイヤー初期位置は "0P" のように印を付ける
+			const bool isSpawn = doc.player_spawn() && doc.player_spawn()->position == MapChipIndex{ x, y, z };
+			const std::string label = std::format("{}{}{}",
+				static_cast<i32>(chip),
+				doc.blocked_faces(x, y, z) != ClayFace::None ? "*" : "",
+				isSpawn ? "P" : "");
 			ImGui::Button(label.c_str(), buttonSize);
 
 			ImGui::PopStyleColor(4);
@@ -333,14 +353,24 @@ void StageEditorWindow::draw_grid() {
 						doc.begin_edit();
 						isPainting = true;
 					}
-					doc.set(x, y, z, selectedChip, selectedFaces, selectedClayColor);
+					if (spawnTool) {
+						doc.set_player_spawn(x, y, z, spawnDirection);
+					}
+					else {
+						doc.set(x, y, z, selectedChip, selectedFaces, selectedClayColor);
+					}
 				}
 				else if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 					if (!isPainting) {
 						doc.begin_edit();
 						isPainting = true;
 					}
-					doc.set(x, y, z, MapChipType::Empty);
+					if (spawnTool) {
+						doc.clear_player_spawn();
+					}
+					else {
+						doc.set(x, y, z, MapChipType::Empty);
+					}
 				}
 			}
 

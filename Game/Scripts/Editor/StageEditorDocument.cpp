@@ -53,6 +53,9 @@ void StageEditorDocument::set(i32 x, i32 y, i32 z, MapChipType type, u8 blockedF
 	chips[flat_index(x, y, z)] = type;
 	faces[flat_index(x, y, z)] = type == MapChipType::Clay ? blockedFaces : ClayFace::None;
 	colors[flat_index(x, y, z)] = static_cast<u8>(type == MapChipType::Clay ? std::min<i32>(color, ClayColor::Count - 1) : 0);
+	if (playerSpawn && playerSpawn->position.x == x && playerSpawn->position.z == z) {
+		snap_player_spawn();
+	}
 	++changeVersion;
 }
 
@@ -64,6 +67,38 @@ u8 StageEditorDocument::clay_color(i32 x, i32 y, i32 z) const {
 	return is_inside(x, y, z) ? colors[flat_index(x, y, z)] : 0;
 }
 
+void StageEditorDocument::set_player_spawn(i32 x, i32 y, i32 z, u8 direction) {
+	if (!is_inside(x, y, z)) {
+		return;
+	}
+	const std::optional<i32> floorY = SnapToFloorY(x, y, z, sizeY, [this](i32 cx, i32 cy, i32 cz) { return get(cx, cy, cz); });
+	if (!floorY) {
+		return;
+	}
+	const PlayerSpawnRecord record{ { x, *floorY, z }, direction };
+	if (playerSpawn && playerSpawn->position == record.position && playerSpawn->direction == direction) {
+		return;
+	}
+	if (isEditing && !editSnapshotPushed) {
+		push_undo();
+		editSnapshotPushed = true;
+	}
+	playerSpawn = record;
+	++changeVersion;
+}
+
+void StageEditorDocument::clear_player_spawn() {
+	if (!playerSpawn) {
+		return;
+	}
+	if (isEditing && !editSnapshotPushed) {
+		push_undo();
+		editSnapshotPushed = true;
+	}
+	playerSpawn.reset();
+	++changeVersion;
+}
+
 void StageEditorDocument::create_new(i32 width, i32 height, i32 depth) {
 	push_undo();
 
@@ -73,6 +108,7 @@ void StageEditorDocument::create_new(i32 width, i32 height, i32 depth) {
 	chips.assign(static_cast<size_t>(sizeX * sizeY * sizeZ), MapChipType::Empty);
 	faces.assign(chips.size(), ClayFace::None);
 	colors.assign(chips.size(), 0);
+	playerSpawn.reset();
 	currentStageNumber = MapChipField::CountStages() + 1;
 	++changeVersion;
 }
@@ -136,6 +172,19 @@ bool StageEditorDocument::load(i32 stageNumber) {
 	}
 	szgWarningIf(ignored > 0, "StageEditorDocument: {} Clay entries in '{}/stage.json' are not on a clay cell (ignored)", ignored, directory);
 
+	// stage.json のプレイヤー初期位置。Y はその列の床に合わせる
+	playerSpawn = MapChipField::LoadStageJsonPlayerSpawn(directory);
+	if (playerSpawn) {
+		const MapChipIndex p = playerSpawn->position;
+		if (!is_inside(p.x, 0, p.z)) {
+			playerSpawn.reset();
+		}
+		else {
+			snap_player_spawn();
+		}
+		szgWarningIf(!playerSpawn, "StageEditorDocument: PlayerSpawn ({}, {}, {}) in '{}/stage.json' has no empty cell in its column (ignored)", p.x, p.y, p.z, directory);
+	}
+
 	currentStageNumber = stageNumber;
 	++changeVersion;
 
@@ -187,6 +236,7 @@ bool StageEditorDocument::save() {
 		}
 	}
 	MapChipField::SaveStageJsonClay(MapChipField::StageDirectory(currentStageNumber), records);
+	MapChipField::SaveStageJsonPlayerSpawn(MapChipField::StageDirectory(currentStageNumber), playerSpawn);
 
 	szgInformation("StageEditorDocument: saved Stage{:02} ({}x{}x{})", currentStageNumber, sizeX, sizeY, sizeZ);
 	return true;
@@ -228,7 +278,7 @@ void StageEditorDocument::undo() {
 	if (undoStack.empty()) {
 		return;
 	}
-	redoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces, colors });
+	redoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces, colors, playerSpawn });
 	if (redoStack.size() > MAX_HISTORY) {
 		redoStack.pop_front();
 	}
@@ -241,7 +291,7 @@ void StageEditorDocument::redo() {
 	if (redoStack.empty()) {
 		return;
 	}
-	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces, colors });
+	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces, colors, playerSpawn });
 	if (undoStack.size() > MAX_HISTORY) {
 		undoStack.pop_front();
 	}
@@ -251,7 +301,7 @@ void StageEditorDocument::redo() {
 }
 
 void StageEditorDocument::push_undo() {
-	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces, colors });
+	undoStack.emplace_back(StageSnapshot{ sizeX, sizeY, sizeZ, chips, faces, colors, playerSpawn });
 	if (undoStack.size() > MAX_HISTORY) {
 		undoStack.pop_front();
 	}
@@ -265,6 +315,7 @@ void StageEditorDocument::apply_snapshot(const StageSnapshot& snapshot) {
 	chips = snapshot.chips;
 	faces = snapshot.faces;
 	colors = snapshot.colors;
+	playerSpawn = snapshot.playerSpawn;
 }
 
 void StageEditorDocument::rebuild_chips(i32 newX, i32 newY, i32 newZ) {
@@ -291,6 +342,24 @@ void StageEditorDocument::rebuild_chips(i32 newX, i32 newY, i32 newZ) {
 	chips = std::move(newChips);
 	faces = std::move(newFaces);
 	colors = std::move(newColors);
+	if (playerSpawn && !is_inside(playerSpawn->position.x, 0, playerSpawn->position.z)) {
+		playerSpawn.reset();
+	}
+	snap_player_spawn();
+}
+
+void StageEditorDocument::snap_player_spawn() {
+	if (!playerSpawn) {
+		return;
+	}
+	MapChipIndex& p = playerSpawn->position;
+	const std::optional<i32> floorY = SnapToFloorY(p.x, p.y, p.z, sizeY, [this](i32 x, i32 y, i32 z) { return get(x, y, z); });
+	if (floorY) {
+		p.y = *floorY;
+	}
+	else {
+		playerSpawn.reset();
+	}
 }
 
 i32 StageEditorDocument::flat_index(i32 x, i32 y, i32 z) const {
