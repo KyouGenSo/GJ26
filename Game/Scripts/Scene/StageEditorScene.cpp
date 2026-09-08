@@ -15,6 +15,7 @@ StageEditorScene::StageEditorScene() {
 
 void StageEditorScene::custom_load_asset() {
 	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/Cube.obj");
+	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/cross/cross.obj");
 }
 
 void StageEditorScene::custom_setup() {
