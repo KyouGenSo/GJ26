@@ -97,4 +97,22 @@ void StageEditorScript::rebuild() {
 			}
 		}
 	}
+
+	// プレイヤー初期位置は青い半分サイズの立方体、向きは小さな立方体で示す
+	if (const std::optional<PlayerSpawnRecord>& spawn = doc.player_spawn()) {
+		const Vector3 position = MapChipField::to_world(spawn->position.x, spawn->position.y, spawn->position.z);
+		const MapChipIndex d = ClayFace::ToDirection(spawn->direction);
+		const Vector3 direction = MapChipField::to_world(d.x, d.y, d.z);
+		const auto place = [this](const Vector3& at, r32 scale) {
+			Reference<szg::StaticMeshInstance> cube = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
+			cube->transform_mut().set_translate(at);
+			cube->transform_mut().set_scale(Vector3{ scale, scale, scale });
+			if (!cube->get_materials().empty()) {
+				cube->get_materials()[0].color = CColorRGB::BLUE;
+			}
+			cubes.emplace_back(cube);
+		};
+		place(position, 0.5f);
+		place(position + direction * 0.4f, 0.2f);
+	}
 }

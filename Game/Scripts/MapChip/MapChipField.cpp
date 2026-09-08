@@ -68,6 +68,42 @@ std::filesystem::path StageJsonPath(const std::string& directory) {
 	return szg::IAssetBuilder::ResolveFilePath(std::format("{}/stage.json", directory), "csv");
 }
 
+/// <summary>
+/// stage.json のルートオブジェクト(無い / 壊れている場合は空オブジェクト)
+/// </summary>
+nlohmann::json ReadStageJsonRoot(const std::filesystem::path& file) {
+	if (std::ifstream ifs{ file }; ifs) {
+		nlohmann::json existing = nlohmann::json::parse(ifs, nullptr, false);
+		if (existing.is_object()) {
+			return existing;
+		}
+	}
+	return nlohmann::json::object();
+}
+
+bool WriteStageJsonRoot(const std::filesystem::path& file, const nlohmann::json& root) {
+	std::filesystem::create_directories(file.parent_path());
+	std::ofstream ofs{ file };
+	if (!ofs) {
+		szgWarning("MapChipField: failed to write \'{}\'", file.string());
+		return false;
+	}
+	ofs << std::setw(1) << std::setfill('\t') << root;
+	return true;
+}
+
+/// <summary>
+/// "Position": [x, y, z] の検証と取り出し
+/// </summary>
+std::optional<MapChipIndex> ReadPosition(const nlohmann::json& entry) {
+	const auto position = entry.is_object() ? entry.find("Position") : entry.end();
+	if (position == entry.end() || !position->is_array() || position->size() != 3 ||
+		!std::all_of(position->begin(), position->end(), [](const nlohmann::json& v) { return v.is_number(); })) {
+		return std::nullopt;
+	}
+	return MapChipIndex{ position->at(0).get<i32>(), position->at(1).get<i32>(), position->at(2).get<i32>() };
+}
+
 } // namespace
 
 bool MapChipField::load_stage(i32 stageNumber) {
@@ -195,6 +231,22 @@ bool MapChipField::load(const std::string& directory) {
 		clayColor[flat_index(p.x, p.y, p.z)] = record.color;
 	}
 	szgWarningIf(ignored > 0, "MapChipField: {} Clay entries in \'{}/stage.json\' are not on a clay cell (ignored)", ignored, directory);
+
+	// stage.json のプレイヤー初期位置。Y はその列の床に合わせる
+	playerSpawn = LoadStageJsonPlayerSpawn(directory);
+	if (playerSpawn) {
+		MapChipIndex& p = playerSpawn->position;
+		const std::optional<i32> floorY = is_inside(p.x, 0, p.z)
+			? SnapToFloorY(p.x, p.y, p.z, sizeY, [this](i32 x, i32 y, i32 z) { return get(x, y, z); })
+			: std::nullopt;
+		if (!floorY) {
+			szgWarning("MapChipField: PlayerSpawn ({}, {}, {}) in \'{}/stage.json\' has no empty cell in its column (ignored)", p.x, p.y, p.z, directory);
+			playerSpawn.reset();
+		}
+		else {
+			p.y = *floorY;
+		}
+	}
 	return true;
 }
 
@@ -553,13 +605,12 @@ std::vector<ClayRecord> MapChipField::LoadStageJsonClay(const std::string& direc
 	}
 
 	for (const nlohmann::json& entry : *clay) {
-		const auto position = entry.is_object() ? entry.find("Position") : entry.end();
-		if (position == entry.end() || !position->is_array() || position->size() != 3 ||
-			!std::all_of(position->begin(), position->end(), [](const nlohmann::json& v) { return v.is_number(); })) {
+		const std::optional<MapChipIndex> position = ReadPosition(entry);
+		if (!position) {
 			szgWarning("MapChipField: \'{}\' Clay entry has invalid \"Position\": {}", file.string(), entry.dump());
 			continue;
 		}
-		ClayRecord record{ { position->at(0).get<i32>(), position->at(1).get<i32>(), position->at(2).get<i32>() }, ClayFace::None };
+		ClayRecord record{ *position, ClayFace::None };
 		if (const auto faces = entry.find("BlockedFaces"); faces != entry.end() && faces->is_array()) {
 			for (const nlohmann::json& face : *faces) {
 				const u8 bit = face.is_string() ? ClayFace::FromName(face.get<std::string>()) : ClayFace::None;
@@ -583,15 +634,8 @@ std::vector<ClayRecord> MapChipField::LoadStageJsonClay(const std::string& direc
 
 bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::vector<ClayRecord>& records) {
 	const std::filesystem::path file = StageJsonPath(directory);
-
-	// 他のキーを残すため既存を読む。壊れていれば作り直す
-	nlohmann::json root = nlohmann::json::object();
-	if (std::ifstream ifs{ file }; ifs) {
-		nlohmann::json existing = nlohmann::json::parse(ifs, nullptr, false);
-		if (existing.is_object()) {
-			root = std::move(existing);
-		}
-	}
+	// 他のキーを残すため既存を読む
+	nlohmann::json root = ReadStageJsonRoot(file);
 
 	nlohmann::json clay = nlohmann::json::array();
 	for (const ClayRecord& record : records) {
@@ -608,15 +652,58 @@ bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::ve
 		clay.push_back(std::move(item));
 	}
 	root["Clay"] = std::move(clay);
+	return WriteStageJsonRoot(file, root);
+}
 
-	std::filesystem::create_directories(file.parent_path());
-	std::ofstream ofs{ file };
-	if (!ofs) {
-		szgWarning("MapChipField: failed to write \'{}\'", file.string());
-		return false;
+std::optional<PlayerSpawnRecord> MapChipField::LoadStageJsonPlayerSpawn(const std::string& directory) {
+	const std::filesystem::path file = StageJsonPath(directory);
+	std::ifstream ifs{ file };
+	if (!ifs) {
+		return std::nullopt;
 	}
-	ofs << std::setw(1) << std::setfill('\t') << root;
-	return true;
+
+	const nlohmann::json root = nlohmann::json::parse(ifs, nullptr, false);
+	if (!root.is_object()) {
+		szgWarning("MapChipField: \'{}\' is not a json object", file.string());
+		return std::nullopt;
+	}
+	const auto spawn = root.find("PlayerSpawn");
+	if (spawn == root.end()) {
+		return std::nullopt;
+	}
+
+	const std::optional<MapChipIndex> position = ReadPosition(*spawn);
+	if (!position) {
+		szgWarning("MapChipField: \'{}\' \"PlayerSpawn\" has invalid \"Position\": {}", file.string(), spawn->dump());
+		return std::nullopt;
+	}
+	PlayerSpawnRecord record{ *position };
+	if (const auto direction = spawn->find("Direction"); direction != spawn->end()) {
+		const u8 bit = direction->is_string() ? ClayFace::FromName(direction->get<std::string>()) : ClayFace::None;
+		if (bit != ClayFace::None) {
+			record.direction = bit;
+		}
+		else {
+			szgWarning("MapChipField: \'{}\' \"PlayerSpawn\" has unknown \"Direction\" {} (+Z)", file.string(), direction->dump());
+		}
+	}
+	return record;
+}
+
+bool MapChipField::SaveStageJsonPlayerSpawn(const std::string& directory, const std::optional<PlayerSpawnRecord>& spawn) {
+	const std::filesystem::path file = StageJsonPath(directory);
+	nlohmann::json root = ReadStageJsonRoot(file);
+
+	if (spawn) {
+		nlohmann::json item = nlohmann::json::object();
+		item["Position"] = { spawn->position.x, spawn->position.y, spawn->position.z };
+		item["Direction"] = ClayFace::ToName(spawn->direction);
+		root["PlayerSpawn"] = std::move(item);
+	}
+	else {
+		root.erase("PlayerSpawn");
+	}
+	return WriteStageJsonRoot(file, root);
 }
 
 void MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY) {

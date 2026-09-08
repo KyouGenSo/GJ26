@@ -17,6 +17,7 @@ struct StageSnapshot {
 	std::vector<MapChipType> chips;
 	std::vector<u8> faces;
 	std::vector<u8> colors;
+	std::optional<PlayerSpawnRecord> playerSpawn;
 };
 
 /// <summary>
@@ -76,6 +77,21 @@ public:
 	u8 clay_color(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
+	/// プレイヤーの初期位置（未設定なら nullopt）
+	/// </summary>
+	const std::optional<PlayerSpawnRecord>& player_spawn() const noexcept { return playerSpawn; }
+
+	/// <summary>
+	/// プレイヤーの初期位置と向き（ClayFace のビット）を設定（範囲外は無視、セルの中身は変えない、Y は列の床に合わせる）
+	/// </summary>
+	void set_player_spawn(i32 x, i32 y, i32 z, u8 direction);
+
+	/// <summary>
+	/// プレイヤーの初期位置を未設定に戻す
+	/// </summary>
+	void clear_player_spawn();
+
+	/// <summary>
 	/// ステージを新規作成する（全セル Empty）
 	/// </summary>
 	void create_new(i32 width, i32 height, i32 depth);
@@ -126,6 +142,7 @@ public:
 
 private:
 	void push_undo();
+	void snap_player_spawn(); // 初期位置の Y を床に合わせる(列に空セルが無ければ解除)
 	void apply_snapshot(const struct StageSnapshot& snapshot);
 	void rebuild_chips(i32 newX, i32 newY, i32 newZ);
 	i32 flat_index(i32 x, i32 y, i32 z) const;
@@ -138,6 +155,7 @@ private:
 	std::vector<MapChipType> chips;
 	std::vector<u8> faces; // chips と同じ添字。粘土セルの伸ばせない面（ClayFace のビット）
 	std::vector<u8> colors; // chips と同じ添字。粘土セルの色番号（ClayColor の添字）
+	std::optional<PlayerSpawnRecord> playerSpawn;
 	i32 currentStageNumber{ 1 };
 	u32 changeVersion{ 0 };
 

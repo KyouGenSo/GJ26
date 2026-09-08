@@ -40,6 +40,8 @@ private:
 	MapChipType selectedChip{ MapChipType::Clay };
 	u8 selectedFaces{ ClayFace::None }; // 粘土を塗るときに付ける伸ばせない面
 	u8 selectedClayColor{ 0 }; // 粘土を塗るときの色番号(ClayColor の添字)
+	bool spawnTool{ false }; // プレイヤー初期位置ツールを選択中(チップは塗らない)
+	u8 spawnDirection{ ClayFace::PosZ }; // 初期位置を置くときの向き(ClayFace のビット)
 
 	i32 newWidth{ 8 };
 	i32 newHeight{ 2 };
