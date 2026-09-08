@@ -7,10 +7,10 @@
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 
-ColorRGB StageEditorScript::ChipColor(MapChipType type) {
+ColorRGB StageEditorScript::ChipColor(MapChipType type, u8 clayColor) {
 	switch (type) {
 	case MapChipType::Clay:
-		return ColorRGB{ 0.55f, 0.35f, 0.20f };
+		return ClayColor::Preview[clayColor];
 	case MapChipType::GoalPiece:
 		return CColorRGB::YELLOW;
 	case MapChipType::Goal:
@@ -87,7 +87,7 @@ void StageEditorScript::rebuild() {
 				Reference<szg::StaticMeshInstance> cube = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
 				cube->transform_mut().set_translate(MapChipField::to_world(x, y, z));
 				if (!cube->get_materials().empty()) {
-					cube->get_materials()[0].color = ChipColor(chip);
+					cube->get_materials()[0].color = ChipColor(chip, doc.clay_color(x, y, z));
 				}
 				if (chip == MapChipType::Clay) {
 					MapChipField::AttachFacePlates(*worldRoot, cube, doc.blocked_faces(x, y, z));

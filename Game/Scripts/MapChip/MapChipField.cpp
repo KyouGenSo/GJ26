@@ -14,6 +14,7 @@
 #include <Engine/Assets/CSV/CSVAssetBuilder.h>
 #include <Engine/Assets/IAssetBuilder.h>
 #include <Engine/Assets/PolygonMesh/PolygonMeshLibrary.h>
+#include <Engine/Assets/Texture/TextureLibrary.h>
 #include <Library/Math/ColorRGB.h>
 
 namespace {
@@ -91,6 +92,10 @@ void MapChipField::RegisterVisualAssets() {
 		szg::PolygonMeshLibrary::RegisterLoadQue(setting.assetPath);
 	}
 	szg::PolygonMeshLibrary::RegisterLoadQue(GOAL_ACTIVE_ASSET_PATH);
+	// 色 0 の clay.png は clay.obj の map_Kd で登録される。[[game]] タグだと Texture/ が挟まるので実パスで登録する
+	for (i32 i = 1; i < ClayColor::Count; ++i) {
+		szg::TextureLibrary::RegisterLoadQue(std::format("./Game/Assets/Models/clay/{}", ClayColor::Textures[i]));
+	}
 }
 
 bool MapChipField::load(const std::string& directory) {
@@ -117,6 +122,7 @@ bool MapChipField::load(const std::string& directory) {
 		clayOrigin.clear();
 		clayPiece.clear();
 		clayBlockedFaces.clear();
+		clayColor.clear();
 		return false;
 	}
 
@@ -150,16 +156,18 @@ bool MapChipField::load(const std::string& directory) {
 		}
 	}
 
-	// stage.json の塞がれた面。粘土でないセルの項目は無視
+	// stage.json の塞がれた面と色。粘土でないセルの項目は無視
 	clayBlockedFaces.assign(chips.size(), ClayFace::None);
+	clayColor.assign(chips.size(), 0);
 	i32 ignored = 0;
-	for (const ClayFaceRecord& record : LoadStageJsonClay(directory)) {
+	for (const ClayRecord& record : LoadStageJsonClay(directory)) {
 		const MapChipIndex& p = record.position;
 		if (!is_inside(p.x, p.y, p.z) || chips[flat_index(p.x, p.y, p.z)] != MapChipType::Clay) {
 			++ignored;
 			continue;
 		}
 		clayBlockedFaces[flat_index(p.x, p.y, p.z)] |= record.blockedFaces;
+		clayColor[flat_index(p.x, p.y, p.z)] = record.color;
 	}
 	szgWarningIf(ignored > 0, "MapChipField: {} Clay entries in \'{}/stage.json\' are not on a clay cell (ignored)", ignored, directory);
 	return true;
@@ -252,7 +260,7 @@ MapChipType MapChipField::get(i32 x, i32 y, i32 z) const {
 	return is_inside(x, y, z) ? chips[flat_index(x, y, z)] : MapChipType::Empty;
 }
 
-void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type) {
+void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type, u8 color) {
 	if (!is_inside(x, y, z)) {
 		return;
 	}
@@ -262,6 +270,7 @@ void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type) {
 	clayOrigin[i] = type == MapChipType::Clay ? i : -1;
 	clayPiece[i] = -1;
 	clayBlockedFaces[i] = ClayFace::None;
+	clayColor[i] = static_cast<u8>(type == MapChipType::Clay ? std::min<i32>(color, ClayColor::Count - 1) : 0);
 	++revision;
 	refresh_visual(i);
 }
@@ -274,13 +283,15 @@ void MapChipField::restore(const Cells& source) {
 	cancel_visual_interpolation();
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		if (chips[i] == source.chips[i] && clayOrigin[i] == source.clayOrigin[i] &&
-			clayPiece[i] == source.clayPiece[i] && clayBlockedFaces[i] == source.clayBlockedFaces[i]) {
+			clayPiece[i] == source.clayPiece[i] && clayBlockedFaces[i] == source.clayBlockedFaces[i] &&
+			clayColor[i] == source.clayColor[i]) {
 			continue;
 		}
 		chips[i] = source.chips[i];
 		clayOrigin[i] = source.clayOrigin[i];
 		clayPiece[i] = source.clayPiece[i];
 		clayBlockedFaces[i] = source.clayBlockedFaces[i];
+		clayColor[i] = source.clayColor[i];
 		refresh_visual(i);
 	}
 	++revision;
@@ -358,6 +369,7 @@ bool MapChipField::stretch_clay(
 	chips[target] = MapChipType::Clay;
 	clayOrigin[target] = root;
 	clayPiece[target] = clayPiece[source];
+	clayColor[target] = clayColor[source];
 	++revision;
 	refresh_visual(target);
 	begin_visual_interpolation(
@@ -387,10 +399,11 @@ bool MapChipField::move_goal_piece(
 		i32 origin;
 		i32 piece;
 		u8 faces;
+		u8 color;
 	};
 	std::vector<Moved> moved;
 	for (const i32 cell : cells) {
-		moved.push_back(Moved{ *shifted(cell, delta), chips[cell], clayOrigin[cell], clayPiece[cell], clayBlockedFaces[cell] });
+		moved.push_back(Moved{ *shifted(cell, delta), chips[cell], clayOrigin[cell], clayPiece[cell], clayBlockedFaces[cell], clayColor[cell] });
 	}
 
 	// 全部空けてからずらして置き直す(元セルと移動先の重なりを気にしなくてよい)
@@ -399,6 +412,7 @@ bool MapChipField::move_goal_piece(
 		clayOrigin[cell] = -1;
 		clayPiece[cell] = -1;
 		clayBlockedFaces[cell] = ClayFace::None;
+		clayColor[cell] = 0;
 		refresh_visual(cell);
 	}
 	for (const Moved& m : moved) {
@@ -406,6 +420,7 @@ bool MapChipField::move_goal_piece(
 		clayOrigin[m.target] = m.origin == -1 ? -1 : *shifted(m.origin, delta);
 		clayPiece[m.target] = m.piece == -1 ? -1 : *shifted(m.piece, delta);
 		clayBlockedFaces[m.target] = m.faces;
+		clayColor[m.target] = m.color;
 		refresh_visual(m.target);
 	}
 	++revision;
@@ -443,8 +458,12 @@ u8 MapChipField::blocked_faces(const MapChipIndex& index) const {
 	return root == -1 ? ClayFace::None : clayBlockedFaces[root];
 }
 
-std::vector<ClayFaceRecord> MapChipField::LoadStageJsonClay(const std::string& directory) {
-	std::vector<ClayFaceRecord> result;
+u8 MapChipField::clay_color(const MapChipIndex& index) const {
+	return is_inside(index.x, index.y, index.z) ? clayColor[flat_index(index.x, index.y, index.z)] : 0;
+}
+
+std::vector<ClayRecord> MapChipField::LoadStageJsonClay(const std::string& directory) {
+	std::vector<ClayRecord> result;
 	const std::filesystem::path file = StageJsonPath(directory);
 	std::ifstream ifs{ file };
 	if (!ifs) {
@@ -472,7 +491,7 @@ std::vector<ClayFaceRecord> MapChipField::LoadStageJsonClay(const std::string& d
 			szgWarning("MapChipField: \'{}\' Clay entry has invalid \"Position\": {}", file.string(), entry.dump());
 			continue;
 		}
-		ClayFaceRecord record{ { position->at(0).get<i32>(), position->at(1).get<i32>(), position->at(2).get<i32>() }, ClayFace::None };
+		ClayRecord record{ { position->at(0).get<i32>(), position->at(1).get<i32>(), position->at(2).get<i32>() }, ClayFace::None };
 		if (const auto faces = entry.find("BlockedFaces"); faces != entry.end() && faces->is_array()) {
 			for (const nlohmann::json& face : *faces) {
 				const u8 bit = face.is_string() ? ClayFace::FromName(face.get<std::string>()) : ClayFace::None;
@@ -480,12 +499,21 @@ std::vector<ClayFaceRecord> MapChipField::LoadStageJsonClay(const std::string& d
 				record.blockedFaces |= bit;
 			}
 		}
+		if (const auto color = entry.find("Color"); color != entry.end()) {
+			const i32 value = color->is_number_integer() ? color->get<i32>() : -1;
+			if (0 <= value && value < ClayColor::Count) {
+				record.color = static_cast<u8>(value);
+			}
+			else {
+				szgWarning("MapChipField: \'{}\' invalid \"Color\" {} (0..{})", file.string(), color->dump(), ClayColor::Count - 1);
+			}
+		}
 		result.push_back(record);
 	}
 	return result;
 }
 
-bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::vector<ClayFaceRecord>& records) {
+bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::vector<ClayRecord>& records) {
 	const std::filesystem::path file = StageJsonPath(directory);
 
 	// 他のキーを残すため既存を読む。壊れていれば作り直す
@@ -498,7 +526,7 @@ bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::ve
 	}
 
 	nlohmann::json clay = nlohmann::json::array();
-	for (const ClayFaceRecord& record : records) {
+	for (const ClayRecord& record : records) {
 		nlohmann::json names = nlohmann::json::array();
 		for (const ClayFace::Entry& entry : ClayFace::Table) {
 			if (record.blockedFaces & entry.bit) {
@@ -508,6 +536,7 @@ bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::ve
 		nlohmann::json item = nlohmann::json::object();
 		item["Position"] = { record.position.x, record.position.y, record.position.z };
 		item["BlockedFaces"] = std::move(names);
+		item["Color"] = static_cast<i32>(record.color);
 		clay.push_back(std::move(item));
 	}
 	root["Clay"] = std::move(clay);
@@ -680,6 +709,10 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		localPosition.y += setting->yOffset;
 	}
 	visual->transform_mut().set_translate(localPosition);
+	// 色付き粘土はインスタンス単位でテクスチャを差し替える(0 は clay.obj 既定の clay.png のまま)
+	if (chips[flat] == MapChipType::Clay && clayColor[flat] != 0 && !visual->get_materials().empty()) {
+		visual->get_materials()[0].texture = szg::TextureLibrary::GetTexture(ClayColor::Textures[clayColor[flat]]);
+	}
 	// 塞がれた面の板は元セルにだけ付ける
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {
 		AttachFacePlates(*worldRoot, visual, clayBlockedFaces[flat]);
