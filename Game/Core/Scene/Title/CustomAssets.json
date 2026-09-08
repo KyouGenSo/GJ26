@@ -4,11 +4,14 @@
 	"Font": [],
 	"Json": [],
 	"Mesh": [
-		".\\Game\\Assets\\Models\\skydome\\skydome.obj"
+		".\\Game\\Assets\\Models\\skydome\\skydome.obj",
+		".\\Game\\Assets\\Models\\title\\title.obj"
 	],
 	"Param": [],
 	"Particle": [],
 	"Shader": [],
 	"Skeleton": [],
-	"Texture": []
+	"Texture": [
+		".\\Game\\Assets\\textures\\ui\\titleA.png"
+	]
 }
