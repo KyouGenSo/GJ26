@@ -102,7 +102,7 @@ public:
 		const MapChipIndex& blockIndex,
 		const Vector3& playerDirection) const noexcept;
 
-	/// 判定に成功した場合だけGoalPieceを移動し、PlayerとGoalPieceの移動先を返す
+	/// 判定に成功した場合だけGoalPieceを移動し、PlayerとGoalPieceの移動先を返す(blockIndex は落下後の位置)
 	std::optional<BlockMoveDestination> try_move_goal_piece(
 		const Vector3& playerPosition,
 		const MapChipIndex& blockIndex,

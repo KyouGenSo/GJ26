@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <deque>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -228,9 +229,10 @@ public:
 	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から隣の空セル to へ 1 マス動かす(プレイヤーが掴んで押す・引く 1 歩分)。つながった粘土も一緒に動く</para>
 	/// <para>押す: to = ピースの向こう側のセル / 引く: プレイヤーが 1 歩下がった後に to = 元のプレイヤーのセル</para>
+	/// <para>動かした後、グループ全セルの下が空なら着地するまで落ちる(表示は横移動の補間が終わってから落ちる)</para>
 	/// </summary>
-	/// <returns>can_move_goal_piece が false のときは動かさず false</returns>
-	bool move_goal_piece(
+	/// <returns>着地後のピースの位置。can_move_goal_piece が false のときは動かさず nullopt</returns>
+	std::optional<MapChipIndex> move_goal_piece(
 		const MapChipIndex& from,
 		const MapChipIndex& to,
 		r32 visualMoveDuration = 0.0f);
@@ -304,10 +306,14 @@ private:
 	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
+	std::vector<i32> relocate_cells(const std::vector<i32>& cells, const MapChipIndex& delta); // cells を delta だけずらして置き直し、移動後の flat 一覧を返す(表示も更新)
+	struct VisualMove {
+		Vector3 offset;
+		r32 duration;
+	};
 	void begin_visual_interpolation(
 		const std::vector<i32>& targetCells,
-		const Vector3& moveOffset,
-		r32 duration);
+		const std::vector<VisualMove>& moves); // moves を順に再生する。表示は現在位置を最終位置として moves の合計分だけ戻した所から始まる
 	void cancel_visual_interpolation();
 	void refresh_visual(i32 flat, bool goalActive = false);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
@@ -327,9 +333,12 @@ private:
 		Vector3 startPosition{ CVector3::ZERO };
 		Vector3 targetPosition{ CVector3::ZERO };
 	};
-	std::vector<VisualInterpolation> visualInterpolations;
+	struct VisualInterpolationStep {
+		std::vector<VisualInterpolation> entries;
+		r32 duration{ 0.0f };
+	};
+	std::deque<VisualInterpolationStep> visualInterpolationSteps; // front が再生中
 	r32 visualInterpolationElapsed{ 0.0f };
-	r32 visualInterpolationDuration{ 0.0f };
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
 	u32 revision{ 0 };

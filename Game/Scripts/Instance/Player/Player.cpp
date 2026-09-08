@@ -480,8 +480,15 @@ void Player::update_gripped_block_movement() {
 		move->playerIndex.y,
 		move->playerIndex.z), moveDuration, *moveDirection);
 
-	// グリップ中のブロックのインデックスを更新する
-	context_.grippedBlockIndex = move->blockIndex;
+	// 落下したブロックはプレイヤーより下の段になるので、グリップ状態を解除する
+	if (move->blockIndex.y < context_.grippedBlockIndex->y) {
+		gripInputReady_ = false;
+		context_.input.gripPressed = false;
+		stateManager_.release_grip(context_);
+	}
+	else {
+		context_.grippedBlockIndex = move->blockIndex;
+	}
 	szgInformation(
 		"Player: moved grabbed GoalPiece. player=({}, {}, {}), block=({}, {}, {})",
 		move->playerIndex.x,

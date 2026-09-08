@@ -164,11 +164,17 @@ std::optional<BlockMoveDestination> BlockMovementJudge::try_move_goal_piece(
 		return std::nullopt;
 	}
 
-	const std::optional<BlockMoveDestination> move =
+	std::optional<BlockMoveDestination> move =
 		judge(playerPosition, blockIndex, playerDirection).destination(moveDirection);
-	if (!move || !field_->move_goal_piece(blockIndex, move->blockIndex, visualMoveDuration)) {
+	if (!move) {
 		return std::nullopt;
 	}
+	const std::optional<MapChipIndex> landed =
+		field_->move_goal_piece(blockIndex, move->blockIndex, visualMoveDuration);
+	if (!landed) {
+		return std::nullopt;
+	}
+	move->blockIndex = *landed;
 	return move;
 }
 
