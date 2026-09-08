@@ -10,6 +10,7 @@
 #include "Scripts/MapChip/MapChipField.h"
 
 class Player;
+class SoundPlayer;
 
 /// <summary>
 /// <para>ブロック操作(粘土を伸ばす / 接続 / ピースを押す・引く)の Undo</para>
@@ -24,6 +25,11 @@ public:
 
 public:
 	void setup(Reference<MapChipField> field_, Reference<Player> player_);
+
+	/// <summary>
+	/// 1 手戻せたときに鳴らす SE(無ければ無音)
+	/// </summary>
+	void set_sound(Reference<SoundPlayer> sound_);
 
 	/// <summary>
 	/// 入力で undo した後、このフレームの操作前の状態を控える
@@ -60,6 +66,7 @@ private:
 private:
 	Reference<MapChipField> field;
 	Reference<Player> player;
+	Reference<SoundPlayer> sound;
 	szg::InputHandler<szg::KeyID> keys;
 	szg::InputHandler<szg::PadID> pad;
 	bool triggerLPressed{ false }; // LT を押した瞬間を取るための前フレームの状態

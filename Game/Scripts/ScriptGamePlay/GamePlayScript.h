@@ -7,6 +7,7 @@
 #include <Library/Utility/Template/Reference.h>
 
 #include "Scripts/MapChip/MapChipField.h"
+#include "Scripts/Manager/SoundPlayer.h"
 
 namespace szg {
 class Rect3d;
@@ -31,6 +32,11 @@ public:
 
 public:
 	/// <summary>
+	/// GamePlayScene::custom_load_asset で呼ぶ。インゲームの BGM / SE を登録する
+	/// </summary>
+	static void RegisterAudioAssets();
+
+	/// <summary>
 	/// マップ、Player、追従カメラ、ゴール判定をセットアップする
 	/// </summary>
 	void setup(Reference<szg::WorldRoot> worldRoot);
@@ -44,6 +50,9 @@ public:
 
 private:
 	void setup_json_asset();
+
+	/// BGM / SE。Player と UndoManager が参照するので inGameScriptManager_ より先に宣言して後に破棄する
+	SoundPlayer sound_;
 
 	/// 登録順が各インゲームスクリプトの更新順になる
 	szg::SceneScriptManager inGameScriptManager_;
@@ -68,6 +77,9 @@ private:
 	bool clearCameraEffectStarted_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
+	/// ゴール出現 / クリアの立ち上がりで SE を鳴らすための前フレームの状態
+	bool wasGoalOpen_{ false };
+	bool wasCleared_{ false };
 
 	r32 clearCameraDuration_{ 1.4f };
 	r32 clearCameraDistance_{ 4.5f };

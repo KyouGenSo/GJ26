@@ -1,6 +1,7 @@
 #include "GamePlayScript.h"
 
 #include <algorithm>
+#include <array>
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/Json/JsonAsset.h>
@@ -28,8 +29,18 @@ namespace {
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
 constexpr r32 kResetHoldDurationSeconds = 1.0f;
 constexpr r32 kClayGlowWeightDefault = 0.3f;
+/// インゲームで使う音。BGM と移動音はループ、戻る音はシーン遷移をまたいで鳴らす
+constexpr std::array<string_literal, 14> kSounds{
+	"gameBgm.wav", "clearBgm.wav", "back.wav", "reset.wav", "undo.wav",
+	"move.wav", "jump.wav", "grab.wav", "cantGrab.wav",
+	"stretch.wav", "clayConnect.wav", "cantMove.wav", "goalConnect.wav", "goal.wav",
+};
 
 } // namespace
+
+void GamePlayScript::RegisterAudioAssets() {
+	SoundPlayer::RegisterLoadQue(kSounds);
+}
 
 void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	if (isSetup_) {
@@ -43,6 +54,8 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	setup_json_asset();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
 	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
+	sound_.initialize(kSounds);
+	sound_.play("gameBgm.wav");
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	mapTest_ = mapTest;
@@ -71,6 +84,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgWarning("GamePlayScript: Player runtime instance not found.");
 	}
 	player_->set_block_movement_judge(mapTest_->movement_judge_mut());
+	player_->set_sound(sound_);
 
 	std::unique_ptr<FollowCamera> followCamera;
 	if (cameraInstance && cameraFollowTargetInstance) {
@@ -93,6 +107,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	std::unique_ptr<UndoManager> undoManager = eps::CreateUnique<UndoManager>();
 	undoManager_ = undoManager;
 	undoManager_->setup(mapTest_->field_mut(), player_);
+	undoManager_->set_sound(sound_);
 	mapTest_->set_undo_manager(undoManager_);
 
 	std::unique_ptr<GoalManager> goalManager = eps::CreateUnique<GoalManager>();
@@ -172,15 +187,20 @@ void GamePlayScript::prev_update() {
 		padInput_.press_timer(szg::PadID::Start));
 	if (!sceneTransitionRequested_ && backHoldSeconds >= kBackHoldDurationSeconds) {
 		sceneTransitionRequested_ = true;
+		SoundPlayer::PlayAcrossScene("back.wav");
 
 		// ステージ選択画面へ遷移する
 		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
 		return;
 	}
 
-	// Yボタンが一定時間押され続けた場合、ステージを初期状態に戻す
+	// Yボタンが一定時間押され続けた場合、ステージを初期状態に戻す(押している間はリセット音が鳴る)
+	if (padInput_.trigger(szg::PadID::Y)) {
+		sound_.restart("reset.wav");
+	}
 	if (padInput_.release(szg::PadID::Y)) {
 		resetHoldConsumed_ = false;
+		sound_.stop("reset.wav");
 	}
 	if (!resetHoldConsumed_ && padInput_.press_timer(szg::PadID::Y) >= kResetHoldDurationSeconds) {
 		resetHoldConsumed_ = true;
@@ -226,6 +246,25 @@ void GamePlayScript::post_update() {
 	}
 
 	inGameScriptManager_.post_update();
+
+	// ゴール出現の立ち上がりで接続音とクリア可能 BGM、消えたら BGM だけ止める。クリアの立ち上がりでゴール音
+	if (goalManager_) {
+		const bool goalOpen = goalManager_->is_goal_open();
+		if (goalOpen && !wasGoalOpen_) {
+			sound_.restart("goalConnect.wav");
+			sound_.play("clearBgm.wav");
+		}
+		else if (!goalOpen && wasGoalOpen_) {
+			sound_.stop("clearBgm.wav");
+		}
+		wasGoalOpen_ = goalOpen;
+
+		const bool cleared = goalManager_->is_cleared();
+		if (cleared && !wasCleared_) {
+			sound_.restart("goal.wav");
+		}
+		wasCleared_ = cleared;
+	}
 
 	// 目の前の掴める対象(Grip 中は掴んでいるブロック)に輪郭を出す
 	if (player_) {
