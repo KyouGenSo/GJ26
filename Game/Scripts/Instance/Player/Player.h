@@ -115,8 +115,12 @@ private:
 	void setup_json_asset();
 	void update_animation();
 	const AnimationSetting& resolve_animation_setting(PlayerState state) const noexcept;
+	const AnimationSetting& resolve_grip_move_animation(BlockMoveDirection direction) const noexcept;
 	void update_gripped_block_movement();
-	void begin_grip_move_interpolation(const Vector3& targetPosition, float durationSeconds);
+	void begin_grip_move_interpolation(
+		const Vector3& targetPosition,
+		float durationSeconds,
+		BlockMoveDirection moveDirection);
 	void update_grip_move_interpolation() noexcept;
 	void update_mesh_direction(bool snap = false) noexcept;
 
@@ -125,13 +129,18 @@ private:
 	Reference<szg::SkinningMeshInstance> meshInstance_;
 	Reference<FollowCamera> followCamera_;
 	Reference<BlockMovementJudge> blockMovementJudge_;
-	std::optional<PlayerState> animationState_;
+	std::string activeAnimationKey_;
 	std::optional<GripMoveInterpolation> gripMoveInterpolation_;
+	std::optional<BlockMoveDirection> gripMoveAnimationDirection_;
 	std::string animationClipName_{ "アーマチュアアクション" };
 	AnimationSetting idleAnimation_{ "playerStand.gltf", true };
 	AnimationSetting moveAnimation_{ "playerWalk.gltf", true };
 	AnimationSetting jumpAnimation_{ "playerJump.gltf", false };
 	AnimationSetting gripAnimation_{ "playerGrab.gltf", true };
+	AnimationSetting pushAnimation_{ "playerPush.gltf", false };
+	AnimationSetting pullAnimation_{ "playerPull.gltf", false };
+	AnimationSetting pushLeftAnimation_{ "playerPush_left.gltf", false };
+	AnimationSetting pushRightAnimation_{ "playerPush_right.gltf", false };
 	bool gripInputReady_{ true };
 	bool gripMoveInputReady_{ true };
 	float meshTurnSpeed_{ 12.0f };
