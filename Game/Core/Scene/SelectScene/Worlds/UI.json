@@ -36,6 +36,7 @@
 			"Use runtime": true
 		},
 		{
+			"BlendMode": 0,
 			"Children": [],
 			"IsDraw": true,
 			"IsFlipY": false,
@@ -69,7 +70,7 @@
 				},
 				"LightingType": 0,
 				"Shininess": 50.0,
-				"Texture": "TakeCEngine_Logo.png",
+				"Texture": "arrowR.png",
 				"UV Transform": {
 					"Rotation": 0.0,
 					"Scale": {
@@ -95,6 +96,7 @@
 			"Use runtime": true
 		},
 		{
+			"BlendMode": 0,
 			"Children": [],
 			"IsDraw": true,
 			"IsFlipY": false,
@@ -128,7 +130,7 @@
 				},
 				"LightingType": 0,
 				"Shininess": 50.0,
-				"Texture": "TakeCEngine_Logo.png",
+				"Texture": "arrowL.png",
 				"UV Transform": {
 					"Rotation": 0.0,
 					"Scale": {
@@ -154,6 +156,7 @@
 			"Use runtime": true
 		},
 		{
+			"BlendMode": 0,
 			"Children": [],
 			"Color": {
 				"A": 1.0,
@@ -195,6 +198,7 @@
 			"Use runtime": true
 		},
 		{
+			"BlendMode": 0,
 			"Children": [],
 			"Color": {
 				"A": 1.0,

@@ -215,14 +215,26 @@ void MapTestScript::reset_player_position() {
 		return;
 	}
 
-	const std::optional<TemporaryPlayerSpawn> spawn = FindTemporaryPlayerSpawn(field);
-	if (!spawn) {
-		szgWarning("MapTestScript: temporary player spawn was not found.");
-		return;
+	// stage.json に初期位置があればそれ、無ければ盤面から推定する
+	Vector3 position{ CVector3::ZERO };
+	Vector3 direction{ CVector3::ZERO };
+	if (const std::optional<PlayerSpawnRecord>& spawn = field.player_spawn()) {
+		const MapChipIndex d = ClayFace::ToDirection(spawn->direction);
+		position = MapChipField::to_world(spawn->position.x, spawn->position.y, spawn->position.z);
+		direction = MapChipField::to_world(d.x, d.y, d.z);
+	}
+	else {
+		const std::optional<TemporaryPlayerSpawn> fallback = FindTemporaryPlayerSpawn(field);
+		if (!fallback) {
+			szgWarning("MapTestScript: temporary player spawn was not found.");
+			return;
+		}
+		position = fallback->position;
+		direction = fallback->direction;
 	}
 
-	player->get_world_instance_mut()->transform_mut().set_translate(spawn->position);
-	player->set_direction(spawn->direction);
+	player->get_world_instance_mut()->transform_mut().set_translate(position);
+	player->set_direction(direction);
 	if (Reference<FollowCamera> followCamera = player->get_follow_camera_mut()) {
 		followCamera->request_snap();
 	}

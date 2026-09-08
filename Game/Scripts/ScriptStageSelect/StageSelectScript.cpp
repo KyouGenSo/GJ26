@@ -36,6 +36,15 @@ r32 NearestEquivalentDegrees(r32 targetDegrees, r32 referenceDegrees) {
 		std::round((referenceDegrees - targetDegrees) / 360.0f) * 360.0f;
 }
 
+r32 SmoothStep(r32 value) {
+	const r32 t = std::clamp(value, 0.0f, 1.0f);
+	return t * t * (3.0f - 2.0f * t);
+}
+
+r32 Lerp(r32 from, r32 to, r32 t) {
+	return from + (to - from) * t;
+}
+
 } // namespace
 
 void StageSelectScript::setup(
@@ -52,9 +61,11 @@ void StageSelectScript::setup(
 	rightArrow = rightArrow_;
 	if (leftArrow) {
 		leftArrowBasePosition = leftArrow->transform_imm().get_translate();
+		leftArrowBaseScale = leftArrow->transform_imm().get_scale();
 	}
 	if (rightArrow) {
 		rightArrowBasePosition = rightArrow->transform_imm().get_translate();
+		rightArrowBaseScale = rightArrow->transform_imm().get_scale();
 	}
 
 	// 左右移動の入力を登録
@@ -158,6 +169,10 @@ void StageSelectScript::setup_json_asset() {
 	transitionDuration = parameter.get().value("TransitionDuration", nlohmann::json::object()).value("value", transitionDuration);
 	arrowAnimationPeriod = parameter.get().value("ArrowAnimationPeriod", nlohmann::json::object()).value("value", arrowAnimationPeriod);
 	arrowMoveAmplitude = parameter.get().value("ArrowMoveAmplitude", nlohmann::json::object()).value("value", arrowMoveAmplitude);
+	arrowReactionDuration = parameter.get().value("ArrowReactionDuration", nlohmann::json::object()).value("value", arrowReactionDuration);
+	arrowReactionDistance = parameter.get().value("ArrowReactionDistance", nlohmann::json::object()).value("value", arrowReactionDistance);
+	arrowReactionScale = parameter.get().value("ArrowReactionScale", nlohmann::json::object()).value("value", arrowReactionScale);
+	arrowReactionOvershoot = parameter.get().value("ArrowReactionOvershoot", nlohmann::json::object()).value("value", arrowReactionOvershoot);
 	previewFloatAnimationPeriod = parameter.get().value("PreviewFloatAnimationPeriod", nlohmann::json::object()).value("value", previewFloatAnimationPeriod);
 	previewFloatAmplitude = parameter.get().value("PreviewFloatAmplitude", nlohmann::json::object()).value("value", previewFloatAmplitude);
 	transitionRotationDegrees = parameter.get().value("TransitionRotationDegrees", nlohmann::json::object()).value("value", transitionRotationDegrees);
@@ -268,6 +283,8 @@ bool StageSelectScript::begin_transition(i32 step) {
 
 	transitionElapsed = 0.0f;
 	isTransitioning = true;
+	arrowReactionDirection = step < 0 ? -1 : 1;
+	arrowReactionElapsed = 0.0f;
 	update_selection_display();
 	return true;
 }
@@ -351,16 +368,63 @@ void StageSelectScript::update_arrow_animation(r32 deltaSeconds) {
 	const r32 period = std::max(arrowAnimationPeriod, 0.001f);
 	const r32 phase = arrowAnimationTime * (2.0f * std::numbers::pi_v<r32> / period);
 	const r32 offset = std::sin(phase) * arrowMoveAmplitude;
+	r32 reactionOffset = 0.0f;
+	r32 reactionScaleMultiplier = 1.0f;
+	if (arrowReactionDirection != 0) {
+		arrowReactionElapsed += deltaSeconds;
+		const r32 duration = std::max(arrowReactionDuration, 0.001f);
+		const r32 t = std::clamp(arrowReactionElapsed / duration, 0.0f, 1.0f);
+
+		// 素早く外側へ飛び出し、基準位置側へ少し跳ね返ってから戻る。
+		if (t < 0.35f) {
+			const r32 eased = SmoothStep(t / 0.35f);
+			reactionOffset = Lerp(0.0f, arrowReactionDistance, eased);
+			reactionScaleMultiplier = 1.0f + arrowReactionScale * eased;
+		}
+		else if (t < 0.7f) {
+			const r32 eased = SmoothStep((t - 0.35f) / 0.35f);
+			reactionOffset = Lerp(arrowReactionDistance, -arrowReactionOvershoot, eased);
+			reactionScaleMultiplier = Lerp(1.0f + arrowReactionScale, 1.0f - arrowReactionScale * 0.25f, eased);
+		}
+		else {
+			const r32 eased = SmoothStep((t - 0.7f) / 0.3f);
+			reactionOffset = Lerp(-arrowReactionOvershoot, 0.0f, eased);
+			reactionScaleMultiplier = Lerp(1.0f - arrowReactionScale * 0.25f, 1.0f, eased);
+		}
+
+		if (t >= 1.0f) {
+			arrowReactionDirection = 0;
+			arrowReactionElapsed = 0.0f;
+		}
+	}
 
 	if (leftArrow) {
 		Vector3 position = leftArrowBasePosition;
 		position.x -= offset;
+		const r32 scale = arrowReactionDirection < 0 ? reactionScaleMultiplier : 1.0f;
+		if (arrowReactionDirection < 0) {
+			position.x -= reactionOffset;
+		}
 		leftArrow->transform_mut().set_translate(position);
+		leftArrow->transform_mut().set_scale(Vector3{
+			leftArrowBaseScale.x * scale,
+			leftArrowBaseScale.y * scale,
+			leftArrowBaseScale.z * scale,
+		});
 	}
 	if (rightArrow) {
 		Vector3 position = rightArrowBasePosition;
 		position.x += offset;
+		const r32 scale = arrowReactionDirection > 0 ? reactionScaleMultiplier : 1.0f;
+		if (arrowReactionDirection > 0) {
+			position.x += reactionOffset;
+		}
 		rightArrow->transform_mut().set_translate(position);
+		rightArrow->transform_mut().set_scale(Vector3{
+			rightArrowBaseScale.x * scale,
+			rightArrowBaseScale.y * scale,
+			rightArrowBaseScale.z * scale,
+		});
 	}
 }
 

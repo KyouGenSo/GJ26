@@ -5,13 +5,20 @@
 #include <queue>
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Assets/Json/JsonAsset.h>
+#include <Engine/Loader/EmitterInstanceLoader.h>
+#include <Engine/Runtime/Particle/ParticlePool.h>
 #include <Library/Math/ColorRGB.h>
 
 #include "Scripts/Instance/Player/Player.h"
 
 namespace {
 
-constexpr r32 kLinkThickness = 0.2f;
+constexpr r32 kLinkThickness = 0.12f;
+// goalPiece.obj の星の中心(モデルローカル y ≈ 4.04)。モデルは 0.5 倍・底面基準で置かれる
+constexpr r32 kPieceStarLocalY = 4.04f;
+constexpr r32 kPieceModelScale = 0.5f;
+constexpr r32 kLinkY = kPieceStarLocalY * kPieceModelScale - 0.5f;
 
 } // namespace
 
@@ -19,6 +26,12 @@ void GoalManager::setup(Reference<MapChipField> field_, Reference<szg::WorldRoot
 	field = field_;
 	worldRoot = worldRoot_;
 	goalEffect.setup(field, worldRoot);
+
+	szg::JsonAsset particle{ "[[game]]/GoalPieceEffect.particle" };
+	pieceEmitterSettings = szg::EmitterInstanceLoader::Load(particle.cget());
+	if (!pieceEmitterSettings) {
+		szgWarning("GoalManager: GoalPieceEffect.particle could not be loaded.");
+	}
 }
 
 void GoalManager::set_player(Reference<const Player> player_) {
@@ -26,6 +39,7 @@ void GoalManager::set_player(Reference<const Player> player_) {
 }
 
 void GoalManager::finalize() {
+	destroy_piece_emitters();
 	goalEffect.finalize();
 }
 
@@ -33,7 +47,15 @@ void GoalManager::post_update() {
 	if (!field) {
 		return;
 	}
+	// 動き始めたフレームで表示を消し、表示モデルの移動が終わってから再判定する
 	if (field->version() != lastVersion) {
+		lastVersion = field->version();
+		destroy_links();
+		destroy_piece_emitters();
+		rebuildPending = true;
+	}
+	if (rebuildPending && !field->is_visual_interpolating()) {
+		rebuildPending = false;
 		rebuild();
 	}
 	goalEffect.update();
@@ -48,14 +70,8 @@ void GoalManager::post_update() {
 }
 
 void GoalManager::rebuild() {
-	lastVersion = field->version();
-
-	for (auto& link : links) {
-		if (link) {
-			link->destroy_self();
-		}
-	}
-	links.clear();
+	destroy_links();
+	destroy_piece_emitters();
 
 	const std::vector<MapChipIndex> pieces = field->find_all(MapChipType::GoalPiece);
 	std::vector<std::vector<size_t>> adjacency(pieces.size());
@@ -67,6 +83,11 @@ void GoalManager::rebuild() {
 			adjacency[i].emplace_back(j);
 			adjacency[j].emplace_back(i);
 			create_link(pieces[i], pieces[j]);
+		}
+	}
+	for (size_t i = 0; i < pieces.size(); ++i) {
+		if (!adjacency[i].empty()) {
+			create_piece_emitter(pieces[i]);
 		}
 	}
 
@@ -130,7 +151,7 @@ void GoalManager::create_link(const MapChipIndex& a, const MapChipIndex& b) {
 
 	// 並んでいる軸方向だけ長い直方体
 	Reference<szg::StaticMeshInstance> link = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
-	link->transform_mut().set_translate((from + to) * 0.5f);
+	link->transform_mut().set_translate((from + to) * 0.5f + Vector3{ 0.0f, kLinkY, 0.0f });
 	link->transform_mut().set_scale(Vector3{
 		std::max(std::abs(diff.x), kLinkThickness),
 		kLinkThickness,
@@ -140,4 +161,60 @@ void GoalManager::create_link(const MapChipIndex& a, const MapChipIndex& b) {
 		link->get_materials()[0].color = CColorRGB::YELLOW;
 	}
 	links.emplace_back(link);
+}
+
+void GoalManager::destroy_links() {
+	for (auto& link : links) {
+		if (link) {
+			link->destroy_self();
+		}
+	}
+	links.clear();
+}
+
+void GoalManager::create_piece_emitter(const MapChipIndex& index) {
+	Reference<szg::StaticMeshInstance> visual = field ? field->visual_mut(index) : nullptr;
+	if (!worldRoot || !visual || !pieceEmitterSettings) {
+		return;
+	}
+
+	Reference<szg::EmitterInstance> emitter = worldRoot->instantiate<szg::EmitterInstance>(visual);
+	emitter->setup_settings(*pieceEmitterSettings);
+	Reference<szg::ParticlePool> pool = worldRoot->create_particle_pool(
+		emitter,
+		pieceEmitterSettings->capacity == 0 ? 1 : pieceEmitterSettings->capacity,
+		pieceEmitterSettings->overflowPolicy);
+	emitter->setup_pool(pool);
+	if (pool) {
+		pool->setup_draw_spec(pieceEmitterSettings->drawSpec);
+		pool->setup_updaters(
+			szg::EmitterInstance::BuildUpdaterMask(*pieceEmitterSettings),
+			pieceEmitterSettings->rotation.rotationKind);
+	}
+
+	// 親モデルの縮小を打ち消してワールド等倍で放出する
+	const r32 inverseScale = 1.0f / kPieceModelScale;
+	emitter->transform_mut().set_translate(Vector3{ 0.0f, kPieceStarLocalY, 0.0f });
+	emitter->transform_mut().set_scale(Vector3{ inverseScale, inverseScale, inverseScale });
+	emitter->update_affine();
+	emitter->restart_schedule();
+	emitter->set_active(true);
+	pieceEmitters.emplace_back(emitter);
+}
+
+void GoalManager::destroy_piece_emitters() {
+	for (auto& emitter : pieceEmitters) {
+		if (!emitter) {
+			continue;
+		}
+		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
+			pool->clear();
+		}
+		// 親のピースが残る場合に children へ無効参照を残さないよう先に外す
+		emitter->reparent(nullptr, true);
+		if (!emitter->is_marked_destroy()) {
+			emitter->destroy_self();
+		}
+	}
+	pieceEmitters.clear();
 }

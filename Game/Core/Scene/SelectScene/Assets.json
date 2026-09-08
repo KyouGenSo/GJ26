@@ -5,15 +5,13 @@
 		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
 	],
 	"Json": [],
-	"Mesh": [
-		".\\Game\\Assets\\Models\\Cube.obj"
-	],
+	"Mesh": [],
 	"Param": [],
 	"Particle": [],
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": [
-		".\\Game\\Assets\\Models\\TakeCEngine_Logo.png",
-		".\\Game\\Assets\\Models\\floor\\floor.png"
+		".\\Game\\Assets\\textures\\ui\\arrowR.png",
+		".\\Game\\Assets\\textures\\ui\\arrowL.png"
 	]
 }

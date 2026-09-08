@@ -116,6 +116,8 @@ private:
 	Reference<szg::Rect3d> rightArrow;
 	Vector3 leftArrowBasePosition{ CVector3::ZERO };
 	Vector3 rightArrowBasePosition{ CVector3::ZERO };
+	Vector3 leftArrowBaseScale{ CVector3::ONE };
+	Vector3 rightArrowBaseScale{ CVector3::ONE };
 	// 選択中のステージ番号の保存と復元に使う
 	szg::InputHandler<szg::KeyID> keys;
 	// ステージ決定入力
@@ -131,7 +133,9 @@ private:
 	i32 previousStickDirection{ 0 };
 	r32 transitionElapsed{ 0.0f };
 	r32 arrowAnimationTime{ 0.0f };
+	r32 arrowReactionElapsed{ 0.0f };
 	r32 previewFloatAnimationTime{ 0.0f };
+	i32 arrowReactionDirection{ 0 };
 	bool isTransitioning{ false };
 	bool sceneTransitionRequested{ false };
 
@@ -160,6 +164,14 @@ private:
 	r32 arrowAnimationPeriod = 1.0f;
 	// 矢印が基準位置から動く最大距離
 	r32 arrowMoveAmplitude = 0.12f;
+	// 入力した方向の矢印が反応する時間(秒)
+	r32 arrowReactionDuration = 0.18f;
+	// 入力した方向へ矢印が飛び出す距離
+	r32 arrowReactionDistance = 0.25f;
+	// 入力時の矢印の最大拡大量(0.15なら1.15倍)
+	r32 arrowReactionScale = 0.15f;
+	// 飛び出した矢印が基準位置側へ跳ね返る距離
+	r32 arrowReactionOvershoot = 0.04f;
 	// ミニチュアモデルが上下に1往復する時間(秒)
 	r32 previewFloatAnimationPeriod = 1.8f;
 	// ミニチュアモデルが基準位置から上下に動く最大距離

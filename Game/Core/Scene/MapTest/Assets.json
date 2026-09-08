@@ -10,7 +10,8 @@
 		".\\Game\\Assets\\param\\GoalEffect.param"
 	],
 	"Particle": [
-		".\\Game\\Assets\\particle\\GoalEffect.particle"
+		".\\Game\\Assets\\particle\\GoalEffect.particle",
+		".\\Game\\Assets\\particle\\GoalPieceEffect.particle"
 	],
 	"Shader": [],
 	"Skeleton": [],
