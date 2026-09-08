@@ -43,6 +43,21 @@ const std::array<ChipVisualSetting, 3> CHIP_VISUAL_SETTINGS{ {
 constexpr const char* GOAL_ACTIVE_ASSET_PATH = "[[game]]/goal/goal.obj";
 constexpr const char* GOAL_ACTIVE_MESH_NAME = "goal.obj";
 
+/// <summary>
+/// 掴める対象の輪郭メッシュ(make_outline_meshes.py で生成した面反転版)。center は元メッシュの bbox 中心(拡大の基準)
+/// </summary>
+struct OutlineMeshSetting {
+	const char* meshName;
+	const char* outlineMeshName;
+	const char* assetPath;
+	Vector3 center;
+};
+
+const std::array<OutlineMeshSetting, 2> OUTLINE_MESH_SETTINGS{ {
+	{ "clay.obj", "clay_outline.obj", "[[game]]/clay/clay_outline.obj", Vector3{ 0.0f, 1.02f, 0.0f } },
+	{ "goalPiece.obj", "goalPiece_outline.obj", "[[game]]/goalPiece/goalPiece_outline.obj", Vector3{ 0.0f, 2.36f, 0.08f } },
+} };
+
 // 動かせなかった通知の演出
 constexpr r32 WARN_DURATION = 0.5f;
 constexpr r32 WARN_BLINK_PERIOD = 0.1f;
@@ -137,6 +152,9 @@ void MapChipField::RegisterVisualAssets() {
 	for (const ChipVisualSetting& setting : CHIP_VISUAL_SETTINGS) {
 		szg::PolygonMeshLibrary::RegisterLoadQue(setting.assetPath);
 	}
+	for (const OutlineMeshSetting& setting : OUTLINE_MESH_SETTINGS) {
+		szg::PolygonMeshLibrary::RegisterLoadQue(setting.assetPath);
+	}
 	// 色 0 の clay.png は clay.obj の map_Kd で登録される。[[game]] タグだと Texture/ が挟まるので実パスで登録する
 	for (i32 i = 1; i < ClayColor::Count; ++i) {
 		szg::TextureLibrary::RegisterLoadQue(std::format("./Game/Assets/Models/clay/{}", ClayColor::Textures[i]));
@@ -151,6 +169,7 @@ void MapChipField::RegisterVisualAssets() {
 
 bool MapChipField::load(const std::string& directory) {
 	destroy_root();
+	highlightFlat.reset();
 	++revision;
 
 	std::vector<szg::CSVAsset<i32>> layers;
@@ -289,6 +308,7 @@ void MapChipField::destroy_root() {
 	visuals.clear();
 	faceCrosses.clear();
 	warnings.clear();
+	highlight.reset();
 }
 
 void MapChipField::warn_blocked_face(const MapChipIndex& index, const MapChipIndex& direction) {
@@ -936,6 +956,62 @@ bool MapChipField::has_connected_clay(i32 piece) const {
 	return false;
 }
 
+Reference<szg::StaticMeshInstance> MapChipField::AttachOutline(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const HighlightStyle& style) {
+	if (!visual) {
+		return nullptr;
+	}
+	const auto setting = std::find_if(
+		OUTLINE_MESH_SETTINGS.begin(),
+		OUTLINE_MESH_SETTINGS.end(),
+		[&visual](const OutlineMeshSetting& entry) { return visual->key_id() == entry.meshName; });
+	if (setting == OUTLINE_MESH_SETTINGS.end()) {
+		return nullptr;
+	}
+	Reference<szg::StaticMeshInstance> outline = worldRoot_.instantiate<szg::StaticMeshInstance>(visual, setting->outlineMeshName);
+	// bbox 中心を基準に拡大する(原点は底面なので、そのまま拡大すると上にだけ厚くなる)
+	const r32 scale = 1.0f + style.thickness;
+	outline->transform_mut().set_scale(Vector3{ scale, scale, scale });
+	outline->transform_mut().set_translate(setting->center * (1.0f - scale));
+	for (auto& material : outline->get_materials()) {
+		material.color = style.color;
+		material.lightingType = szg::LighingType::None;
+	}
+	return outline;
+}
+
+void MapChipField::set_highlight(const std::optional<MapChipIndex>& index) {
+	if (index && is_inside(index->x, index->y, index->z)) {
+		set_highlight_flat(flat_index(index->x, index->y, index->z));
+	}
+	else {
+		set_highlight_flat(std::nullopt);
+	}
+}
+
+void MapChipField::set_highlight_flat(std::optional<i32> flat) {
+	if (flat == highlightFlat) {
+		return;
+	}
+	if (highlight) {
+		highlight->reparent(nullptr, true);
+		highlight->destroy_self();
+		highlight.reset();
+	}
+	highlightFlat = flat;
+	if (flat && !visuals.empty() && visuals[*flat]) {
+		highlight = AttachOutline(*worldRoot, visuals[*flat], highlightStyle);
+	}
+}
+
+void MapChipField::set_highlight_style(const HighlightStyle& style) {
+	highlightStyle = style;
+	if (highlight) {
+		const std::optional<i32> keep = highlightFlat;
+		set_highlight_flat(std::nullopt);
+		set_highlight_flat(keep);
+	}
+}
+
 Reference<szg::StaticMeshInstance> MapChipField::visual_mut(const MapChipIndex& index) {
 	if (visuals.empty() || !is_inside(index.x, index.y, index.z)) {
 		return nullptr;
@@ -1050,6 +1126,9 @@ void MapChipField::refresh_visual(i32 flat) {
 		visuals[flat]->reparent(nullptr, true);
 		visuals[flat]->destroy_self();
 		visuals[flat].reset();
+		if (highlightFlat == flat) {
+			highlight.reset();
+		}
 	}
 	// 表示(と子の cross)は消えるので、そのセルの演出は参照を捨てる(復元は不要)
 	faceCrosses[flat] = {};
@@ -1096,6 +1175,9 @@ void MapChipField::refresh_visual(i32 flat) {
 		(chips[flat] == MapChipType::GoalPiece && has_connected_clay(flat));
 	if (glow) {
 		AttachGlow(*worldRoot, visual);
+	}
+	if (highlightFlat == flat) {
+		highlight = AttachOutline(*worldRoot, visual, highlightStyle);
 	}
 	// 塞がれた面のバツ印は元セルにだけ付ける(clay.obj ローカルは半幅 1・底面 0)
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {

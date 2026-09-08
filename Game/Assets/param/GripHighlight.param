@@ -1,0 +1,18 @@
+{
+	"ColorR": {
+		"type": "R32",
+		"value": 1.0
+	},
+	"ColorG": {
+		"type": "R32",
+		"value": 0.9
+	},
+	"ColorB": {
+		"type": "R32",
+		"value": 0.2
+	},
+	"Thickness": {
+		"type": "R32",
+		"value": 0.06
+	}
+}
