@@ -149,6 +149,29 @@ bool MapChipField::load(const std::string& directory) {
 		}
 	}
 
+	// ゴール条件オブジェクトは 2 セル高。最上層にあれば 1 層足してから、真上のセルを上段として塞ぐ
+	const i32 layerSize = sizeX * sizeZ;
+	for (i32 i = layerSize * (sizeY - 1); i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == MapChipType::GoalPiece) {
+			chips.insert(chips.end(), static_cast<size_t>(layerSize), MapChipType::Empty);
+			++sizeY;
+			break;
+		}
+	}
+	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] != MapChipType::GoalPiece) {
+			continue;
+		}
+		const i32 upper = i + layerSize;
+		if (chips[upper] == MapChipType::Empty) {
+			chips[upper] = MapChipType::GoalPieceUpper;
+		}
+		else {
+			const MapChipIndex p = unflatten(i);
+			szgWarning("MapChipField: cell above GoalPiece ({}, {}, {}) in \'{}\' is not empty (piece occupies 1 cell)", p.x, p.y, p.z, directory);
+		}
+	}
+
 	// CSV の粘土はそれぞれ独立した未接続のブロック
 	clayOrigin.assign(chips.size(), -1);
 	clayPiece.assign(chips.size(), -1);
@@ -363,15 +386,16 @@ bool MapChipField::stretch_clay(
 	}
 
 	const i32 target = flat_index(to.x, to.y, to.z);
-	if (chips[target] == MapChipType::GoalPiece) {
-		// 伸ばす先がゴール条件オブジェクトなら伸びずにブロック全体がつながる(1 ブロックにつき 1 つ)
+	if (chips[target] == MapChipType::GoalPiece || chips[target] == MapChipType::GoalPieceUpper) {
+		// 伸ばす先がゴール条件オブジェクト(上段でも可)なら伸びずにブロック全体がつながる(1 ブロックにつき 1 つ)。つながり先は下段のセル
 		if (clayPiece[source] != -1) {
 			return false;
 		}
+		const i32 piece = chips[target] == MapChipType::GoalPiece ? target : *shifted(target, MapChipIndex{ 0, -1, 0 });
 		cancel_visual_interpolation();
 		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 			if (chips[i] == MapChipType::Clay && clayOrigin[i] == root) {
-				clayPiece[i] = target;
+				clayPiece[i] = piece;
 				refresh_visual(i);
 			}
 		}
@@ -690,9 +714,13 @@ std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapC
 		return {};
 	}
 
-	// ピースと、それにつながった粘土の全セル
+	// ピース(下段と上段)と、それにつながった粘土の全セル
 	const i32 piece = flat_index(from.x, from.y, from.z);
 	std::vector<i32> cells{ piece };
+	if (const std::optional<i32> upper = shifted(piece, MapChipIndex{ 0, 1, 0 });
+		upper && chips[*upper] == MapChipType::GoalPieceUpper) {
+		cells.emplace_back(*upper);
+	}
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		if (chips[i] == MapChipType::Clay && clayPiece[i] == piece) {
 			cells.emplace_back(i);
@@ -724,7 +752,8 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		visuals[flat].reset();
 	}
 
-	if (chips[flat] == MapChipType::Empty || !root) {
+	// 上段はピースのモデル(下段)に含まれるので表示を持たない
+	if (chips[flat] == MapChipType::Empty || chips[flat] == MapChipType::GoalPieceUpper || !root) {
 		return;
 	}
 

@@ -79,7 +79,7 @@ public:
 	/// <param name="field"></param>
 	void set_field(Reference<MapChipField> field) noexcept;
 
-	/// プレイヤーの現在マスに隣接する、向いている方向のブロックを取得
+	/// プレイヤーの現在マスに隣接する、向いている方向のブロックを取得(ゴール条件オブジェクトの上段なら下段の index)
 	std::optional<MapChipIndex> find_grip_target(
 		const Vector3& playerPosition,
 		const Vector3& playerDirection) const noexcept;
@@ -91,7 +91,7 @@ public:
 	bool is_goal_piece(const MapChipIndex& index) const noexcept;
 
 	/// <summary>
-	/// <para>ワールド座標のAABB [min, max] と重なるセルに固体(粘土・ゴール条件オブジェクト)があるか</para>
+	/// <para>ワールド座標のAABB [min, max] と重なるセルに固体(粘土・ゴール条件オブジェクトの下段と上段)があるか</para>
 	/// <para>ステージのXZ範囲外は固体(見えない壁)。Yの範囲外はEmpty(上へは飛べる。下は地面が受ける)</para>
 	/// </summary>
 	bool overlaps_solid(const Vector3& min, const Vector3& max) const noexcept;

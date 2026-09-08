@@ -22,6 +22,7 @@ enum class MapChipType : i32 {
 	Clay = 1,      // 粘土
 	GoalPiece = 2, // ゴール条件オブジェクト
 	Goal = 3,      // ゴール
+	GoalPieceUpper = 4, // ゴール条件オブジェクトの上段(CSV には書かず、load が GoalPiece の真上へ補完する)
 };
 
 /// <summary>
@@ -128,6 +129,7 @@ struct ClayRecord {
 /// <para>3Dマップチップ</para>
 /// <para>CSV : layer01.csv, layer02.csv, ... の N 番目が y=N-1、行=z(1行目が z=0)、列=x(左→右が +X)</para>
 /// <para>チップ(x,y,z)はワールド座標(x,y,z)を中心とする 1x1x1 の立方体</para>
+/// <para>ゴール条件オブジェクトは 2 セル高。真上のセルは GoalPieceUpper として塞がり、ピースと一緒に動く</para>
 /// <para>立方体は root_mut()(ステージ中央の空 WorldInstance)の子。全体の縮小・移動は root の transform で行う(to_world / to_index は root が単位のときのグリッド配置)</para>
 /// </summary>
 class MapChipField {
@@ -180,7 +182,7 @@ public:
 	MapChipType get(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
-	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと全面開放の新しいブロック扱い。color は粘土のときだけ有効
+	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと全面開放の新しいブロック扱い。color は粘土のときだけ有効。GoalPiece を置いても上段は補完しない
 	/// </summary>
 	void set(i32 x, i32 y, i32 z, MapChipType type, u8 color = 0);
 
