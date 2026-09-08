@@ -158,14 +158,15 @@ std::optional<BlockMoveDestination> BlockMovementJudge::try_move_goal_piece(
 	const Vector3& playerPosition,
 	const MapChipIndex& blockIndex,
 	const Vector3& playerDirection,
-	BlockMoveDirection moveDirection) {
+	BlockMoveDirection moveDirection,
+	r32 visualMoveDuration) {
 	if (!field_) {
 		return std::nullopt;
 	}
 
 	const std::optional<BlockMoveDestination> move =
 		judge(playerPosition, blockIndex, playerDirection).destination(moveDirection);
-	if (!move || !field_->move_goal_piece(blockIndex, move->blockIndex)) {
+	if (!move || !field_->move_goal_piece(blockIndex, move->blockIndex, visualMoveDuration)) {
 		return std::nullopt;
 	}
 	return move;
@@ -178,7 +179,8 @@ std::optional<ClayDeformationResult> BlockMovementJudge::try_deform_clay(
 	const Vector3& playerPosition,
 	const MapChipIndex& clayIndex,
 	const Vector3& playerDirection,
-	BlockMoveDirection moveDirection) {
+	BlockMoveDirection moveDirection,
+	r32 visualMoveDuration) {
 	if (!field_ || !is_clay(clayIndex)) {
 		return std::nullopt;
 	}
@@ -202,7 +204,7 @@ std::optional<ClayDeformationResult> BlockMovementJudge::try_deform_clay(
 	}
 
 	const MapChipType clayDestination = field_->get(clayTo.x, clayTo.y, clayTo.z);
-	if (!field_->stretch_clay(clayIndex, clayTo)) {
+	if (!field_->stretch_clay(clayIndex, clayTo, visualMoveDuration)) {
 		return std::nullopt;
 	}
 	return ClayDeformationResult{

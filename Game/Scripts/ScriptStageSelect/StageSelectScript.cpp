@@ -6,6 +6,7 @@
 #include <numbers>
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Assets/Texture/TextureLibrary.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
@@ -27,6 +28,8 @@
 #include "Scripts/Scene/FactoryGJ26.h"
 
 namespace {
+
+constexpr r32 kFloorTextureGridSize = 5.0f;
 
 r32 NearestEquivalentDegrees(r32 targetDegrees, r32 referenceDegrees) {
 	return targetDegrees +
@@ -187,20 +190,25 @@ bool StageSelectScript::build_preview(Preview& preview, i64 carouselIndex, i32 r
 	}
 
 	// MapChipの最下層直下に、ステージと同じ親Transformで動く床を置く。
-	Reference<szg::StaticMeshInstance> floor =
+	Reference<szg::StaticMeshInstance> ground =
 		worldRoot->instantiate<szg::StaticMeshInstance>(root, "Cube.obj");
-	floor->transform_mut().set_scale(Vector3{
+	ground->transform_mut().set_scale(Vector3{
 		static_cast<r32>(preview.field.width()),
 		floorThickness,
 		static_cast<r32>(preview.field.depth()),
 	});
-	floor->transform_mut().set_translate(Vector3{
+	ground->transform_mut().set_translate(Vector3{
 		0.0f,
 		-preview.field.center().y - (0.5f + floorThickness * 0.5f),
 		0.0f,
 	});
-	if (!floor->get_materials().empty()) {
-		floor->get_materials()[0].color = ColorRGB{ 0.3f, 0.3f, 0.3f };
+	if (!ground->get_materials().empty()) {
+		ground->get_materials()[0].color = ColorRGB{ 0.3f, 0.3f, 0.3f };
+		ground->get_materials()[0].texture = szg::TextureLibrary::GetTexture("floor.png");
+		ground->get_materials()[0].uvTransform.set_scale(Vector2{
+			static_cast<r32>(preview.field.depth()) / kFloorTextureGridSize,
+			static_cast<r32>(preview.field.width()) / kFloorTextureGridSize,
+		});
 	}
 
 	preview.stageNumber = stageNumber;

@@ -79,6 +79,7 @@ void UndoManager::apply(const Snapshot& snapshot) {
 	if (!player) {
 		return;
 	}
+	player->cancel_grip_move_interpolation();
 	if (Reference<szg::WorldInstance> instance = player->get_world_instance_mut()) {
 		instance->transform_mut().set_translate(snapshot.playerPosition);
 	}

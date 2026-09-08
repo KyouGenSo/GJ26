@@ -15,6 +15,7 @@ GamePlayScene::~GamePlayScene() noexcept = default;
 
 void GamePlayScene::custom_load_asset() {
 	MapChipField::RegisterVisualAssets();
+	
 }
 
 void GamePlayScene::custom_setup() {

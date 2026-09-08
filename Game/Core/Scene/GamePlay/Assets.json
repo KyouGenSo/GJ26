@@ -1,19 +1,18 @@
 {
 	"Animation": [
-		".\\Game\\Assets\\Models\\player\\playerStand.gltf",
-		".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
-        ".\\Game\\Assets\\Models\\player\\playerJump.gltf",
-        ".\\Game\\Assets\\Models\\player\\playerGrab.gltf"
+	  	".\\Game\\Assets\\Models\\player\\playerStand.gltf",
+     	".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
+    	".\\Game\\Assets\\Models\\player\\playerJump.gltf",
+    	".\\Game\\Assets\\Models\\player\\playerGrab.gltf"
 	],
 	"Audio": [],
 	"Font": [],
 	"Json": [],
 	"Mesh": [
-		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
+		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
+		".\\Game\\Assets\\Models\\Cube.obj"
 	],
-	"Param": [
-		".\\Game\\Assets\\param\\GoalEffect.param"
-	],
+	"Param": [],
 	"Particle": [
 		".\\Game\\Assets\\particle\\GoalEffect.particle"
 	],

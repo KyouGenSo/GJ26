@@ -72,6 +72,8 @@ public:
 	const std::optional<BlockMoveResult>& get_block_move_result() const noexcept;
 	/// 掴んだブロックを指定方向へ移動できるか
 	bool can_move_gripped_block(BlockMoveDirection direction) const noexcept;
+	/// Grip中の1マス移動補間を破棄する（Undo・ステージ再読込用）
+	void cancel_grip_move_interpolation() noexcept;
 
 public:
 
@@ -103,11 +105,19 @@ private:
 		std::string fileName;
 		bool isLoop{ false };
 	};
+	struct GripMoveInterpolation {
+		Vector3 startPosition{ CVector3::ZERO };
+		Vector3 targetPosition{ CVector3::ZERO };
+		float elapsedSeconds{ 0.0f };
+		float durationSeconds{ 0.0f };
+	};
 
 	void setup_json_asset();
 	void update_animation();
 	const AnimationSetting& resolve_animation_setting(PlayerState state) const noexcept;
 	void update_gripped_block_movement();
+	void begin_grip_move_interpolation(const Vector3& targetPosition, float durationSeconds);
+	void update_grip_move_interpolation() noexcept;
 	void update_mesh_direction(bool snap = false) noexcept;
 
 private:
@@ -116,6 +126,7 @@ private:
 	Reference<FollowCamera> followCamera_;
 	Reference<BlockMovementJudge> blockMovementJudge_;
 	std::optional<PlayerState> animationState_;
+	std::optional<GripMoveInterpolation> gripMoveInterpolation_;
 	std::string animationClipName_{ "アーマチュアアクション" };
 	AnimationSetting idleAnimation_{ "playerStand.gltf", true };
 	AnimationSetting moveAnimation_{ "playerWalk.gltf", true };

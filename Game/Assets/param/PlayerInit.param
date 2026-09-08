@@ -18,5 +18,9 @@
 	"GripAnimationFile": {
 		"type": "String",
 		"value": "playerGrab.gltf"
+	},
+	"GripMoveSpeed": {
+		"type": "R32",
+		"value": 2.5
 	}
 }

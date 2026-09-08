@@ -77,6 +77,7 @@ void Player::finalize() {
 	followCamera_.reset();
 	blockMovementJudge_.reset();
 	animationState_.reset();
+	gripMoveInterpolation_.reset();
 	gripInputReady_ = true;
 	gripMoveInputReady_ = true;
 }
@@ -104,18 +105,25 @@ void Player::prev_update() {
 		context_.moveRight = { 1.0f, 0.0f, 0.0f };
 	}
 
-	if (blockMovementJudge_ && context_.worldInstance && !context_.grippedBlockIndex) {
+	if (!gripMoveInterpolation_ && blockMovementJudge_ && context_.worldInstance && !context_.grippedBlockIndex) {
 		context_.gripTargetIndex = blockMovementJudge_->find_grip_target(
 			context_.worldInstance->world_position(), context_.direction);
 	}
-	stateManager_.update(context_);
-	update_gripped_block_movement();
+	if (gripMoveInterpolation_) {
+		update_grip_move_interpolation();
+	}
+	else {
+		stateManager_.update(context_);
+		update_gripped_block_movement();
+	}
 	update_animation();
-	// グリッド移動でスナップした直後に足元の支えを確かめるため、この位置で重力を掛ける
-	PlayerMovement::apply_gravity(context_);
+	// Gripのグリッド移動中は、補間位置が重力やブロック衝突で上書きされないようにする。
+	if (!gripMoveInterpolation_) {
+		PlayerMovement::apply_gravity(context_);
+	}
 	update_mesh_direction();
 
-	if (blockMovementJudge_ && context_.worldInstance && context_.grippedBlockIndex &&
+	if (!gripMoveInterpolation_ && blockMovementJudge_ && context_.worldInstance && context_.grippedBlockIndex &&
 		blockMovementJudge_->is_goal_piece(*context_.grippedBlockIndex)) {
 		context_.blockMoveResult = blockMovementJudge_->judge(
 			context_.worldInstance->world_position(),
@@ -131,6 +139,7 @@ void Player::prev_update() {
 // 操作対象のWorldInstanceを設定
 //================================
 void Player::set_world_instance(Reference<szg::WorldInstance> worldInstance_) noexcept {
+	gripMoveInterpolation_.reset();
 	context_.worldInstance = worldInstance_;
 	context_.isGrounded = false;
 }
@@ -281,6 +290,10 @@ bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept
 	return context_.blockMoveResult && context_.blockMoveResult->can_move(direction);
 }
 
+void Player::cancel_grip_move_interpolation() noexcept {
+	gripMoveInterpolation_.reset();
+}
+
 //================================
 // Player用パラメータの読み込み
 //================================
@@ -291,12 +304,16 @@ void Player::setup_json_asset() {
 	const auto readString = [&json](const char* name, const std::string& fallback) {
 		return json.value(name, nlohmann::json::object()).value("value", fallback);
 	};
+	const auto readFloat = [&json](const char* name, float fallback) {
+		return json.value(name, nlohmann::json::object()).value("value", fallback);
+	};
 
 	animationClipName_ = readString("AnimationClipName", animationClipName_);
 	idleAnimation_.fileName = readString("IdleAnimationFile", idleAnimation_.fileName);
 	moveAnimation_.fileName = readString("MoveAnimationFile", moveAnimation_.fileName);
 	jumpAnimation_.fileName = readString("JumpAnimationFile", jumpAnimation_.fileName);
 	gripAnimation_.fileName = readString("GripAnimationFile", gripAnimation_.fileName);
+	set_grip_move_speed(readFloat("GripMoveSpeed", context_.gripMoveSpeed));
 }
 
 //================================
@@ -382,16 +399,20 @@ void Player::update_gripped_block_movement() {
 	}
 
 	// 粘土の伸縮判定を行う
+	const float moveDuration = context_.gripMoveSpeed > 0.0f
+		? 1.0f / context_.gripMoveSpeed
+		: 0.0f;
 	const std::optional<ClayDeformationResult> deformation = blockMovementJudge_->try_deform_clay(
 		context_.worldInstance->world_position(),
 		*context_.grippedBlockIndex,
 		context_.direction,
-		*moveDirection);
+		*moveDirection,
+		moveDuration);
 	if (deformation) {
-		context_.worldInstance->transform_mut().set_translate(MapChipField::to_world(
+		begin_grip_move_interpolation(MapChipField::to_world(
 			deformation->playerIndex.x,
 			deformation->playerIndex.y,
-			deformation->playerIndex.z));
+			deformation->playerIndex.z), moveDuration);
 
 		// 粘土を伸ばした場合は、プレイヤーと粘土の両方が移動するので、グリップ状態を解除する
 		if (deformation->type == ClayDeformationType::Connect) {
@@ -424,17 +445,18 @@ void Player::update_gripped_block_movement() {
 		context_.worldInstance->world_position(),
 		*context_.grippedBlockIndex,
 		context_.direction,
-		*moveDirection);
+		*moveDirection,
+		moveDuration);
 	// 移動できない場合は何もしない
 	if (!move) {
 		return;
 	}
 
 	// ゴール条件オブジェクトを移動する
-	context_.worldInstance->transform_mut().set_translate(MapChipField::to_world(
+	begin_grip_move_interpolation(MapChipField::to_world(
 		move->playerIndex.x,
 		move->playerIndex.y,
-		move->playerIndex.z));
+		move->playerIndex.z), moveDuration);
 
 	// グリップ中のブロックのインデックスを更新する
 	context_.grippedBlockIndex = move->blockIndex;
@@ -446,6 +468,53 @@ void Player::update_gripped_block_movement() {
 		move->blockIndex.x,
 		move->blockIndex.y,
 		move->blockIndex.z);
+}
+
+//================================
+// Grip中の1マス移動補間を開始する
+//================================
+void Player::begin_grip_move_interpolation(const Vector3& targetPosition, float durationSeconds) {
+	if (!context_.worldInstance) {
+		return;
+	}
+
+	const Vector3 startPosition = context_.worldInstance->transform_imm().get_translate();
+	if (durationSeconds <= 0.0f || Vector3::Length(startPosition, targetPosition) <= 0.0001f) {
+		context_.worldInstance->transform_mut().set_translate(targetPosition);
+		gripMoveInterpolation_.reset();
+		return;
+	}
+
+	gripMoveInterpolation_ = GripMoveInterpolation{
+		.startPosition = startPosition,
+		.targetPosition = targetPosition,
+		.elapsedSeconds = 0.0f,
+		.durationSeconds = durationSeconds,
+	};
+}
+
+//================================
+// Grip中のPlayer移動をブロック表示と同じSmoothStepで補間する
+//================================
+void Player::update_grip_move_interpolation() noexcept {
+	if (!gripMoveInterpolation_ || !context_.worldInstance) {
+		gripMoveInterpolation_.reset();
+		return;
+	}
+
+	GripMoveInterpolation& interpolation = *gripMoveInterpolation_;
+	interpolation.elapsedSeconds += std::max(context_.deltaSeconds, 0.0f);
+	const float duration = std::max(interpolation.durationSeconds, 0.001f);
+	const float t = std::clamp(interpolation.elapsedSeconds / duration, 0.0f, 1.0f);
+	const float eased = t * t * (3.0f - 2.0f * t);
+	context_.worldInstance->transform_mut().set_translate(Vector3::Lerp(
+		interpolation.startPosition,
+		interpolation.targetPosition,
+		eased));
+
+	if (t >= 1.0f) {
+		gripMoveInterpolation_.reset();
+	}
 }
 
 //================================

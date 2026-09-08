@@ -9,12 +9,12 @@
 	"Json": [],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\clay\\clay.obj",
+		".\\Game\\Assets\\Models\\desk\\desk.obj",
+		".\\Game\\Assets\\Models\\floor\\floor.obj",
 		".\\Game\\Assets\\Models\\scissors\\scissors.obj",
 		".\\Game\\Assets\\Models\\drawingPaper2\\drawingPaper2.obj",
 		".\\Game\\Assets\\Models\\drawingPaper\\drawingPaper.obj",
 		".\\Game\\Assets\\Models\\drawingPaper3\\drawingPaper3.obj",
-		".\\Game\\Assets\\Models\\Cube.obj",
-		".\\SyzygyEngine\\Assets\\Models\\Grid\\Grid.gltf",
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
 	],
 	"Param": [],

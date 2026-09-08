@@ -3,7 +3,9 @@
 	"Audio": [],
 	"Font": [],
 	"Json": [],
-	"Mesh": [],
+	"Mesh": [
+		".\\Game\\Assets\\Models\\Cube.obj"
+	],
 	"Param": [
 		".\\Game\\Assets\\param\\GoalEffect.param"
 	],
@@ -13,6 +15,7 @@
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": [
-		".\\Game\\Assets\\textures\\Cross.png"
+		".\\Game\\Assets\\textures\\Cross.png",
+		".\\Game\\Assets\\Models\\floor\\floor.png"
 	]
 }

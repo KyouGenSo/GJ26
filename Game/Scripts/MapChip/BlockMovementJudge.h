@@ -107,7 +107,8 @@ public:
 		const Vector3& playerPosition,
 		const MapChipIndex& blockIndex,
 		const Vector3& playerDirection,
-		BlockMoveDirection moveDirection);
+		BlockMoveDirection moveDirection,
+		r32 visualMoveDuration = 0.0f);
 
 	/// <summary>
 	/// Grip中の粘土を指定方向へ1マス伸ばし、Playerも同じ方向へ移動する
@@ -116,7 +117,8 @@ public:
 		const Vector3& playerPosition,
 		const MapChipIndex& clayIndex,
 		const Vector3& playerDirection,
-		BlockMoveDirection moveDirection);
+		BlockMoveDirection moveDirection,
+		r32 visualMoveDuration = 0.0f);
 
 private:
 

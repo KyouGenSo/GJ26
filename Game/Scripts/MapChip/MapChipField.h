@@ -159,7 +159,10 @@ public:
 	/// <para>to がゴール条件オブジェクトなら伸びずにその粘土ブロックがつながる(1 ブロックにつき 1 つ)。つながった粘土はピースと一緒に動く</para>
 	/// </summary>
 	/// <returns>from が粘土でない / to が空でもピースでもない / 許可された伸長方向でない / その面が塞がれている / 既につながっている ときは false</returns>
-	bool stretch_clay(const MapChipIndex& from, const MapChipIndex& to);
+	bool stretch_clay(
+		const MapChipIndex& from,
+		const MapChipIndex& to,
+		r32 visualMoveDuration = 0.0f);
 
 	/// <summary>
 	/// セルが属する粘土ブロックの伸ばせない面(ClayFace のビット。粘土でない / 範囲外は None)
@@ -192,7 +195,15 @@ public:
 	/// <para>押す: to = ピースの向こう側のセル / 引く: プレイヤーが 1 歩下がった後に to = 元のプレイヤーのセル</para>
 	/// </summary>
 	/// <returns>can_move_goal_piece が false のときは動かさず false</returns>
-	bool move_goal_piece(const MapChipIndex& from, const MapChipIndex& to);
+	bool move_goal_piece(
+		const MapChipIndex& from,
+		const MapChipIndex& to,
+		r32 visualMoveDuration = 0.0f);
+
+	/// <summary>
+	/// stretch_clay / move_goal_piece で開始した表示モデルの移動補間を更新する
+	/// </summary>
+	void update_visual_interpolation(r32 deltaSeconds);
 
 	/// <summary>
 	/// 指定種類の全セル
@@ -257,6 +268,11 @@ private:
 	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
+	void begin_visual_interpolation(
+		const std::vector<i32>& targetCells,
+		const Vector3& moveOffset,
+		r32 duration);
+	void cancel_visual_interpolation();
 	void refresh_visual(i32 flat, bool goalActive = false);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
@@ -269,6 +285,14 @@ private:
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
+	struct VisualInterpolation {
+		Reference<szg::StaticMeshInstance> visual;
+		Vector3 startPosition{ CVector3::ZERO };
+		Vector3 targetPosition{ CVector3::ZERO };
+	};
+	std::vector<VisualInterpolation> visualInterpolations;
+	r32 visualInterpolationElapsed{ 0.0f };
+	r32 visualInterpolationDuration{ 0.0f };
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
 	u32 revision{ 0 };
