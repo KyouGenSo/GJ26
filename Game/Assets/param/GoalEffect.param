@@ -10,5 +10,9 @@
 	"RotationSpeedDegrees": {
 		"type": "R32",
 		"value": 45.0
+	},
+	"StateTransitionDuration": {
+		"type": "R32",
+		"value": 0.4
 	}
 }

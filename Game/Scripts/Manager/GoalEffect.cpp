@@ -9,12 +9,17 @@
 #include <Engine/Loader/EmitterInstanceLoader.h>
 #include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/Particle/ParticlePool.h>
+#include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 
 namespace {
 
 // StageEditorで調整したエミッタの高さ。Goalモデルは0.5倍なので親ローカル値は2倍する。
 constexpr r32 kEmitterLocalY = 1.3120096f * 2.0f;
 constexpr r32 kGoalModelInverseScale = 2.0f;
+constexpr std::array<const char*, 2> kParticleFiles{
+	"[[game]]/GoalEffect.particle",
+	"[[game]]/GoalEffect2.particle",
+};
 
 } // namespace
 
@@ -23,14 +28,20 @@ void GoalEffect::setup(Reference<MapChipField> field_, Reference<szg::WorldRoot>
 	worldRoot = worldRoot_;
 	setup_json_asset();
 	load_particle_settings();
+	grayscaleData = szg::RuntimeStorage::GetValue<Reference<szg::GrayscalePipeline::Data>>(
+		"PostEffect", "GoalGrayscale").value_or(nullptr);
+	if (!grayscaleData) {
+		szgWarning("GoalEffect: GoalGrayscale post effect runtime reference not found.");
+	}
 }
 
 void GoalEffect::finalize() {
 	restore_visual_transform();
-	if (field && goalIndex) {
-		field->set_goal_active(*goalIndex, false);
+	if (grayscaleData) {
+		grayscaleData->isGray = 1u;
 	}
-	destroy_emitter();
+	destroy_emitters();
+	grayscaleData.reset();
 	goalVisual.reset();
 	goalIndex.reset();
 	field.reset();
@@ -39,24 +50,22 @@ void GoalEffect::finalize() {
 }
 
 void GoalEffect::set_goal(const std::optional<MapChipIndex>& goalIndex_, bool active) {
-	// モデル切替では表示インスタンスが再生成されるため、切替後の参照を取得する。
-	if (field && goalIndex_) {
-		field->set_goal_active(*goalIndex_, active);
-	}
 	Reference<szg::StaticMeshInstance> nextVisual =
 		field && goalIndex_ ? field->visual_mut(*goalIndex_) : nullptr;
 	const bool visualChanged = nextVisual != goalVisual;
 
 	if (visualChanged) {
 		restore_visual_transform();
-		destroy_emitter();
+		destroy_emitters();
 		goalVisual = nextVisual;
 		goalIndex = goalIndex_;
-		animationTime = 0.0f;
+		floatAnimationTime = 0.0f;
+		currentYawDegrees = 0.0f;
+		activeBlend = 0.0f;
 		if (goalVisual) {
 			basePosition = goalVisual->transform_imm().get_translate();
 			baseRotation = goalVisual->transform_imm().get_quaternion();
-			create_emitter();
+			create_emitters();
 		}
 	}
 	else {
@@ -69,21 +78,36 @@ void GoalEffect::set_goal(const std::optional<MapChipIndex>& goalIndex_, bool ac
 }
 
 void GoalEffect::update() {
-	if (!isActive || !goalVisual) {
+	if (!goalVisual) {
 		return;
 	}
 
-	animationTime += szg::WorldClock::DeltaSeconds();
-	const r32 period = std::max(floatPeriod, 0.001f);
-	const r32 phase = animationTime * (2.0f * std::numbers::pi_v<r32> / period);
+	const r32 deltaSeconds = szg::WorldClock::DeltaSeconds();
+	const r32 transitionStep = deltaSeconds / std::max(stateTransitionDuration, 0.001f);
+	activeBlend = isActive
+		? std::min(activeBlend + transitionStep, 1.0f)
+		: std::max(activeBlend - transitionStep, 0.0f);
+	const r32 easedBlend = activeBlend * activeBlend * (3.0f - 2.0f * activeBlend);
 
 	Vector3 position = basePosition;
-	position.y += std::sin(phase) * floatAmplitude;
+	if (activeBlend > 0.0f) {
+		floatAnimationTime += deltaSeconds;
+		const r32 period = std::max(floatPeriod, 0.001f);
+		const r32 phase = floatAnimationTime * (2.0f * std::numbers::pi_v<r32> / period);
+		position.y += std::sin(phase) * floatAmplitude * easedBlend;
+	}
 	goalVisual->transform_mut().set_translate(position);
 
-	const r32 yawDegrees = std::fmod(animationTime * rotationSpeedDegrees, 360.0f);
+	// OFFは逆回転、ONは正回転。ブレンド中は速度が連続的に反転する。
+	const r32 rotationDirection = easedBlend * 2.0f - 1.0f;
+	currentYawDegrees = std::remainder(
+		currentYawDegrees + rotationSpeedDegrees * rotationDirection * deltaSeconds,
+		360.0f);
 	goalVisual->transform_mut().set_quaternion(
-		baseRotation * Quaternion::EulerDegree(Vector3{ 0.0f, yawDegrees, 0.0f }));
+		baseRotation * Quaternion::EulerDegree(Vector3{ 0.0f, currentYawDegrees, 0.0f }));
+
+	// Emitter.update()はAffine更新より先に呼ばれるため、次フレームの放出位置をここで同期する。
+	goalVisual->update_affine();
 }
 
 void GoalEffect::setup_json_asset() {
@@ -100,64 +124,100 @@ void GoalEffect::setup_json_asset() {
 	floatAmplitude = std::max(readR32("FloatAmplitude", floatAmplitude), 0.0f);
 	floatPeriod = std::max(readR32("FloatPeriod", floatPeriod), 0.001f);
 	rotationSpeedDegrees = readR32("RotationSpeedDegrees", rotationSpeedDegrees);
+	stateTransitionDuration = std::max(
+		readR32("StateTransitionDuration", stateTransitionDuration), 0.001f);
 }
 
 void GoalEffect::load_particle_settings() {
-	szg::JsonAsset particle{ "[[game]]/GoalEffect.particle" };
-	emitterSettings = szg::EmitterInstanceLoader::Load(particle.cget());
-	if (!emitterSettings) {
-		szgWarning("GoalEffect: GoalEffect.particle could not be loaded.");
+	for (size_t i = 0; i < kParticleFiles.size(); ++i) {
+		szg::JsonAsset particle{ kParticleFiles[i] };
+		emitterSettings[i] = szg::EmitterInstanceLoader::Load(particle.cget());
+		if (!emitterSettings[i]) {
+			szgWarning("GoalEffect: {} could not be loaded.", kParticleFiles[i]);
+		}
 	}
 }
 
-void GoalEffect::create_emitter() {
-	if (!worldRoot || !goalVisual || !emitterSettings) {
+void GoalEffect::create_emitters() {
+	if (!worldRoot || !goalVisual) {
 		return;
 	}
 
-	emitter = worldRoot->instantiate<szg::EmitterInstance>(goalVisual);
-	emitter->setup_settings(*emitterSettings);
-	Reference<szg::ParticlePool> pool = worldRoot->create_particle_pool(
-		emitter,
-		emitterSettings->capacity == 0 ? 1 : emitterSettings->capacity,
-		emitterSettings->overflowPolicy);
-	emitter->setup_pool(pool);
-	if (pool) {
-		pool->setup_draw_spec(emitterSettings->drawSpec);
-		pool->setup_updaters(
-			szg::EmitterInstance::BuildUpdaterMask(*emitterSettings),
-			emitterSettings->rotation.rotationKind);
+	for (size_t i = 0; i < emitterSettings.size(); ++i) {
+		if (!emitterSettings[i]) {
+			continue;
+		}
+		Reference<szg::EmitterInstance> emitter =
+			worldRoot->instantiate<szg::EmitterInstance>(goalVisual);
+		emitter->setup_settings(*emitterSettings[i]);
+		Reference<szg::ParticlePool> pool = worldRoot->create_particle_pool(
+			emitter,
+			emitterSettings[i]->capacity == 0 ? 1 : emitterSettings[i]->capacity,
+			emitterSettings[i]->overflowPolicy);
+		emitter->setup_pool(pool);
+		if (pool) {
+			pool->setup_draw_spec(emitterSettings[i]->drawSpec);
+			pool->setup_updaters(
+				szg::EmitterInstance::BuildUpdaterMask(*emitterSettings[i]),
+				emitterSettings[i]->rotation.rotationKind);
+		}
+		emitters[i] = emitter;
 	}
 
-	emitter->transform_mut().set_translate(Vector3{ 0.0f, kEmitterLocalY, 0.0f });
-	emitter->transform_mut().set_scale(Vector3{
-		kGoalModelInverseScale,
-		kGoalModelInverseScale,
-		kGoalModelInverseScale,
-	});
-	emitter->update_affine();
-	emitter->set_active(false);
+	sync_emitter_transforms();
+	for (Reference<szg::EmitterInstance> emitter : emitters) {
+		if (emitter) {
+			emitter->set_active(false);
+		}
+	}
 }
 
-void GoalEffect::destroy_emitter() {
-	if (!emitter) {
-		return;
+void GoalEffect::destroy_emitters() {
+	for (Reference<szg::EmitterInstance>& emitter : emitters) {
+		if (!emitter) {
+			continue;
+		}
+		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
+			pool->clear();
+		}
+		emitter->reparent(nullptr, true);
+		if (!emitter->is_marked_destroy()) {
+			emitter->destroy_self();
+		}
+		emitter.reset();
 	}
-	if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
-		pool->clear();
+}
+
+void GoalEffect::sync_emitter_transforms() {
+	for (Reference<szg::EmitterInstance> emitter : emitters) {
+		if (!emitter) {
+			continue;
+		}
+		emitter->transform_mut().set_translate(Vector3{ 0.0f, kEmitterLocalY, 0.0f });
+		emitter->transform_mut().set_scale(Vector3{
+			kGoalModelInverseScale,
+			kGoalModelInverseScale,
+			kGoalModelInverseScale,
+		});
+		// 非Activeへ切り替える前に、ゲーム開始時のGoal位置を反映する。
+		emitter->update_affine();
 	}
-	if (!emitter->is_marked_destroy()) {
-		emitter->destroy_self();
-	}
-	emitter.reset();
 }
 
 void GoalEffect::apply_active_state(bool active) {
+	const bool wasActive = isActive;
 	isActive = active;
-	animationTime = 0.0f;
+	if (isActive && !wasActive && activeBlend <= 0.0f) {
+		floatAnimationTime = 0.0f;
+	}
+	if (grayscaleData) {
+		grayscaleData->isGray = isActive ? 0u : 1u;
+	}
 	if (!isActive) {
-		restore_visual_transform();
-		if (emitter) {
+		for (Reference<szg::EmitterInstance> emitter : emitters) {
+			if (!emitter) {
+				continue;
+			}
 			emitter->set_active(false);
 			if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
 				pool->clear();
@@ -166,11 +226,14 @@ void GoalEffect::apply_active_state(bool active) {
 		return;
 	}
 
-	if (emitter) {
+	for (Reference<szg::EmitterInstance> emitter : emitters) {
+		if (!emitter) {
+			continue;
+		}
 		emitter->restart_schedule();
 		emitter->set_active(true);
-		emitter->update_affine();
 	}
+	sync_emitter_transforms();
 }
 
 void GoalEffect::restore_visual_transform() {

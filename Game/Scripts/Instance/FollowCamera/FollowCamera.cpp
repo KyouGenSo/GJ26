@@ -16,6 +16,7 @@ FollowCamera::FollowCamera(
 void FollowCamera::finalize() {
 	cameraInstance_.reset();
 	owner_.reset();
+	goalEffect_.reset();
 	rotationInput_ = {};
 	rotationDelta_ = {};
 	shouldSnap_ = true;
@@ -29,6 +30,12 @@ void FollowCamera::prev_update() {
 	}
 
 	const float deltaSeconds = szg::WorldClock::DeltaSeconds();
+	if (goalEffect_) {
+		rotationInput_ = {};
+		rotationDelta_ = {};
+		update_goal_effect(deltaSeconds);
+		return;
+	}
 	update_rotation(deltaSeconds);
 
 	const Vector3 targetPosition = calculate_target_position();
@@ -38,10 +45,16 @@ void FollowCamera::prev_update() {
 }
 
 void FollowCamera::add_rotation_input(const Vector2& rotationInput) noexcept {
+	if (goalEffect_) {
+		return;
+	}
 	rotationInput_ += rotationInput;
 }
 
 void FollowCamera::add_rotation_delta(const Vector2& rotationDelta) noexcept {
+	if (goalEffect_) {
+		return;
+	}
 	rotationDelta_ += rotationDelta;
 }
 
@@ -108,6 +121,70 @@ void FollowCamera::fit_to_bounds(const Vector3& boundsSize, float padding) noexc
 	const float safePadding = std::max(padding, 1.0f);
 	set_distance(radius * std::sqrt(limitingCotangent * limitingCotangent + 1.0f) * safePadding);
 	request_snap();
+}
+
+bool FollowCamera::start_goal_effect(
+	const Vector3& targetPosition,
+	float duration,
+	float distance,
+	float elevationDegrees,
+	float bounceStrength) noexcept {
+	if (!cameraInstance_ || !owner_) {
+		return false;
+	}
+
+	const Vector3 cameraPosition = cameraInstance_->transform_imm().get_translate();
+	Vector3 horizontalDirection{
+		cameraPosition.x - targetPosition.x,
+		0.0f,
+		cameraPosition.z - targetPosition.z,
+	};
+	float horizontalLength = std::sqrt(
+		horizontalDirection.x * horizontalDirection.x +
+		horizontalDirection.z * horizontalDirection.z);
+	if (horizontalLength <= 0.001f) {
+		const Vector3 fallback = Vector3{ 0.0f, 0.0f, -1.0f } *
+			Quaternion::EulerRadian(0.0f, yaw_, 0.0f);
+		horizontalDirection = { fallback.x, 0.0f, fallback.z };
+		horizontalLength = std::max(std::sqrt(
+			horizontalDirection.x * horizontalDirection.x +
+			horizontalDirection.z * horizontalDirection.z), 0.001f);
+	}
+	horizontalDirection /= horizontalLength;
+
+	const float safeDistance = std::max(distance, 0.1f);
+	const float elevation = std::clamp(elevationDegrees, 0.0f, 89.0f) *
+		(std::numbers::pi_v<float> / 180.0f);
+	const float horizontalDistance = std::cos(elevation) * safeDistance;
+	const float height = std::sin(elevation) * safeDistance;
+	const Vector3 destination = targetPosition +
+		horizontalDirection * horizontalDistance + Vector3{ 0.0f, height, 0.0f };
+
+	goalEffect_ = GoalCameraEffect{
+		.startPosition = cameraPosition,
+		.startTarget = calculate_target_position(),
+		.targetPosition = targetPosition,
+		.destinationPosition = destination,
+		.elapsed = 0.0f,
+		.duration = std::max(duration, 0.001f),
+		.bounceStrength = std::max(bounceStrength, 0.0f),
+		.finished = false,
+	};
+	rotationInput_ = {};
+	rotationDelta_ = {};
+	shouldSnap_ = false;
+	return true;
+}
+
+void FollowCamera::stop_goal_effect() noexcept {
+	goalEffect_.reset();
+	rotationInput_ = {};
+	rotationDelta_ = {};
+	request_snap();
+}
+
+bool FollowCamera::is_goal_effect_finished() const noexcept {
+	return goalEffect_ && goalEffect_->finished;
 }
 
 Reference<szg::CameraInstance> FollowCamera::get_camera_instance_mut() noexcept {
@@ -192,4 +269,41 @@ void FollowCamera::update_position(const Vector3& desiredPosition, float deltaSe
 		std::clamp(interpolation, 0.0f, 1.0f)
 	);
 	transform.set_translate(position);
+}
+
+void FollowCamera::update_goal_effect(float deltaSeconds) noexcept {
+	if (!cameraInstance_ || !goalEffect_) {
+		return;
+	}
+
+	GoalCameraEffect& effect = *goalEffect_;
+	if (effect.finished) {
+		cameraInstance_->transform_mut().set_translate(effect.destinationPosition);
+		cameraInstance_->look_at(effect.targetPosition);
+		return;
+	}
+
+	effect.elapsed += deltaSeconds;
+	const float t = std::clamp(effect.elapsed / effect.duration, 0.0f, 1.0f);
+	const float smoothTargetT = t * t * (3.0f - 2.0f * t);
+	const float shifted = t - 1.0f;
+	// 1.0を一度越えて戻るEaseOutBack。カメラが近づき過ぎてから最終距離へ戻る。
+	const float cameraT = 1.0f +
+		(effect.bounceStrength + 1.0f) * shifted * shifted * shifted +
+		effect.bounceStrength * shifted * shifted;
+
+	const Vector3 cameraPosition = Vector3::Lerp(
+		effect.startPosition,
+		effect.destinationPosition,
+		cameraT);
+	const Vector3 lookTarget = Vector3::Lerp(
+		effect.startTarget,
+		effect.targetPosition,
+		smoothTargetT);
+	cameraInstance_->transform_mut().set_translate(cameraPosition);
+	cameraInstance_->look_at(lookTarget);
+
+	if (t >= 1.0f) {
+		effect.finished = true;
+	}
 }
