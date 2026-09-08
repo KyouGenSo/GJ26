@@ -214,9 +214,10 @@ public:
 	static bool SaveStageJsonClay(const std::string& directory, const std::vector<ClayRecord>& records);
 
 	/// <summary>
-	/// parent(粘土の元セルの立方体)の塞がれた各面に薄い暗色の板を子として付ける。親の destroy_self で一緒に消える
+	/// <para>parent(粘土の元セルの立方体)の塞がれた各面に cross.obj を子として付ける。親の destroy_self で一緒に消える</para>
+	/// <para>halfSize は親ローカルでの面の半幅、bottomY は親ローカルでの底面の高さ</para>
 	/// </summary>
-	static void AttachFacePlates(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces);
+	static void AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY);
 
 	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
