@@ -43,7 +43,7 @@ void StageEditorScript::prev_update() {
 	}
 
 	if (keys.trigger(szg::KeyID::F5)) {
-		szg::SceneManager2::SceneChange(SceneListGJ26::MapTest, 0.0f);
+		szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
 	}
 }
 
