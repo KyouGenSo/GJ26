@@ -182,11 +182,70 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 }
 
 void MapChipField::destroy_root() {
+	cancel_visual_interpolation();
 	if (root) {
 		root->destroy_self();
 		root.reset();
 	}
 	visuals.clear();
+}
+
+void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
+	if (visualInterpolations.empty()) {
+		return;
+	}
+
+	visualInterpolationElapsed += std::max(deltaSeconds, 0.0f);
+	const r32 duration = std::max(visualInterpolationDuration, 0.001f);
+	const r32 t = std::clamp(visualInterpolationElapsed / duration, 0.0f, 1.0f);
+	const r32 eased = t * t * (3.0f - 2.0f * t);
+	for (VisualInterpolation& interpolation : visualInterpolations) {
+		if (interpolation.visual) {
+			interpolation.visual->transform_mut().set_translate(Vector3::Lerp(
+				interpolation.startPosition,
+				interpolation.targetPosition,
+				eased));
+		}
+	}
+	if (t >= 1.0f) {
+		cancel_visual_interpolation();
+	}
+}
+
+void MapChipField::begin_visual_interpolation(
+	const std::vector<i32>& targetCells,
+	const Vector3& moveOffset,
+	r32 duration) {
+	cancel_visual_interpolation();
+	if (duration <= 0.0f) {
+		return;
+	}
+
+	visualInterpolationDuration = duration;
+	for (const i32 target : targetCells) {
+		if (target < 0 || target >= static_cast<i32>(visuals.size()) || !visuals[target]) {
+			continue;
+		}
+		const Vector3 targetPosition = visuals[target]->transform_imm().get_translate();
+		const Vector3 startPosition = targetPosition - moveOffset;
+		visuals[target]->transform_mut().set_translate(startPosition);
+		visualInterpolations.push_back(VisualInterpolation{
+			.visual = visuals[target],
+			.startPosition = startPosition,
+			.targetPosition = targetPosition,
+		});
+	}
+}
+
+void MapChipField::cancel_visual_interpolation() {
+	for (VisualInterpolation& interpolation : visualInterpolations) {
+		if (interpolation.visual) {
+			interpolation.visual->transform_mut().set_translate(interpolation.targetPosition);
+		}
+	}
+	visualInterpolations.clear();
+	visualInterpolationElapsed = 0.0f;
+	visualInterpolationDuration = 0.0f;
 }
 
 MapChipType MapChipField::get(i32 x, i32 y, i32 z) const {
@@ -197,6 +256,7 @@ void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type) {
 	if (!is_inside(x, y, z)) {
 		return;
 	}
+	cancel_visual_interpolation();
 	const i32 i = flat_index(x, y, z);
 	chips[i] = type;
 	clayOrigin[i] = type == MapChipType::Clay ? i : -1;
@@ -211,6 +271,7 @@ void MapChipField::restore(const Cells& source) {
 		szgWarning("MapChipField: restore size mismatch ({} != {})", source.chips.size(), chips.size());
 		return;
 	}
+	cancel_visual_interpolation();
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		if (chips[i] == source.chips[i] && clayOrigin[i] == source.clayOrigin[i] &&
 			clayPiece[i] == source.clayPiece[i] && clayBlockedFaces[i] == source.clayBlockedFaces[i]) {
@@ -225,7 +286,10 @@ void MapChipField::restore(const Cells& source) {
 	++revision;
 }
 
-bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to) {
+bool MapChipField::stretch_clay(
+	const MapChipIndex& from,
+	const MapChipIndex& to,
+	r32 visualMoveDuration) {
 	if (!is_inside(from.x, from.y, from.z) || !is_inside(to.x, to.y, to.z)) {
 		return false;
 	}
@@ -276,6 +340,7 @@ bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to
 		if (clayPiece[source] != -1) {
 			return false;
 		}
+		cancel_visual_interpolation();
 		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 			if (chips[i] == MapChipType::Clay && clayOrigin[i] == root) {
 				clayPiece[i] = target;
@@ -289,11 +354,16 @@ bool MapChipField::stretch_clay(const MapChipIndex& from, const MapChipIndex& to
 		return false;
 	}
 
+	cancel_visual_interpolation();
 	chips[target] = MapChipType::Clay;
 	clayOrigin[target] = root;
 	clayPiece[target] = clayPiece[source];
 	++revision;
 	refresh_visual(target);
+	begin_visual_interpolation(
+		std::vector<i32>{ target },
+		to_world(to.x - from.x, to.y - from.y, to.z - from.z),
+		visualMoveDuration);
 	return true;
 }
 
@@ -301,7 +371,10 @@ bool MapChipField::can_move_goal_piece(const MapChipIndex& from, const MapChipIn
 	return !moving_cells(from, to).empty();
 }
 
-bool MapChipField::move_goal_piece(const MapChipIndex& from, const MapChipIndex& to) {
+bool MapChipField::move_goal_piece(
+	const MapChipIndex& from,
+	const MapChipIndex& to,
+	r32 visualMoveDuration) {
 	const std::vector<i32> cells = moving_cells(from, to);
 	if (cells.empty()) {
 		return false;
@@ -336,6 +409,15 @@ bool MapChipField::move_goal_piece(const MapChipIndex& from, const MapChipIndex&
 		refresh_visual(m.target);
 	}
 	++revision;
+	std::vector<i32> targetCells;
+	targetCells.reserve(moved.size());
+	for (const Moved& m : moved) {
+		targetCells.push_back(m.target);
+	}
+	begin_visual_interpolation(
+		targetCells,
+		to_world(delta.x, delta.y, delta.z),
+		visualMoveDuration);
 	return true;
 }
 

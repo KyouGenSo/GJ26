@@ -123,9 +123,9 @@
 					}
 				},
 				"Scale": {
-					"X": 20.0,
-					"Y": 1.0,
-					"Z": 20.0
+					"X": 10.0,
+					"Y": 4.0,
+					"Z": 6.0
 				},
 				"Translate": {
 					"X": 0.0,
@@ -136,18 +136,18 @@
 			"Materials": [
 				{
 					"Color": {
-						"B": 0.07598037272691727,
-						"G": 0.34638112783432007,
-						"R": 0.9117646813392639
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
 					},
 					"LightingType": 2,
 					"Shininess": 50.0,
-					"Texture": "White.png",
+					"Texture": "desk.png",
 					"UV Transform": {
 						"Rotation": 0.0,
 						"Scale": {
-							"X": 1.0,
-							"Y": 1.0
+							"X": 1.5,
+							"Y": 4.0
 						},
 						"Translate": {
 							"X": 0.0,
@@ -156,7 +156,7 @@
 					}
 				}
 			],
-			"Mesh": "Cube.obj",
+			"Mesh": "desk.obj",
 			"Name": "Table",
 			"Type": 2000,
 			"Use runtime": false
@@ -174,9 +174,9 @@
 					}
 				},
 				"Scale": {
-					"X": 0.25999999046325684,
-					"Y": 1.0,
-					"Z": 0.05999999865889549
+					"X": 8.0,
+					"Y": 0.20000000298023224,
+					"Z": 8.0
 				},
 				"Translate": {
 					"X": 0.0,
@@ -187,27 +187,27 @@
 			"Materials": [
 				{
 					"Color": {
-						"B": 0.5202042460441589,
-						"G": 0.6372548937797546,
-						"R": 0.06872354447841644
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
 					},
 					"LightingType": 2,
 					"Shininess": 50.0,
-					"Texture": "Grid.png",
+					"Texture": "floor.png",
 					"UV Transform": {
 						"Rotation": 0.0,
 						"Scale": {
-							"X": 20.0,
-							"Y": 20.0
+							"X": 1.0,
+							"Y": 1.0
 						},
 						"Translate": {
 							"X": 0.0,
-							"Y": -0.0
+							"Y": 0.0
 						}
 					}
 				}
 			],
-			"Mesh": "Grid.gltf",
+			"Mesh": "floor.obj",
 			"Name": "CutterMat",
 			"Type": 2000,
 			"Use runtime": false

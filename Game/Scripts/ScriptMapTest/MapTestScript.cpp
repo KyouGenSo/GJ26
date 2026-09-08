@@ -5,8 +5,10 @@
 #include <optional>
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 #include <Engine/Runtime/Scene/SceneManager2.h>
+#include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
@@ -14,6 +16,8 @@
 #include "Scripts/Scene/FactoryGJ26.h"
 
 namespace {
+
+constexpr r32 kFloorTextureGridSize = 5.0f;
 
 struct TemporaryPlayerSpawn {
 	Vector3 position;
@@ -89,8 +93,10 @@ void MapTestScript::setup(Reference<szg::WorldRoot> worldRoot_) {
 	stageNumber = std::clamp(szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1), 1, stageCount);
 
 	// 地面
-	ground = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "Cube.obj");
-	ground->get_materials()[0].color = ColorRGB{ 0.3f, 0.3f, 0.3f };
+	ground = szg::RuntimeStorage::GetValue<Reference<szg::StaticMeshInstance>>("RuntimeInstance", "Ground").value_or(nullptr);
+	if (!ground) {
+		szgWarning("MapTestScript: Ground runtime instance not found.");
+	}
 
 	// プレイヤー代わりのマーカー
 	marker = worldRoot->instantiate<szg::StaticMeshInstance>(nullptr, "thumbtack.obj");
@@ -118,6 +124,7 @@ void MapTestScript::set_undo_manager(Reference<UndoManager> undoManager_) {
 }
 
 void MapTestScript::prev_update() {
+	field.update_visual_interpolation(szg::WorldClock::DeltaSeconds());
 	keys.update();
 
 	if (keys.trigger(szg::KeyID::F5)) {
@@ -150,12 +157,23 @@ void MapTestScript::prev_update() {
 }
 
 void MapTestScript::reload() {
+	if (player) {
+		player->cancel_grip_move_interpolation();
+	}
 	field.load_stage(stageNumber);
 	field.build(*worldRoot);
 
 	const Vector3 center = MapChipField::to_world(field.width() - 1, 0, field.depth() - 1) * 0.5f;
-	ground->transform_mut().set_scale(Vector3{ static_cast<r32>(field.width()), 0.1f, static_cast<r32>(field.depth()) });
-	ground->transform_mut().set_translate(Vector3{ center.x, -0.55f, center.z });
+	if (ground) {
+		ground->transform_mut().set_scale(Vector3{ static_cast<r32>(field.width()), 0.1f, static_cast<r32>(field.depth()) });
+		ground->transform_mut().set_translate(Vector3{ center.x, -0.55f, center.z });
+		if (!ground->get_materials().empty()) {
+			ground->get_materials()[0].uvTransform.set_scale(Vector2{
+				static_cast<r32>(field.depth()) / kFloorTextureGridSize,
+				static_cast<r32>(field.width()) / kFloorTextureGridSize,
+			});
+		}
+	}
 
 	update_camera_framing();
 	reset_player_position();
