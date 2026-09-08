@@ -2,6 +2,7 @@
 
 #include <array>
 #include <deque>
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -137,6 +138,25 @@ inline constexpr std::array<ColorRGB, Count> Preview{
 	ColorRGB{ 0.724f, 1.000f, 0.674f },
 	ColorRGB{ 1.000f, 0.938f, 0.674f },
 };
+
+/// <summary>
+/// 伸長方向 → 矢印付きテクスチャの接尾辞(ClayFace::Table と同じ並び)
+/// </summary>
+inline constexpr std::array<const char*, 4> ArrowSuffix{ "px", "nx", "pz", "nz" };
+
+/// <summary>
+/// 伸ばして出た粘土用の矢印付きテクスチャ名(例: clay2_px.png)。face は ClayFace のビット 1 つ
+/// </summary>
+inline std::string ArrowTexture(i32 color, u8 face) {
+	std::string_view stem = Textures[color];
+	stem.remove_suffix(4); // ".png"
+	for (size_t i = 0; i < ClayFace::Table.size(); ++i) {
+		if (ClayFace::Table[i].bit == face) {
+			return std::format("{}_{}.png", stem, ArrowSuffix[i]);
+		}
+	}
+	return Textures[color];
+}
 
 } // namespace ClayColor
 
@@ -398,6 +418,7 @@ private:
 	i32 flat_index(i32 x, i32 y, i32 z) const;
 	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
+	u8 clay_stretch_face(i32 flat) const; // 伸ばして出た粘土がコアから伸びた方向(ClayFace のビット。コア・粘土以外は None)
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
 	std::vector<i32> relocate_cells(const std::vector<i32>& cells, const MapChipIndex& delta); // cells を delta だけずらして置き直し、移動後の flat 一覧を返す(表示も更新)
 	struct VisualMove {
