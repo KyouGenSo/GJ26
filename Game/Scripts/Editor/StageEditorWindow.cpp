@@ -33,12 +33,14 @@ const char* ChipLabel(MapChipType type) {
 }
 
 /// <summary>
-/// ImGui で使う色に変換（Empty は無効っぽい濃いグレー）
+/// ImGui で使う色に変換（粘土は色番号の代表色、Empty は無効っぽい濃いグレー）
 /// </summary>
-ImVec4 ChipColor(MapChipType type) {
+ImVec4 ChipColor(MapChipType type, u8 clayColor) {
 	switch (type) {
-	case MapChipType::Clay:
-		return ImVec4{ 0.55f, 0.35f, 0.20f, 1.0f };
+	case MapChipType::Clay: {
+		const ColorRGB& c = ClayColor::Preview[clayColor];
+		return ImVec4{ c.red, c.green, c.blue, 1.0f };
+	}
 	case MapChipType::GoalPiece:
 		return ImVec4{ 1.0f, 1.0f, 0.0f, 1.0f };
 	case MapChipType::Goal:
@@ -247,6 +249,24 @@ void StageEditorWindow::draw_chip_select() {
 		}
 		ImGui::NewLine();
 		selectedFaces = static_cast<u8>(flags);
+
+		// 粘土の色。既存の粘土は色を変えて塗り直すと上書きされる
+		ImGui::Text("色");
+		for (i32 i = 0; i < ClayColor::Count; ++i) {
+			ImGui::PushID(i);
+			const ImVec4 color = ChipColor(MapChipType::Clay, static_cast<u8>(i));
+			ImGui::PushStyleColor(ImGuiCol_Button, color);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4{ 0.1f, 0.1f, 0.1f, 1.0f });
+			if (ImGui::Button(i == selectedClayColor ? "*" : " ", ImVec2{ 28.0f, 28.0f })) {
+				selectedClayColor = static_cast<u8>(i);
+			}
+			ImGui::PopStyleColor(4);
+			ImGui::PopID();
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
 	}
 }
 
@@ -294,16 +314,18 @@ void StageEditorWindow::draw_grid() {
 			ImGui::PushID(static_cast<i32>(x + z * doc.width()));
 
 			MapChipType chip = doc.get(x, y, z);
-			ImVec4 color = ChipColor(chip);
+			ImVec4 color = ChipColor(chip, doc.clay_color(x, y, z));
 			ImGui::PushStyleColor(ImGuiCol_Button, color);
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color);
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);
+			// 粘土の代表色は淡いので文字を暗くする
+			ImGui::PushStyleColor(ImGuiCol_Text, chip == MapChipType::Clay ? ImVec4{ 0.1f, 0.1f, 0.1f, 1.0f } : ImGui::GetStyleColorVec4(ImGuiCol_Text));
 
 			// 伸ばせない面のある粘土は "1*" のように印を付ける
 			const std::string label = std::format("{}{}", static_cast<i32>(chip), doc.blocked_faces(x, y, z) != ClayFace::None ? "*" : "");
 			ImGui::Button(label.c_str(), buttonSize);
 
-			ImGui::PopStyleColor(3);
+			ImGui::PopStyleColor(4);
 
 			if (ImGui::IsItemHovered()) {
 				if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
@@ -311,7 +333,7 @@ void StageEditorWindow::draw_grid() {
 						doc.begin_edit();
 						isPainting = true;
 					}
-					doc.set(x, y, z, selectedChip, selectedFaces);
+					doc.set(x, y, z, selectedChip, selectedFaces, selectedClayColor);
 				}
 				else if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
 					if (!isPainting) {

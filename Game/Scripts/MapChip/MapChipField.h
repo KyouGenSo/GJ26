@@ -9,6 +9,7 @@
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 #include <Engine/Module/World/WorldInstance/WorldInstance.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
+#include <Library/Math/ColorRGB.h>
 #include <Library/Math/Vector3.h>
 #include <Library/Utility/Template/Reference.h>
 
@@ -87,11 +88,39 @@ constexpr u8 FromName(std::string_view name) {
 } // namespace ClayFace
 
 /// <summary>
-/// stage.json の "Clay" 1 件(粘土の元セルの位置と伸ばせない面)
+/// 粘土ブロックの色(テクスチャ差し替え)。0 は clay.obj 既定の clay.png
 /// </summary>
-struct ClayFaceRecord {
+namespace ClayColor {
+
+inline constexpr i32 Count = 5;
+
+/// <summary>
+/// 色番号 → テクスチャ名(TextureLibrary::GetTexture に渡す)
+/// </summary>
+inline constexpr std::array<const char*, Count> Textures{
+	"clay.png", "clay2.png", "clay3.png", "clay4.png", "clay5.png",
+};
+
+/// <summary>
+/// 色番号 → エディタ表示用の代表色(テクスチャの平均色)
+/// </summary>
+inline constexpr std::array<ColorRGB, Count> Preview{
+	ColorRGB{ 0.965f, 0.961f, 0.957f },
+	ColorRGB{ 1.000f, 0.682f, 0.920f },
+	ColorRGB{ 0.693f, 0.702f, 1.000f },
+	ColorRGB{ 0.724f, 1.000f, 0.674f },
+	ColorRGB{ 1.000f, 0.938f, 0.674f },
+};
+
+} // namespace ClayColor
+
+/// <summary>
+/// stage.json の "Clay" 1 件(粘土の元セルの位置・伸ばせない面・色)
+/// </summary>
+struct ClayRecord {
 	MapChipIndex position;
 	u8 blockedFaces;
+	u8 color{ 0 }; // ClayColor の番号
 };
 
 /// <summary>
@@ -150,9 +179,9 @@ public:
 	MapChipType get(i32 x, i32 y, i32 z) const;
 
 	/// <summary>
-	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと全面開放の新しいブロック扱い
+	/// チップの設定(build 済みなら表示も更新、範囲外は無視)。粘土を置くと全面開放の新しいブロック扱い。color は粘土のときだけ有効
 	/// </summary>
-	void set(i32 x, i32 y, i32 z, MapChipType type);
+	void set(i32 x, i32 y, i32 z, MapChipType type, u8 color = 0);
 
 	/// <summary>
 	/// <para>粘土を from から隣接する空セル to へ伸ばす。コアは前後左右へ分岐でき、子はコアから外向きの直線方向にだけ伸ばせる。塞がれた面(stage.json)からは伸ばせない</para>
@@ -170,14 +199,19 @@ public:
 	u8 blocked_faces(const MapChipIndex& index) const;
 
 	/// <summary>
+	/// セルの粘土の色番号(ClayColor の添字。粘土でない / 範囲外は 0)
+	/// </summary>
+	u8 clay_color(const MapChipIndex& index) const;
+
+	/// <summary>
 	/// directory/stage.json の "Clay" を読む。ファイルが無ければ空(警告なし)、壊れていれば警告して空。セルが粘土かの検証は呼び出し側
 	/// </summary>
-	static std::vector<ClayFaceRecord> LoadStageJsonClay(const std::string& directory);
+	static std::vector<ClayRecord> LoadStageJsonClay(const std::string& directory);
 
 	/// <summary>
 	/// directory/stage.json の "Clay" を records で書き換える(他のキーは維持、無ければ作る)
 	/// </summary>
-	static bool SaveStageJsonClay(const std::string& directory, const std::vector<ClayFaceRecord>& records);
+	static bool SaveStageJsonClay(const std::string& directory, const std::vector<ClayRecord>& records);
 
 	/// <summary>
 	/// parent(粘土の元セルの立方体)の塞がれた各面に薄い暗色の板を子として付ける。親の destroy_self で一緒に消える
@@ -229,9 +263,10 @@ public:
 		std::vector<i32> clayOrigin;
 		std::vector<i32> clayPiece;
 		std::vector<u8> clayBlockedFaces;
+		std::vector<u8> clayColor;
 	};
 
-	Cells cells() const { return Cells{ chips, clayOrigin, clayPiece, clayBlockedFaces }; }
+	Cells cells() const { return Cells{ chips, clayOrigin, clayPiece, clayBlockedFaces, clayColor }; }
 
 	/// <summary>
 	/// cells() の内容に戻し、変わったセルだけ表示を作り直す。サイズが違えば警告して無視。version は進む
@@ -284,6 +319,7 @@ private:
 	std::vector<i32> clayOrigin; // chips と同じ添字。粘土なら元セルの flat_index、他は -1
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
+	std::vector<u8> clayColor; // chips と同じ添字。粘土の色番号(ClayColor の添字)、他は 0
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	struct VisualInterpolation {
 		Reference<szg::StaticMeshInstance> visual;

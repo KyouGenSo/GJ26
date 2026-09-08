@@ -26,7 +26,7 @@ public:
 
 private:
 	void rebuild();
-	static ColorRGB ChipColor(MapChipType type);
+	static ColorRGB ChipColor(MapChipType type, u8 clayColor);
 
 private:
 	Reference<szg::WorldRoot> worldRoot;
