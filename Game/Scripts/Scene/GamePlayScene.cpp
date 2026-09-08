@@ -1,6 +1,7 @@
 #include "GamePlayScene.h"
 
 #include <Engine/Application/Logger.h>
+#include <Engine/Assets/Shader/ShaderLibrary.h>
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
@@ -15,7 +16,10 @@ GamePlayScene::~GamePlayScene() noexcept = default;
 
 void GamePlayScene::custom_load_asset() {
 	MapChipField::RegisterVisualAssets();
-	
+	// RenderPath.json のブルーム(レイヤー 1 をぼかして加算)が使うポストエフェクトシェーダー
+	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/GaussianBlur.PS.hlsl");
+	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/MargeTexture4.PS.hlsl");
+	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/Bloom.PS.hlsl");
 }
 
 void GamePlayScene::custom_setup() {

@@ -31,8 +31,8 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 130.0,
-					"Y": 160.0
+					"X": 100.0,
+					"Y": 350.0
 				}
 			},
 			"Links": {},
@@ -49,8 +49,8 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 460.0,
-					"Y": 160.0
+					"X": 400.0,
+					"Y": 350.0
 				}
 			},
 			"Links": {
@@ -89,22 +89,185 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 780.0,
-					"Y": 160.0
+					"X": 700.0,
+					"Y": 350.0
 				}
 			},
 			"Links": {
 				"Base": 1
 			},
 			"Type": 0
+		},
+		{
+			"Data": {
+				"BottomRight": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"CameraId": 0,
+				"ClearDepthStencil": false,
+				"GBufferSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Height": 1080.0,
+				"LayerIndex": 2,
+				"Left": 0.0,
+				"MaxDepth": 1.0,
+				"MinDepth": 0.0,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Top": 0.0,
+				"TopLeft": {
+					"X": 0.0,
+					"Y": 0.0
+				},
+				"Width": 1920.0,
+				"WorldIndex": 0
+			},
+			"Debug": {
+				"Position": {
+					"X": 700.0,
+					"Y": 650.0
+				}
+			},
+			"Links": {},
+			"Type": 0
+		},
+		{
+			"Data": {
+				"EffectTag": null,
+				"OutputSize": {
+					"X": 960.0,
+					"Y": 540.0
+				},
+				"Type": 3
+			},
+			"Debug": {
+				"Position": {
+					"X": 1000.0,
+					"Y": 650.0
+				}
+			},
+			"Links": {
+				"Base": 3
+			},
+			"Type": 1
+		},
+		{
+			"Data": {
+				"EffectTag": null,
+				"OutputSize": {
+					"X": 480.0,
+					"Y": 270.0
+				},
+				"Type": 3
+			},
+			"Debug": {
+				"Position": {
+					"X": 1250.0,
+					"Y": 650.0
+				}
+			},
+			"Links": {
+				"Base": 4
+			},
+			"Type": 1
+		},
+		{
+			"Data": {
+				"EffectTag": null,
+				"OutputSize": {
+					"X": 240.0,
+					"Y": 135.0
+				},
+				"Type": 3
+			},
+			"Debug": {
+				"Position": {
+					"X": 1500.0,
+					"Y": 650.0
+				}
+			},
+			"Links": {
+				"Base": 5
+			},
+			"Type": 1
+		},
+		{
+			"Data": {
+				"EffectTag": null,
+				"OutputSize": {
+					"X": 120.0,
+					"Y": 67.0
+				},
+				"Type": 3
+			},
+			"Debug": {
+				"Position": {
+					"X": 1750.0,
+					"Y": 650.0
+				}
+			},
+			"Links": {
+				"Base": 6
+			},
+			"Type": 1
+		},
+		{
+			"Data": {
+				"EffectTag": null,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Type": 6
+			},
+			"Debug": {
+				"Position": {
+					"X": 2000.0,
+					"Y": 650.0
+				}
+			},
+			"Links": {
+				"Base": 4,
+				"MixTexture1": 5,
+				"MixTexture2": 6,
+				"MixTexture3": 7
+			},
+			"Type": 1
+		},
+		{
+			"Data": {
+				"EffectTag": "ClayGlow",
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Type": 1,
+				"UseRuntime": true
+			},
+			"Debug": {
+				"Position": {
+					"X": 2300.0,
+					"Y": 350.0
+				}
+			},
+			"Links": {
+				"Base": 2,
+				"CombinedTexture": 8
+			},
+			"Type": 1
 		}
 	],
 	"ResultNode": {
-		"Connect": 3,
+		"Connect": 10,
 		"Debug": {
 			"Position": {
-				"X": 1100.0,
-				"Y": 160.0
+				"X": 2600.0,
+				"Y": 350.0
 			}
 		}
 	}
