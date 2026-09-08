@@ -13,6 +13,7 @@ class FollowCamera;
 class GoalManager;
 class MapTestScript;
 class Player;
+class UndoManager;
 
 /// <summary>
 /// インゲームを構成する各スクリプトの生成と更新順を管理する
@@ -43,6 +44,7 @@ private:
 	Reference<Player> player_;
 	Reference<FollowCamera> followCamera_;
 	Reference<GoalManager> goalManager_;
+	Reference<UndoManager> undoManager_;
 	szg::InputHandler<szg::KeyID> keyInput_;
 	szg::InputHandler<szg::PadID> padInput_;
 
