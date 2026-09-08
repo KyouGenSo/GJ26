@@ -1,0 +1,42 @@
+{
+	"SquashRatio": {
+		"type": "R32",
+		"value": 0.15000000596046448
+	},
+	"PullRatio": {
+		"type": "R32",
+		"value": 0.550000011920929
+	},
+	"SettleRatio": {
+		"type": "R32",
+		"value": 0.30000001192092896
+	},
+	"PullProgress": {
+		"type": "R32",
+		"value": 0.8500000238418579
+	},
+	"NeckDepth": {
+		"type": "R32",
+		"value": 0.30000001192092896
+	},
+	"NeckResolveStart": {
+		"type": "R32",
+		"value": 0.699999988079071
+	},
+	"TipDomeThreshold": {
+		"type": "R32",
+		"value": 0.4000000059604645
+	},
+	"RingCount": {
+		"type": "I32",
+		"value": 8
+	},
+	"CornerSegments": {
+		"type": "I32",
+		"value": 4
+	},
+	"KeyframeCount": {
+		"type": "I32",
+		"value": 10
+	}
+}

@@ -1,5 +1,8 @@
 #include "MapChipField.h"
 
+#include "ClayMeshGenerator.h"
+#include "ClayStretchAnimator.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -128,6 +131,9 @@ std::optional<MapChipIndex> ReadPosition(const nlohmann::json& entry) {
 }
 
 } // namespace
+
+MapChipField::MapChipField() = default;
+MapChipField::~MapChipField() = default;
 
 bool MapChipField::load_stage(i32 stageNumber) {
 	return load(StageDirectory(stageNumber));
@@ -292,14 +298,56 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 	root = worldRoot->instantiate<szg::WorldInstance>(nullptr);
 	root->transform_mut().set_translate(center());
 	visuals.assign(chips.size(), Reference<szg::StaticMeshInstance>{});
+	clayBlockVisuals.clear();
+	stretchAnimator.reset();
 	faceCrosses.assign(chips.size(), {});
 
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == MapChipType::Clay) {
+			continue;
+		}
 		refresh_visual(i);
+	}
+
+	std::unordered_set<i32> uniqueOrigins;
+	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == MapChipType::Clay && clayOrigin[i] >= 0) {
+			uniqueOrigins.insert(clayOrigin[i]);
+		}
+	}
+	for (const i32 originFlat : uniqueOrigins) {
+		ClayMeshGenerator::Generate(originFlat, *this);
+		const MapChipIndex origin{
+			originFlat % sizeX,
+			originFlat / (sizeX * sizeZ),
+			(originFlat / sizeX) % sizeZ,
+		};
+		const std::string meshName = ClayMeshGenerator::MeshName(originFlat);
+		Reference<szg::StaticMeshInstance> blockVisual =
+			worldRoot->instantiate<szg::StaticMeshInstance>(root, meshName);
+		Vector3 localPosition = to_world(origin.x, origin.y, origin.z) - center();
+		blockVisual->transform_mut().set_translate(localPosition);
+		const bool connected = clayPiece[originFlat] >= 0;
+		if (!blockVisual->get_materials().empty()) {
+			blockVisual->get_materials()[0].color = connected
+				? ColorRGB{ 0.30f, 0.05f, 0.00f }
+				: ColorRGB{ 0.55f, 0.35f, 0.20f };
+		}
+		AttachFaceCrosses(*worldRoot, blockVisual, clayBlockedFaces[originFlat], 1.0f, 0.0f);
+		generatedClayMeshes.insert(originFlat);
+		clayBlockVisuals[originFlat] = blockVisual;
 	}
 }
 
 void MapChipField::destroy_root() {
+	if (stretchAnimator) {
+		stretchAnimator.reset();
+	}
+	for (const i32 originFlat : generatedClayMeshes) {
+		ClayMeshGenerator::Remove(originFlat);
+	}
+	generatedClayMeshes.clear();
+	clayBlockVisuals.clear();
 	cancel_visual_interpolation();
 	if (root) {
 		root->destroy_self();
@@ -457,6 +505,12 @@ void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
 	if (t >= 1.0f) {
 		visualInterpolationSteps.pop_front();
 		visualInterpolationElapsed = 0.0f;
+	}
+}
+
+void MapChipField::update_stretch_animation(r32 deltaSeconds) {
+	if (stretchAnimator) {
+		stretchAnimator->update(deltaSeconds, *this);
 	}
 }
 
@@ -662,10 +716,41 @@ bool MapChipField::stretch_clay(
 	clayPiece[target] = clayPiece[source];
 	clayColor[target] = clayColor[source];
 	++revision;
-	refresh_visual(target);
-	begin_visual_interpolation(
-		std::vector<i32>{ target },
-		{ VisualMove{ to_world(to.x - from.x, to.y - from.y, to.z - from.z), visualMoveDuration } });
+
+	if (visualMoveDuration > 0.0f && root >= 0) {
+		if (!stretchAnimator) {
+			stretchAnimator = std::make_unique<ClayStretchAnimator>();
+		}
+		const i32 originFlat = root;
+		Reference<szg::StaticMeshInstance> baseVisual = clayBlockVisuals.contains(originFlat) ? clayBlockVisuals.at(originFlat) : nullptr;
+		if (baseVisual && this->root) {
+			const Vector3 stretchDir{
+				static_cast<r32>(stretchDirection.x),
+				static_cast<r32>(stretchDirection.y),
+				static_cast<r32>(stretchDirection.z)
+			};
+			stretchAnimator->begin(
+				originFlat,
+				source,
+				target,
+				stretchDir,
+				visualMoveDuration,
+				*this,
+				*worldRoot,
+				this->root,
+				baseVisual);
+		} else {
+			refresh_visual(target);
+			begin_visual_interpolation(
+				std::vector<i32>{ target },
+				{ VisualMove{ to_world(to.x - from.x, to.y - from.y, to.z - from.z), visualMoveDuration } });
+		}
+	} else {
+		refresh_visual(target);
+		begin_visual_interpolation(
+			std::vector<i32>{ target },
+			{ VisualMove{ to_world(to.x - from.x, to.y - from.y, to.z - from.z), visualMoveDuration } });
+	}
 	return true;
 }
 
@@ -1135,7 +1220,8 @@ void MapChipField::refresh_visual(i32 flat) {
 	std::erase_if(warnings, [flat](const WarningEffect& warning) { return warning.flat == flat; });
 
 	// 上段はピースのモデル(下段)に含まれるので表示を持たない
-	if (chips[flat] == MapChipType::Empty || chips[flat] == MapChipType::GoalPieceUpper || !root) {
+	if (chips[flat] == MapChipType::Empty ||
+		chips[flat] == MapChipType::GoalPieceUpper || !root) {
 		return;
 	}
 

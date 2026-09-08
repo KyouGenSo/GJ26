@@ -2,10 +2,13 @@
 
 #include <array>
 #include <deque>
+#include <memory>
 #include <format>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
@@ -14,6 +17,8 @@
 #include <Library/Math/ColorRGB.h>
 #include <Library/Math/Vector3.h>
 #include <Library/Utility/Template/Reference.h>
+
+class ClayStretchAnimator;
 
 /// <summary>
 /// マップチップの種類(CSVのセル値)
@@ -204,6 +209,9 @@ std::optional<i32> SnapToFloorY(i32 x, i32 y, i32 z, i32 height, GetChip get) {
 /// </summary>
 class MapChipField {
 public:
+	MapChipField();
+	~MapChipField();
+
 	/// <summary>
 	/// directory/layer01.csv, layer02.csv, ... を連番が途切れるまで読み込む
 	/// </summary>
@@ -387,6 +395,11 @@ public:
 	void update_visual_interpolation(r32 deltaSeconds);
 
 	/// <summary>
+	/// 粘土伸長アニメーションを更新する
+	/// </summary>
+	void update_stretch_animation(r32 deltaSeconds);
+
+	/// <summary>
 	/// 表示モデルの移動補間が再生中か
 	/// </summary>
 	bool is_visual_interpolating() const { return !visualInterpolationSteps.empty(); }
@@ -448,10 +461,11 @@ public:
 	/// </summary>
 	void destroy_root();
 
+	MapChipIndex unflatten(i32 flat) const;
+
 private:
 	bool is_inside(i32 x, i32 y, i32 z) const;
 	i32 flat_index(i32 x, i32 y, i32 z) const;
-	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	u8 clay_stretch_face(i32 flat) const; // 伸ばして出た粘土がコアから伸びた方向(ClayFace のビット。コア・粘土以外は None)
 	bool has_connected_clay(i32 piece) const; // piece(ゴール条件オブジェクトの下段)につながった粘土が 1 つでもあるか
@@ -513,5 +527,8 @@ private:
 	std::vector<WarningEffect> warnings; // 再生中の演出
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
+	std::unordered_set<i32> generatedClayMeshes;
+	std::unordered_map<i32, Reference<szg::StaticMeshInstance>> clayBlockVisuals;
+	std::unique_ptr<ClayStretchAnimator> stretchAnimator;
 	u32 revision{ 0 };
 };

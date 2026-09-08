@@ -15,6 +15,7 @@
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
 #include "Scripts/Manager/UndoManager.h"
+#include "Scripts/MapChip/ClayStretchMeshGenerator.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 
@@ -39,6 +40,9 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
+
+	ClayStretchMeshGenerator::GenerateAll();
+
 	setup_json_asset();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
 	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);

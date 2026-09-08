@@ -126,6 +126,7 @@ void MapTestScript::set_undo_manager(Reference<UndoManager> undoManager_) {
 void MapTestScript::prev_update() {
 	field.update_visual_interpolation(szg::WorldClock::DeltaSeconds());
 	field.update_warnings(szg::WorldClock::DeltaSeconds());
+	field.update_stretch_animation(szg::WorldClock::DeltaSeconds());
 	keys.update();
 
 	if (keys.trigger(szg::KeyID::F5)) {

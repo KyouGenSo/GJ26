@@ -140,6 +140,13 @@
     </ClCompile>
     <ClCompile Include="Scripts\Instance\Player\State\PlayerJumpState.cpp" />
     <ClCompile Include="Scripts\Instance\Player\State\PlayerGripState.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayMeshGenerator.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayStretchAnimator.cpp">
+      <Filter>Scripts\MapChip</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\MapChip\ClayStretchMeshGenerator.cpp">
+      <Filter>Scripts\MapChip</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h">
@@ -176,6 +183,12 @@
       <Filter>Scripts\Instance\Player</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\MapChip\BlockMovementJudge.h">
+      <Filter>Scripts\MapChip</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\MapChip\ClayStretchAnimator.h">
+      <Filter>Scripts\MapChip</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\MapChip\ClayStretchMeshGenerator.h">
       <Filter>Scripts\MapChip</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h">
@@ -250,5 +263,6 @@
     <ClInclude Include="Scripts\Instance\Player\State\PlayerGripState.h">
       <Filter>Scripts\Instance\Player\State</Filter>
     </ClInclude>
+    <ClInclude Include="Scripts\MapChip\ClayMeshGenerator.h" />
   </ItemGroup>
 </Project>

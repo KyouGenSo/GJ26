@@ -30,6 +30,9 @@
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
     <ClCompile Include="Scripts\MapChip\BlockMovementJudge.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayMeshGenerator.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayStretchAnimator.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayStretchMeshGenerator.cpp" />
     <ClCompile Include="Scripts\main.cpp" />
     <ClCompile Include="Scripts\Scene\FactoryGJ26.cpp" />
     <ClCompile Include="Scripts\GJ26.cpp" />
@@ -69,6 +72,9 @@
     <ClInclude Include="Scripts\Instance\Player\State\IPlayerState.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
     <ClInclude Include="Scripts\MapChip\BlockMovementJudge.h" />
+    <ClInclude Include="Scripts\MapChip\ClayMeshGenerator.h" />
+    <ClInclude Include="Scripts\MapChip\ClayStretchAnimator.h" />
+    <ClInclude Include="Scripts\MapChip\ClayStretchMeshGenerator.h" />
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
     <ClInclude Include="Scripts\GJ26.h" />
     <ClInclude Include="Scripts\MapChip\MapChipField.h" />
@@ -184,6 +190,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ForcedIncludeFiles>$(SolutionDir)SyzygyEngine\Library\Utility\BuiltinTypes.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <FxCompile>
       <ShaderModel>6.6</ShaderModel>
