@@ -45,7 +45,7 @@
 				"Y": -1.0,
 				"Z": -0.0
 			},
-			"Influence Layer": 1,
+			"Influence Layer": 3,
 			"Intensity": 1.0,
 			"Local transform": {
 				"Rotation": {
@@ -335,5 +335,5 @@
 		}
 	],
 	"Name": "PlayerDevWorld",
-	"NumLayer": 2
+	"NumLayer": 3
 }

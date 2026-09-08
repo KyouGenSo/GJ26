@@ -237,6 +237,11 @@ public:
 	void build(szg::WorldRoot& worldRoot_);
 
 	/// <summary>
+	/// Goal表示に使う描画レイヤーを設定する（build前に指定。既定はLayer 0）
+	/// </summary>
+	void set_goal_visual_layer(u32 layer) noexcept { goalVisualLayer = layer; }
+
+	/// <summary>
 	/// 全表示モデルの親(ステージ中央に置いた空の WorldInstance)。build 前は null。子のローカル座標は中央基準
 	/// </summary>
 	Reference<szg::WorldInstance> root_mut() { return root; }
@@ -372,12 +377,6 @@ public:
 	Reference<szg::StaticMeshInstance> visual_mut(const MapChipIndex& index);
 
 	/// <summary>
-	/// Goalセルの表示モデルをActive(goal.obj) / Off(goalOff.obj)へ切り替える
-	/// </summary>
-	/// <returns>Goalセルであり、表示モデルを切り替えられた場合はtrue</returns>
-	bool set_goal_active(const MapChipIndex& index, bool active);
-
-	/// <summary>
 	/// セルデータの複製(表示・root は含まない)。restore で戻す
 	/// </summary>
 	struct Cells {
@@ -441,7 +440,7 @@ private:
 	void begin_warning(i32 flat, Reference<szg::StaticMeshInstance> visual, const Vector3& shakeAxis, r32 shakeAmplitude, bool blink); // 同じ visual の演出があれば戻してから始める
 	void end_warning(WarningEffect& warning); // 色と位置を戻す
 	void end_warnings(); // 全演出を戻して消す
-	void refresh_visual(i32 flat, bool goalActive = false);
+	void refresh_visual(i32 flat);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
 private:
@@ -453,6 +452,7 @@ private:
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<u8> clayColor; // chips と同じ添字。粘土の色番号(ClayColor の添字)、他は 0
+	u32 goalVisualLayer{ 0 };
 	std::optional<PlayerSpawnRecord> playerSpawn;
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	struct VisualInterpolation {

@@ -1,14 +1,5 @@
 {
-	"Animation": [
-		".\\Game\\Assets\\Models\\player\\playerStand.gltf",
-		".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
-		".\\Game\\Assets\\Models\\player\\playerJump.gltf",
-		".\\Game\\Assets\\Models\\player\\playerGrab.gltf",
-		".\\Game\\Assets\\Models\\player\\playerPush.gltf",
-		".\\Game\\Assets\\Models\\player\\playerPull.gltf",
-		".\\Game\\Assets\\Models\\player\\playerPush_left.gltf",
-		".\\Game\\Assets\\Models\\player\\playerPush_right.gltf"
-	],
+	"Animation": [],
 	"Audio": [],
 	"Font": [],
 	"Json": [],
@@ -19,13 +10,16 @@
 	"Param": [],
 	"Particle": [
 		".\\Game\\Assets\\particle\\GoalEffect.particle",
-		".\\Game\\Assets\\particle\\GoalPieceEffect.particle"
+		".\\Game\\Assets\\particle\\GoalEffect2.particle"
 	],
-	"Shader": [],
+	"Shader": [
+		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
+	],
 	"Skeleton": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
 	"Texture": [
-		".\\Game\\Assets\\textures\\Cross.png"
+		".\\Game\\Assets\\textures\\Cross.png",
+		".\\Game\\Assets\\textures\\texture_Star_512px (1).png"
 	]
 }

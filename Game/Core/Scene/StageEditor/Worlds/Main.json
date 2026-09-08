@@ -144,8 +144,8 @@
 					"Z": 0.0
 				}
 			},
-			"Name": "GoalGlowEffect",
-			"ParticleFile": "GoalGlowEffect.particle",
+			"Name": "GoalEffect",
+			"ParticleFile": "GoalEffect.particle",
 			"Type": 6000,
 			"Use runtime": true
 		}

@@ -13,44 +13,6 @@
 					"Y": 1080.0
 				},
 				"Height": 1080.0,
-				"LayerIndex": 0,
-				"Left": 0.0,
-				"MaxDepth": 1.0,
-				"MinDepth": 0.0,
-				"OutputSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Top": 0.0,
-				"TopLeft": {
-					"X": 0.0,
-					"Y": 0.0
-				},
-				"Width": 1920.0,
-				"WorldIndex": 0
-			},
-			"Debug": {
-				"Position": {
-					"X": 210.0,
-					"Y": 350.0
-				}
-			},
-			"Links": {},
-			"Type": 0
-		},
-		{
-			"Data": {
-				"BottomRight": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"CameraId": 0,
-				"ClearDepthStencil": false,
-				"GBufferSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Height": 1080.0,
 				"LayerIndex": 1,
 				"Left": 0.0,
 				"MaxDepth": 1.0,
@@ -69,8 +31,106 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 210.0,
-					"Y": 600.0
+					"X": 100.0,
+					"Y": 350.0
+				}
+			},
+			"Links": {},
+			"Type": 0
+		},
+		{
+			"Data": {
+				"EffectTag": "GoalGrayscale",
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Type": 4
+			},
+			"Debug": {
+				"Position": {
+					"X": 400.0,
+					"Y": 350.0
+				}
+			},
+			"Links": {
+				"Base": 0
+			},
+			"Type": 1
+		},
+		{
+			"Data": {
+				"BottomRight": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"CameraId": 0,
+				"ClearDepthStencil": false,
+				"GBufferSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Height": 1080.0,
+				"LayerIndex": 0,
+				"Left": 0.0,
+				"MaxDepth": 1.0,
+				"MinDepth": 0.0,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Top": 0.0,
+				"TopLeft": {
+					"X": 0.0,
+					"Y": 0.0
+				},
+				"Width": 1920.0,
+				"WorldIndex": 0
+			},
+			"Debug": {
+				"Position": {
+					"X": 700.0,
+					"Y": 350.0
+				}
+			},
+			"Links": {
+				"Base": 1
+			},
+			"Type": 0
+		},
+		{
+			"Data": {
+				"BottomRight": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"CameraId": 0,
+				"ClearDepthStencil": false,
+				"GBufferSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Height": 1080.0,
+				"LayerIndex": 2,
+				"Left": 0.0,
+				"MaxDepth": 1.0,
+				"MinDepth": 0.0,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Top": 0.0,
+				"TopLeft": {
+					"X": 0.0,
+					"Y": 0.0
+				},
+				"Width": 1920.0,
+				"WorldIndex": 0
+			},
+			"Debug": {
+				"Position": {
+					"X": 700.0,
+					"Y": 650.0
 				}
 			},
 			"Links": {},
@@ -87,12 +147,12 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 500.0,
-					"Y": 600.0
+					"X": 1000.0,
+					"Y": 650.0
 				}
 			},
 			"Links": {
-				"Base": 1
+				"Base": 3
 			},
 			"Type": 1
 		},
@@ -107,12 +167,12 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 750.0,
-					"Y": 600.0
+					"X": 1250.0,
+					"Y": 650.0
 				}
 			},
 			"Links": {
-				"Base": 2
+				"Base": 4
 			},
 			"Type": 1
 		},
@@ -127,12 +187,12 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 1000.0,
-					"Y": 600.0
+					"X": 1500.0,
+					"Y": 650.0
 				}
 			},
 			"Links": {
-				"Base": 3
+				"Base": 5
 			},
 			"Type": 1
 		},
@@ -147,12 +207,12 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 1250.0,
-					"Y": 600.0
+					"X": 1750.0,
+					"Y": 650.0
 				}
 			},
 			"Links": {
-				"Base": 4
+				"Base": 6
 			},
 			"Type": 1
 		},
@@ -167,15 +227,15 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 1500.0,
-					"Y": 600.0
+					"X": 2000.0,
+					"Y": 650.0
 				}
 			},
 			"Links": {
-				"Base": 2,
-				"MixTexture1": 3,
-				"MixTexture2": 4,
-				"MixTexture3": 5
+				"Base": 4,
+				"MixTexture1": 5,
+				"MixTexture2": 6,
+				"MixTexture3": 7
 			},
 			"Type": 1
 		},
@@ -191,22 +251,22 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 1800.0,
+					"X": 2300.0,
 					"Y": 350.0
 				}
 			},
 			"Links": {
-				"Base": 0,
-				"CombinedTexture": 6
+				"Base": 2,
+				"CombinedTexture": 8
 			},
 			"Type": 1
 		}
 	],
 	"ResultNode": {
-		"Connect": 8,
+		"Connect": 10,
 		"Debug": {
 			"Position": {
-				"X": 2100.0,
+				"X": 2600.0,
 				"Y": 350.0
 			}
 		}

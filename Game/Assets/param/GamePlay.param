@@ -1,0 +1,22 @@
+{
+	"ClearCameraDuration": {
+		"type": "R32",
+		"value": 1.4
+	},
+	"ClearCameraDistance": {
+		"type": "R32",
+		"value": 4.5
+	},
+	"ClearCameraElevationDegrees": {
+		"type": "R32",
+		"value": 38.0
+	},
+	"ClearCameraTargetHeight": {
+		"type": "R32",
+		"value": 0.8
+	},
+	"ClearCameraBounceStrength": {
+		"type": "R32",
+		"value": 1.1
+	}
+}
