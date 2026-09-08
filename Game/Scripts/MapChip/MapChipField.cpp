@@ -141,6 +141,12 @@ void MapChipField::RegisterVisualAssets() {
 	for (i32 i = 1; i < ClayColor::Count; ++i) {
 		szg::TextureLibrary::RegisterLoadQue(std::format("./Game/Assets/Models/clay/{}", ClayColor::Textures[i]));
 	}
+	// 伸ばして出た粘土の矢印付きテクスチャ(色 × 方向。make_arrow_textures.py で生成)
+	for (i32 i = 0; i < ClayColor::Count; ++i) {
+		for (const ClayFace::Entry& face : ClayFace::Table) {
+			szg::TextureLibrary::RegisterLoadQue(std::format("./Game/Assets/Models/clay/{}", ClayColor::ArrowTexture(i, face.bit)));
+		}
+	}
 }
 
 bool MapChipField::load(const std::string& directory) {
@@ -955,6 +961,22 @@ std::optional<i32> MapChipField::shifted(i32 flat, const MapChipIndex& delta) co
 	return flat_index(x, y, z);
 }
 
+u8 MapChipField::clay_stretch_face(i32 flat) const {
+	const i32 origin = clayOrigin[flat];
+	if (chips[flat] != MapChipType::Clay || origin < 0 || origin == flat) {
+		return ClayFace::None;
+	}
+	// 伸ばして出たセルはコアと同じ X 軸か Z 軸上にあるので、コアからの向きが伸ばした方向
+	const MapChipIndex self = unflatten(flat);
+	const MapChipIndex core = unflatten(origin);
+	const i32 dx = self.x - core.x;
+	const i32 dz = self.z - core.z;
+	if ((dx != 0) == (dz != 0)) {
+		return ClayFace::None;
+	}
+	return ClayFace::FromDirection({ dx == 0 ? 0 : (dx < 0 ? -1 : 1), 0, dz == 0 ? 0 : (dz < 0 ? -1 : 1) });
+}
+
 std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapChipIndex& to) const {
 	if (from.y != to.y || std::abs(to.x - from.x) + std::abs(to.z - from.z) != 1) {
 		return {};
@@ -1029,9 +1051,14 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		localPosition.y += setting->yOffset;
 	}
 	visual->transform_mut().set_translate(localPosition);
-	// 色付き粘土はインスタンス単位でテクスチャを差し替える(0 は clay.obj 既定の clay.png のまま)
-	if (chips[flat] == MapChipType::Clay && clayColor[flat] != 0 && !visual->get_materials().empty()) {
-		visual->get_materials()[0].texture = szg::TextureLibrary::GetTexture(ClayColor::Textures[clayColor[flat]]);
+	// 粘土はインスタンス単位でテクスチャを差し替える。伸ばして出たセルは矢印付き、コアは色のみ(0 は clay.obj 既定の clay.png のまま)
+	if (chips[flat] == MapChipType::Clay && !visual->get_materials().empty()) {
+		if (const u8 face = clay_stretch_face(flat); face != ClayFace::None) {
+			visual->get_materials()[0].texture = szg::TextureLibrary::GetTexture(ClayColor::ArrowTexture(clayColor[flat], face));
+		}
+		else if (clayColor[flat] != 0) {
+			visual->get_materials()[0].texture = szg::TextureLibrary::GetTexture(ClayColor::Textures[clayColor[flat]]);
+		}
 	}
 	// 塞がれた面のバツ印は元セルにだけ付ける(clay.obj ローカルは半幅 1・底面 0)
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {
