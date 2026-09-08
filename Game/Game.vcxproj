@@ -22,6 +22,7 @@
     <ClCompile Include="Scripts\ScriptStageEditor\AxisController.cpp" />
     <ClCompile Include="Scripts\ScriptGamePlay\GamePlayScript.cpp" />
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp" />
+    <ClCompile Include="Scripts\Instance\Skydome\Skydome.cpp" />
     <ClCompile Include="Scripts\Instance\Player\Player.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerKeyInput.cpp" />
@@ -56,6 +57,7 @@
     <ClInclude Include="Scripts\ScriptStageEditor\AxisController.h" />
     <ClInclude Include="Scripts\ScriptGamePlay\GamePlayScript.h" />
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h" />
+    <ClInclude Include="Scripts\Instance\Skydome\Skydome.h" />
     <ClInclude Include="Scripts\InputMapper.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerContext.h" />
     <ClInclude Include="Scripts\Instance\Player\Player.h" />
