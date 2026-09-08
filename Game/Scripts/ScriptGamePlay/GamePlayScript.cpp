@@ -13,12 +13,14 @@
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
+#include "Scripts/Manager/UndoManager.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 
 namespace {
 
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
+constexpr r32 kResetHoldDurationSeconds = 1.0f;
 
 } // namespace
 
@@ -32,7 +34,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		return;
 	}
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
-	padInput_.initialize({ szg::PadID::Start }, szg::InputInitializeMode::Current);
+	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	mapTest_ = mapTest;
@@ -78,12 +80,18 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 
 	mapTest_->set_player(player_);
 
+	std::unique_ptr<UndoManager> undoManager = eps::CreateUnique<UndoManager>();
+	undoManager_ = undoManager;
+	undoManager_->setup(mapTest_->field_mut(), player_);
+	mapTest_->set_undo_manager(undoManager_);
+
 	std::unique_ptr<GoalManager> goalManager = eps::CreateUnique<GoalManager>();
 	goalManager_ = goalManager;
 	goalManager_->setup(mapTest_->field_mut(), worldRoot);
 	goalManager_->set_player(player_);
 
-	// ステージ更新 -> Player移動 -> 追従カメラ更新 -> ゴール判定の順に実行する
+	// Undo -> ステージ更新 -> Player移動 -> 追従カメラ更新 -> ゴール判定の順に実行する
+	inGameScriptManager_.register_script(std::move(undoManager));
 	inGameScriptManager_.register_script(std::move(mapTest));
 	inGameScriptManager_.register_script(std::move(player));
 	if (followCamera) {
@@ -104,6 +112,7 @@ void GamePlayScript::finalize() {
 	player_.reset();
 	followCamera_.reset();
 	goalManager_.reset();
+	undoManager_.reset();
 }
 
 void GamePlayScript::prev_update() {
@@ -123,6 +132,15 @@ void GamePlayScript::prev_update() {
 		// ステージ選択画面へ遷移する
 		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
 		return;
+	}
+
+	// Yボタンが一定時間押され続けた場合、ステージを初期状態に戻す
+	if (padInput_.release(szg::PadID::Y)) {
+		resetHoldConsumed_ = false;
+	}
+	if (!resetHoldConsumed_ && padInput_.press_timer(szg::PadID::Y) >= kResetHoldDurationSeconds) {
+		resetHoldConsumed_ = true;
+		mapTest_->reload();
 	}
 
 	inGameScriptManager_.prev_update();

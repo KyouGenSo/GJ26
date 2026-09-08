@@ -159,6 +159,11 @@ void MapTestScript::prev_update() {
 void MapTestScript::reload() {
 	if (player) {
 		player->cancel_grip_move_interpolation();
+		// 掴んでいたセルは読み直した盤面では無効
+		PlayerContext& context = player->get_context_mut();
+		context.grippedBlockIndex.reset();
+		context.blockMoveResult.reset();
+		context.verticalVelocity = 0.0f;
 	}
 	field.load_stage(stageNumber);
 	field.build(*worldRoot);
@@ -248,7 +253,7 @@ void MapTestScript::debug_move_goal_piece(bool push) {
 			szgInformation("MapTestScript: pull ng (marker blocked)");
 			return;
 		}
-		const bool moved = field.move_goal_piece(piece, pieceTo);
+		const bool moved = field.move_goal_piece(piece, pieceTo).has_value();
 		if (moved) {
 			actor->transform_mut().set_translate(MapChipField::to_world(markerTo.x, markerTo.y, markerTo.z));
 			if (player) {
