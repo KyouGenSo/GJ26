@@ -443,6 +443,11 @@ public:
 	i32 height() const { return sizeY; }
 	i32 depth() const { return sizeZ; }
 
+	/// <summary>
+	/// root と子の表示モデルをまとめて破棄する(chips は残るので load し直せる)
+	/// </summary>
+	void destroy_root();
+
 private:
 	bool is_inside(i32 x, i32 y, i32 z) const;
 	i32 flat_index(i32 x, i32 y, i32 z) const;
@@ -467,7 +472,6 @@ private:
 	void end_warning(WarningEffect& warning); // 色と位置を戻す
 	void end_warnings(); // 全演出を戻して消す
 	void refresh_visual(i32 flat);
-	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
 private:
 	i32 sizeX{ 0 };
