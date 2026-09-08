@@ -13,6 +13,7 @@
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
+#include "Scripts/Instance/Skydome/Skydome.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 
 namespace {
@@ -53,6 +54,12 @@ void TitleScene::custom_load_asset() {
 }
 
 void TitleScene::custom_setup() {
+	if (Reference<szg::WorldCluster> world = world_mut(0)) {
+		world->world_root_mut().instantiate<Skydome>(nullptr);
+	}
+	else {
+		szgError("Title: world 0 not found.");
+	}
 
 	auto cameraInstance =
 		szg::RuntimeStorage::GetValue<Reference<szg::CameraInstance>>("RuntimeInstance", "MainCamera");
