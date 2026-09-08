@@ -96,6 +96,12 @@ public:
 	/// </summary>
 	bool overlaps_solid(const Vector3& min, const Vector3& max) const noexcept;
 
+	/// <summary>
+	/// <para>ワールド座標のAABB [min, max] と重なるセルの支えがゴール条件オブジェクト(下段・上段)だけなら、AABB 中心に一番近いそのセル</para>
+	/// <para>粘土が 1 つでも重なっていれば nullopt(粘土に乗っている扱い)</para>
+	/// </summary>
+	std::optional<MapChipIndex> goal_piece_top_under(const Vector3& min, const Vector3& max) const noexcept;
+
 	/// 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 	BlockMoveResult judge(
 		const Vector3& playerPosition,

@@ -121,6 +121,40 @@ bool BlockMovementJudge::overlaps_solid(const Vector3& min, const Vector3& max) 
 }
 
 //===========================================
+// AABBと重なるセルの支えがゴール条件オブジェクトだけなら、中心に一番近いそのセル
+//===========================================
+std::optional<MapChipIndex> BlockMovementJudge::goal_piece_top_under(const Vector3& min, const Vector3& max) const noexcept {
+	if (!field_ || field_->width() <= 0) {
+		return std::nullopt;
+	}
+
+	const Vector3 center = (min + max) * 0.5f;
+	std::optional<MapChipIndex> nearest;
+	float nearestDistance = 0.0f;
+	for (i32 z = CellIndex(min.z); z <= CellIndex(max.z); ++z) {
+		for (i32 x = CellIndex(min.x); x <= CellIndex(max.x); ++x) {
+			for (i32 y = CellIndex(min.y); y <= CellIndex(max.y); ++y) {
+				const MapChipType type = field_->get(x, y, z);
+				if (type == MapChipType::Clay) {
+					return std::nullopt;
+				}
+				if (type != MapChipType::GoalPiece && type != MapChipType::GoalPieceUpper) {
+					continue;
+				}
+				const float dx = center.x - static_cast<float>(x);
+				const float dz = center.z - static_cast<float>(z);
+				const float distance = dx * dx + dz * dz;
+				if (!nearest || distance < nearestDistance) {
+					nearest = MapChipIndex{ x, y, z };
+					nearestDistance = distance;
+				}
+			}
+		}
+	}
+	return nearest;
+}
+
+//===========================================
 // 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 //===========================================
 BlockMoveResult BlockMovementJudge::judge(
