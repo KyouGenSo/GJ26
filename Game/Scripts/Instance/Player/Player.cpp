@@ -76,8 +76,9 @@ void Player::finalize() {
 	meshInstance_.reset();
 	followCamera_.reset();
 	blockMovementJudge_.reset();
-	animationState_.reset();
+	activeAnimationKey_.clear();
 	gripMoveInterpolation_.reset();
+	gripMoveAnimationDirection_.reset();
 	gripInputReady_ = true;
 	gripMoveInputReady_ = true;
 }
@@ -139,7 +140,7 @@ void Player::prev_update() {
 // 操作対象のWorldInstanceを設定
 //================================
 void Player::set_world_instance(Reference<szg::WorldInstance> worldInstance_) noexcept {
-	gripMoveInterpolation_.reset();
+	cancel_grip_move_interpolation();
 	context_.worldInstance = worldInstance_;
 	context_.isGrounded = false;
 }
@@ -247,7 +248,7 @@ void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
 
 void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance) {
 	meshInstance_ = meshInstance;
-	animationState_.reset();
+	activeAnimationKey_.clear();
 	update_mesh_direction(true);
 	update_animation();
 }
@@ -292,6 +293,7 @@ bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept
 
 void Player::cancel_grip_move_interpolation() noexcept {
 	gripMoveInterpolation_.reset();
+	gripMoveAnimationDirection_.reset();
 }
 
 //================================
@@ -313,6 +315,10 @@ void Player::setup_json_asset() {
 	moveAnimation_.fileName = readString("MoveAnimationFile", moveAnimation_.fileName);
 	jumpAnimation_.fileName = readString("JumpAnimationFile", jumpAnimation_.fileName);
 	gripAnimation_.fileName = readString("GripAnimationFile", gripAnimation_.fileName);
+	pushAnimation_.fileName = readString("PushAnimationFile", pushAnimation_.fileName);
+	pullAnimation_.fileName = readString("PullAnimationFile", pullAnimation_.fileName);
+	pushLeftAnimation_.fileName = readString("PushLeftAnimationFile", pushLeftAnimation_.fileName);
+	pushRightAnimation_.fileName = readString("PushRightAnimationFile", pushRightAnimation_.fileName);
 	set_grip_move_speed(readFloat("GripMoveSpeed", context_.gripMoveSpeed));
 }
 
@@ -324,20 +330,19 @@ void Player::update_animation() {
 		return;
 	}
 	
-	// 現在のPlayerStateに対応するアニメーションが再生中なら何もしない
 	const PlayerState state = stateManager_.get_current_state();
-	if (animationState_ && *animationState_ == state) {
+	const AnimationSetting& setting = gripMoveInterpolation_ && gripMoveAnimationDirection_
+		? resolve_grip_move_animation(*gripMoveAnimationDirection_)
+		: resolve_animation_setting(state);
+	const std::string animationKey = setting.fileName + '-' + animationClipName_;
+	if (activeAnimationKey_ == animationKey) {
 		return;
 	}
-
-	// PlayerStateに対応するアニメーションを再生する
-	const AnimationSetting& setting = resolve_animation_setting(state);
-	const std::string animationKey = setting.fileName + '-' + animationClipName_;
 
 	// アニメーションが登録されていない場合は警告を出して終了
 	if (!szg::NodeAnimationLibrary::IsRegistered(animationKey)) {
 		szgWarning("Player: animation is not registered. Name-'{}'.", animationKey);
-		animationState_ = state;
+		activeAnimationKey_ = animationKey;
 		return;
 	}
 
@@ -349,7 +354,24 @@ void Player::update_animation() {
 	if (szg::NodeAnimationPlayer* animation = meshInstance_->get_animation()) {
 		animation->restart();
 	}
-	animationState_ = state;
+	activeAnimationKey_ = animationKey;
+}
+
+//================================
+// Grip中の移動方向に対応するアニメーション設定を取得
+//================================
+const Player::AnimationSetting& Player::resolve_grip_move_animation(BlockMoveDirection direction) const noexcept {
+	switch (direction) {
+	case BlockMoveDirection::Backward:
+		return pullAnimation_;
+	case BlockMoveDirection::Left:
+		return pushLeftAnimation_;
+	case BlockMoveDirection::Right:
+		return pushRightAnimation_;
+	case BlockMoveDirection::Forward:
+	default:
+		return pushAnimation_;
+	}
 }
 
 //================================
@@ -412,7 +434,7 @@ void Player::update_gripped_block_movement() {
 		begin_grip_move_interpolation(MapChipField::to_world(
 			deformation->playerIndex.x,
 			deformation->playerIndex.y,
-			deformation->playerIndex.z), moveDuration);
+			deformation->playerIndex.z), moveDuration, *moveDirection);
 
 		// 粘土を伸ばした場合は、プレイヤーと粘土の両方が移動するので、グリップ状態を解除する
 		if (deformation->type == ClayDeformationType::Connect) {
@@ -456,7 +478,7 @@ void Player::update_gripped_block_movement() {
 	begin_grip_move_interpolation(MapChipField::to_world(
 		move->playerIndex.x,
 		move->playerIndex.y,
-		move->playerIndex.z), moveDuration);
+		move->playerIndex.z), moveDuration, *moveDirection);
 
 	// グリップ中のブロックのインデックスを更新する
 	context_.grippedBlockIndex = move->blockIndex;
@@ -473,7 +495,10 @@ void Player::update_gripped_block_movement() {
 //================================
 // Grip中の1マス移動補間を開始する
 //================================
-void Player::begin_grip_move_interpolation(const Vector3& targetPosition, float durationSeconds) {
+void Player::begin_grip_move_interpolation(
+	const Vector3& targetPosition,
+	float durationSeconds,
+	BlockMoveDirection moveDirection) {
 	if (!context_.worldInstance) {
 		return;
 	}
@@ -482,6 +507,7 @@ void Player::begin_grip_move_interpolation(const Vector3& targetPosition, float 
 	if (durationSeconds <= 0.0f || Vector3::Length(startPosition, targetPosition) <= 0.0001f) {
 		context_.worldInstance->transform_mut().set_translate(targetPosition);
 		gripMoveInterpolation_.reset();
+		gripMoveAnimationDirection_.reset();
 		return;
 	}
 
@@ -491,6 +517,7 @@ void Player::begin_grip_move_interpolation(const Vector3& targetPosition, float 
 		.elapsedSeconds = 0.0f,
 		.durationSeconds = durationSeconds,
 	};
+	gripMoveAnimationDirection_ = moveDirection;
 }
 
 //================================
@@ -499,6 +526,7 @@ void Player::begin_grip_move_interpolation(const Vector3& targetPosition, float 
 void Player::update_grip_move_interpolation() noexcept {
 	if (!gripMoveInterpolation_ || !context_.worldInstance) {
 		gripMoveInterpolation_.reset();
+		gripMoveAnimationDirection_.reset();
 		return;
 	}
 
@@ -514,6 +542,7 @@ void Player::update_grip_move_interpolation() noexcept {
 
 	if (t >= 1.0f) {
 		gripMoveInterpolation_.reset();
+		gripMoveAnimationDirection_.reset();
 	}
 }
 

@@ -1,9 +1,13 @@
 {
 	"Animation": [
-	  	".\\Game\\Assets\\Models\\player\\playerStand.gltf",
-     	".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
-    	".\\Game\\Assets\\Models\\player\\playerJump.gltf",
-    	".\\Game\\Assets\\Models\\player\\playerGrab.gltf"
+		".\\Game\\Assets\\Models\\player\\playerStand.gltf",
+		".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
+		".\\Game\\Assets\\Models\\player\\playerJump.gltf",
+		".\\Game\\Assets\\Models\\player\\playerGrab.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPush.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPull.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPush_left.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPush_right.gltf"
 	],
 	"Audio": [],
 	"Font": [],

@@ -19,6 +19,22 @@
 		"type": "String",
 		"value": "playerGrab.gltf"
 	},
+	"PushAnimationFile": {
+		"type": "String",
+		"value": "playerPush.gltf"
+	},
+	"PullAnimationFile": {
+		"type": "String",
+		"value": "playerPull.gltf"
+	},
+	"PushLeftAnimationFile": {
+		"type": "String",
+		"value": "playerPush_left.gltf"
+	},
+	"PushRightAnimationFile": {
+		"type": "String",
+		"value": "playerPush_right.gltf"
+	},
 	"GripMoveSpeed": {
 		"type": "R32",
 		"value": 2.5
