@@ -156,6 +156,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <ForcedIncludeFiles>$(SolutionDir)SyzygyEngine\Library\Utility\BuiltinTypes.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <FxCompile>
       <ShaderModel>6.6</ShaderModel>
@@ -205,6 +206,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ForcedIncludeFiles>$(SolutionDir)SyzygyEngine\Library\Utility\BuiltinTypes.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <Optimization>Disabled</Optimization>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <FxCompile>
       <ShaderModel>6.6</ShaderModel>
