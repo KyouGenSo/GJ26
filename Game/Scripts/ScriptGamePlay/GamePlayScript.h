@@ -9,6 +9,7 @@
 #include "Scripts/MapChip/MapChipField.h"
 
 namespace szg {
+class Rect3d;
 class WorldRoot;
 }
 
@@ -55,6 +56,8 @@ private:
 	Reference<UndoManager> undoManager_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
 	Reference<szg::BloomPipeline::Data> clayGlow_;
+	/// リセットゲージの塗り(UI.json "ResetGaugeFill")。Y 長押し時間に応じて左から伸ばす
+	Reference<szg::Rect3d> resetGaugeFill_;
 	/// 掴める対象の輪郭の見た目(GripHighlight.param)
 	MapChipField::HighlightStyle gripHighlight_;
 	szg::InputHandler<szg::KeyID> keyInput_;
@@ -71,4 +74,6 @@ private:
 	r32 clearCameraElevationDegrees_{ 38.0f };
 	r32 clearCameraTargetHeight_{ 0.8f };
 	r32 clearCameraBounceStrength_{ 1.1f };
+	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
+	r32 resetGaugeFullWidth_{ 0.0f };
 };
