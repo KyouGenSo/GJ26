@@ -1,6 +1,7 @@
 {
 	"Instances": [
 		{
+			"BlendMode": 0,
 			"Children": [],
 			"Color": {
 				"A": 1.0,
