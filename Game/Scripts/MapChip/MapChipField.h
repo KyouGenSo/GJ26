@@ -2,6 +2,7 @@
 
 #include <array>
 #include <deque>
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -137,6 +138,25 @@ inline constexpr std::array<ColorRGB, Count> Preview{
 	ColorRGB{ 0.724f, 1.000f, 0.674f },
 	ColorRGB{ 1.000f, 0.938f, 0.674f },
 };
+
+/// <summary>
+/// 伸長方向 → 矢印付きテクスチャの接尾辞(ClayFace::Table と同じ並び)
+/// </summary>
+inline constexpr std::array<const char*, 4> ArrowSuffix{ "px", "nx", "pz", "nz" };
+
+/// <summary>
+/// 伸ばして出た粘土用の矢印付きテクスチャ名(例: clay2_px.png)。face は ClayFace のビット 1 つ
+/// </summary>
+inline std::string ArrowTexture(i32 color, u8 face) {
+	std::string_view stem = Textures[color];
+	stem.remove_suffix(4); // ".png"
+	for (size_t i = 0; i < ClayFace::Table.size(); ++i) {
+		if (ClayFace::Table[i].bit == face) {
+			return std::format("{}_{}.png", stem, ArrowSuffix[i]);
+		}
+	}
+	return Textures[color];
+}
 
 } // namespace ClayColor
 
@@ -314,6 +334,12 @@ public:
 	static std::array<Reference<szg::StaticMeshInstance>, 4> AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY);
 
 	/// <summary>
+	/// <para>つながった粘土・ゴール条件オブジェクトを光らせる複製(visual と同じメッシュ・マテリアル)を visual の子として付ける。親の destroy_self で一緒に消える</para>
+	/// <para>描画レイヤー 1 (RenderPath.json でぼかしてブルーム合成される) にライティング無しで描き、深度テストに勝つよう少し大きくする</para>
+	/// </summary>
+	static void AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual);
+
+	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
 	/// <para>つながった粘土も一緒に動くので、粘土の移動先が塞がっていれば false</para>
 	/// </summary>
@@ -397,6 +423,8 @@ private:
 	i32 flat_index(i32 x, i32 y, i32 z) const;
 	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
+	u8 clay_stretch_face(i32 flat) const; // 伸ばして出た粘土がコアから伸びた方向(ClayFace のビット。コア・粘土以外は None)
+	bool has_connected_clay(i32 piece) const; // piece(ゴール条件オブジェクトの下段)につながった粘土が 1 つでもあるか
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
 	std::vector<i32> relocate_cells(const std::vector<i32>& cells, const MapChipIndex& delta); // cells を delta だけずらして置き直し、移動後の flat 一覧を返す(表示も更新)
 	struct VisualMove {
@@ -412,7 +440,7 @@ private:
 	void begin_warning(i32 flat, Reference<szg::StaticMeshInstance> visual, const Vector3& shakeAxis, r32 shakeAmplitude, bool blink); // 同じ visual の演出があれば戻してから始める
 	void end_warning(WarningEffect& warning); // 色と位置を戻す
 	void end_warnings(); // 全演出を戻して消す
-	void refresh_visual(i32 flat, bool goalActive = false);
+	void refresh_visual(i32 flat);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
 private:

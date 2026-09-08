@@ -4,6 +4,7 @@
 #include <optional>
 
 #include <Engine/Runtime/Particle/EmitterSettings.h>
+#include <Engine/Module/Render/RenderPipeline/Posteffect/Bloom/BloomPipeline.h>
 #include <Engine/Runtime/Input/InputHandler.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Runtime/SceneScript/SceneScriptManager.h>
@@ -67,6 +68,8 @@ private:
 	Reference<szg::StringRectInstance> clearText_;
 	std::array<Reference<szg::EmitterInstance>, 2> confettiEmitters_;
 	std::optional<szg::EmitterInstanceSettings> confettiSettings_;
+	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
+	Reference<szg::BloomPipeline::Data> clayGlow_;
 	szg::InputHandler<szg::KeyID> keyInput_;
 	szg::InputHandler<szg::PadID> padInput_;
 

@@ -10,7 +10,11 @@
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
-	"Particle": [],
+	"Particle": [
+		".\\Game\\Assets\\particle\\GoalEffect.particle",
+		".\\Game\\Assets\\particle\\GoalEffect2.particle",
+		".\\Game\\Assets\\particle\\confettiEffect.particle"
+	],
 	"Shader": [
 		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
 	],
@@ -18,6 +22,8 @@
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
 	"Texture": [
+		".\\Game\\Assets\\textures\\Cross.png",
+		".\\Game\\Assets\\textures\\texture_Star_512px (1).png",
 		".\\Game\\Assets\\textures\\ui\\ui.png",
 		".\\Game\\Assets\\textures\\ui\\ui2.png",
 		".\\Game\\Assets\\textures\\ui\\toSelect.png",

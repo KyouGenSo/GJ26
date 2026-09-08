@@ -379,7 +379,7 @@
 			},
 			"Font": "UDEVGothic35HS-Regular.mtsdf",
 			"IsDraw": false,
-			"Layer": 2,
+			"Layer": 3,
 			"Local transform": {
 				"Rotation": {
 					"W": 0.0,
@@ -412,5 +412,5 @@
 		}
 	],
 	"Name": "PlayerDevWorld",
-	"NumLayer": 3
+	"NumLayer": 4
 }
