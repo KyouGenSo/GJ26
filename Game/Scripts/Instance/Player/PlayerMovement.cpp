@@ -1,6 +1,7 @@
 #include "PlayerMovement.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 #include "PlayerContext.h"
@@ -64,9 +65,58 @@ void PlayerMovement::apply_gravity(PlayerContext& context) noexcept {
 		position.y = 0.0f;
 	}
 
-	context.isGrounded = velocity <= 0.0f && (hitBlock || onGround);
-	if (hitBlock || onGround) {
+	// ゴール条件オブジェクトの上には乗れず、接地せずに縁へ滑り落ちる
+	bool onGoalPiece = false;
+	if (hitBlock && velocity <= 0.0f && context.judge) {
+		const Vector3 skin{ kSkin, kSkin, kSkin };
+		Vector3 min = position - kHalfExtent + skin;
+		Vector3 max = position + kHalfExtent - skin;
+		min.y = max.y = position.y - kHalfExtent.y - kGroundProbe;
+		if (const std::optional<MapChipIndex> piece = context.judge->goal_piece_top_under(min, max)) {
+			onGoalPiece = true;
+			slide_off_goal_piece(context, *piece);
+		}
+	}
+
+	const bool supported = (hitBlock && !onGoalPiece) || onGround;
+	context.isGrounded = velocity <= 0.0f && supported;
+	if (supported) {
 		context.verticalVelocity = 0.0f;
+	}
+}
+
+//===========================================
+// ゴール条件オブジェクトの上から一番近い縁へ押し出す
+//===========================================
+void PlayerMovement::slide_off_goal_piece(PlayerContext& context, const MapChipIndex& piece) noexcept {
+	const Vector3 position = context.worldInstance->transform_imm().get_translate();
+	const float dx = position.x - static_cast<float>(piece.x);
+	const float dz = position.z - static_cast<float>(piece.z);
+	struct Candidate {
+		size_t axis;
+		float sign;
+		float distance; // 縁までの距離。近い順に試す
+	};
+	std::array<Candidate, 4> candidates{ {
+		{ 0, 1.0f, 0.5f - dx },
+		{ 0, -1.0f, 0.5f + dx },
+		{ 2, 1.0f, 0.5f - dz },
+		{ 2, -1.0f, 0.5f + dz },
+	} };
+	// 中心にいるときの決め手として、向いている方向を少しだけ優先する
+	Vector3 direction = context.direction;
+	for (Candidate& candidate : candidates) {
+		if (direction[candidate.axis] * candidate.sign > 0.0f) {
+			candidate.distance -= 1e-3f;
+		}
+	}
+	std::sort(candidates.begin(), candidates.end(), [](const Candidate& a, const Candidate& b) { return a.distance < b.distance; });
+
+	const float step = context.pieceSlideSpeed * context.deltaSeconds;
+	for (const Candidate& candidate : candidates) {
+		if (!move_axis(context, candidate.axis, candidate.sign * step)) {
+			return;
+		}
 	}
 }
 

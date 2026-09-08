@@ -253,7 +253,7 @@ void MapTestScript::debug_move_goal_piece(bool push) {
 			szgInformation("MapTestScript: pull ng (marker blocked)");
 			return;
 		}
-		const bool moved = field.move_goal_piece(piece, pieceTo);
+		const bool moved = field.move_goal_piece(piece, pieceTo).has_value();
 		if (moved) {
 			actor->transform_mut().set_translate(MapChipField::to_world(markerTo.x, markerTo.y, markerTo.z));
 			if (player) {

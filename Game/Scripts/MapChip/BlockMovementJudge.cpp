@@ -8,9 +8,11 @@ MapChipIndex Add(const MapChipIndex& lhs, const MapChipIndex& rhs) noexcept {
 	return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z };
 }
 
+constexpr MapChipIndex kUp{ 0, 1, 0 };
+
 /// プレイヤーが通れないチップか
 bool IsSolid(MapChipType type) noexcept {
-	return type == MapChipType::Clay || type == MapChipType::GoalPiece;
+	return type == MapChipType::Clay || type == MapChipType::GoalPiece || type == MapChipType::GoalPieceUpper;
 }
 
 /// ワールド座標を含むセルの添字(セル中心が整数座標)
@@ -76,6 +78,10 @@ std::optional<MapChipIndex> BlockMovementJudge::find_grip_target(
 		return std::nullopt;
 	}
 	const MapChipType type = field_->get(target.x, target.y, target.z);
+	if (type == MapChipType::GoalPieceUpper) {
+		// 上段を掴んでも対象はピース本体(下段)
+		return MapChipIndex{ target.x, target.y - 1, target.z };
+	}
 	if (type != MapChipType::GoalPiece && type != MapChipType::Clay) {
 		return std::nullopt;
 	}
@@ -115,6 +121,40 @@ bool BlockMovementJudge::overlaps_solid(const Vector3& min, const Vector3& max) 
 }
 
 //===========================================
+// AABBと重なるセルの支えがゴール条件オブジェクトだけなら、中心に一番近いそのセル
+//===========================================
+std::optional<MapChipIndex> BlockMovementJudge::goal_piece_top_under(const Vector3& min, const Vector3& max) const noexcept {
+	if (!field_ || field_->width() <= 0) {
+		return std::nullopt;
+	}
+
+	const Vector3 center = (min + max) * 0.5f;
+	std::optional<MapChipIndex> nearest;
+	float nearestDistance = 0.0f;
+	for (i32 z = CellIndex(min.z); z <= CellIndex(max.z); ++z) {
+		for (i32 x = CellIndex(min.x); x <= CellIndex(max.x); ++x) {
+			for (i32 y = CellIndex(min.y); y <= CellIndex(max.y); ++y) {
+				const MapChipType type = field_->get(x, y, z);
+				if (type == MapChipType::Clay) {
+					return std::nullopt;
+				}
+				if (type != MapChipType::GoalPiece && type != MapChipType::GoalPieceUpper) {
+					continue;
+				}
+				const float dx = center.x - static_cast<float>(x);
+				const float dz = center.z - static_cast<float>(z);
+				const float distance = dx * dx + dz * dz;
+				if (!nearest || distance < nearestDistance) {
+					nearest = MapChipIndex{ x, y, z };
+					nearestDistance = distance;
+				}
+			}
+		}
+	}
+	return nearest;
+}
+
+//===========================================
 // 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 //===========================================
 BlockMoveResult BlockMovementJudge::judge(
@@ -134,8 +174,10 @@ BlockMoveResult BlockMovementJudge::judge(
 		return result;
 	}
 
+	// プレイヤーの正面がピースの下段か上段のどちらかであればよい
 	const MapChipIndex forward = cardinal_direction(playerDirection);
-	if (Add(*playerIndex, forward) != blockIndex) {
+	const MapChipIndex adjacent = Add(*playerIndex, forward);
+	if (adjacent != blockIndex && adjacent != Add(blockIndex, kUp)) {
 		return result;
 	}
 	result.playerIndex = *playerIndex;
@@ -164,11 +206,17 @@ std::optional<BlockMoveDestination> BlockMovementJudge::try_move_goal_piece(
 		return std::nullopt;
 	}
 
-	const std::optional<BlockMoveDestination> move =
+	std::optional<BlockMoveDestination> move =
 		judge(playerPosition, blockIndex, playerDirection).destination(moveDirection);
-	if (!move || !field_->move_goal_piece(blockIndex, move->blockIndex, visualMoveDuration)) {
+	if (!move) {
 		return std::nullopt;
 	}
+	const std::optional<MapChipIndex> landed =
+		field_->move_goal_piece(blockIndex, move->blockIndex, visualMoveDuration);
+	if (!landed) {
+		return std::nullopt;
+	}
+	move->blockIndex = *landed;
 	return move;
 }
 
@@ -210,7 +258,7 @@ std::optional<ClayDeformationResult> BlockMovementJudge::try_deform_clay(
 	return ClayDeformationResult{
 		.playerIndex = playerTo,
 		.clayIndex = clayTo,
-		.type = clayDestination == MapChipType::GoalPiece
+		.type = clayDestination == MapChipType::GoalPiece || clayDestination == MapChipType::GoalPieceUpper
 			? ClayDeformationType::Connect
 			: ClayDeformationType::Stretch,
 	};
@@ -257,14 +305,13 @@ std::optional<BlockMoveDestination> BlockMovementJudge::find_goal_piece_destinat
 		.blockIndex = Add(source, offset),
 	};
 
-	// 前進時はPlayerがGoalPieceの元セルへ入るため、同時移動によって空くセルとして扱う
+	// 前進時はPlayerがGoalPieceの元セル(下段または上段)へ入るため、同時移動によって空くセルとして扱う
+	const MapChipIndex& playerTo = destination.playerIndex;
+	const MapChipType playerToType = field_->get(playerTo.x, playerTo.y, playerTo.z);
+	const bool vacated = playerTo == source ||
+		(playerTo == Add(source, kUp) && playerToType == MapChipType::GoalPieceUpper);
 	const bool canMovePlayer =
-		field_->contains(destination.playerIndex) &&
-		(destination.playerIndex == source ||
-			field_->get(
-				destination.playerIndex.x,
-				destination.playerIndex.y,
-				destination.playerIndex.z) == MapChipType::Empty);
+		field_->contains(playerTo) && (vacated || playerToType == MapChipType::Empty);
 	if (!canMovePlayer || !field_->can_move_goal_piece(source, destination.blockIndex)) {
 		return std::nullopt;
 	}

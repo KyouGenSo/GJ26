@@ -149,6 +149,29 @@ bool MapChipField::load(const std::string& directory) {
 		}
 	}
 
+	// ゴール条件オブジェクトは 2 セル高。最上層にあれば 1 層足してから、真上のセルを上段として塞ぐ
+	const i32 layerSize = sizeX * sizeZ;
+	for (i32 i = layerSize * (sizeY - 1); i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == MapChipType::GoalPiece) {
+			chips.insert(chips.end(), static_cast<size_t>(layerSize), MapChipType::Empty);
+			++sizeY;
+			break;
+		}
+	}
+	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] != MapChipType::GoalPiece) {
+			continue;
+		}
+		const i32 upper = i + layerSize;
+		if (chips[upper] == MapChipType::Empty) {
+			chips[upper] = MapChipType::GoalPieceUpper;
+		}
+		else {
+			const MapChipIndex p = unflatten(i);
+			szgWarning("MapChipField: cell above GoalPiece ({}, {}, {}) in \'{}\' is not empty (piece occupies 1 cell)", p.x, p.y, p.z, directory);
+		}
+	}
+
 	// CSV の粘土はそれぞれ独立した未接続のブロック
 	clayOrigin.assign(chips.size(), -1);
 	clayPiece.assign(chips.size(), -1);
@@ -201,15 +224,16 @@ void MapChipField::destroy_root() {
 }
 
 void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
-	if (visualInterpolations.empty()) {
+	if (visualInterpolationSteps.empty()) {
 		return;
 	}
 
+	VisualInterpolationStep& step = visualInterpolationSteps.front();
 	visualInterpolationElapsed += std::max(deltaSeconds, 0.0f);
-	const r32 duration = std::max(visualInterpolationDuration, 0.001f);
+	const r32 duration = std::max(step.duration, 0.001f);
 	const r32 t = std::clamp(visualInterpolationElapsed / duration, 0.0f, 1.0f);
 	const r32 eased = t * t * (3.0f - 2.0f * t);
-	for (VisualInterpolation& interpolation : visualInterpolations) {
+	for (VisualInterpolation& interpolation : step.entries) {
 		if (interpolation.visual) {
 			interpolation.visual->transform_mut().set_translate(Vector3::Lerp(
 				interpolation.startPosition,
@@ -218,44 +242,58 @@ void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
 		}
 	}
 	if (t >= 1.0f) {
-		cancel_visual_interpolation();
+		visualInterpolationSteps.pop_front();
+		visualInterpolationElapsed = 0.0f;
 	}
 }
 
 void MapChipField::begin_visual_interpolation(
 	const std::vector<i32>& targetCells,
-	const Vector3& moveOffset,
-	r32 duration) {
+	const std::vector<VisualMove>& moves) {
 	cancel_visual_interpolation();
-	if (duration <= 0.0f) {
+	Vector3 totalOffset = CVector3::ZERO;
+	for (const VisualMove& move : moves) {
+		if (move.duration > 0.0f) {
+			totalOffset += move.offset;
+			visualInterpolationSteps.push_back(VisualInterpolationStep{ .duration = move.duration });
+		}
+	}
+	if (visualInterpolationSteps.empty()) {
 		return;
 	}
 
-	visualInterpolationDuration = duration;
 	for (const i32 target : targetCells) {
 		if (target < 0 || target >= static_cast<i32>(visuals.size()) || !visuals[target]) {
 			continue;
 		}
-		const Vector3 targetPosition = visuals[target]->transform_imm().get_translate();
-		const Vector3 startPosition = targetPosition - moveOffset;
-		visuals[target]->transform_mut().set_translate(startPosition);
-		visualInterpolations.push_back(VisualInterpolation{
-			.visual = visuals[target],
-			.startPosition = startPosition,
-			.targetPosition = targetPosition,
-		});
+		Vector3 position = visuals[target]->transform_imm().get_translate() - totalOffset;
+		visuals[target]->transform_mut().set_translate(position);
+		size_t stepIndex = 0;
+		for (const VisualMove& move : moves) {
+			if (move.duration <= 0.0f) {
+				continue;
+			}
+			visualInterpolationSteps[stepIndex++].entries.push_back(VisualInterpolation{
+				.visual = visuals[target],
+				.startPosition = position,
+				.targetPosition = position + move.offset,
+			});
+			position += move.offset;
+		}
 	}
 }
 
 void MapChipField::cancel_visual_interpolation() {
-	for (VisualInterpolation& interpolation : visualInterpolations) {
-		if (interpolation.visual) {
-			interpolation.visual->transform_mut().set_translate(interpolation.targetPosition);
+	// 後の段階ほど最終位置に近いので、順に置けば最後の段階の target で終わる
+	for (VisualInterpolationStep& step : visualInterpolationSteps) {
+		for (VisualInterpolation& interpolation : step.entries) {
+			if (interpolation.visual) {
+				interpolation.visual->transform_mut().set_translate(interpolation.targetPosition);
+			}
 		}
 	}
-	visualInterpolations.clear();
+	visualInterpolationSteps.clear();
 	visualInterpolationElapsed = 0.0f;
-	visualInterpolationDuration = 0.0f;
 }
 
 MapChipType MapChipField::get(i32 x, i32 y, i32 z) const {
@@ -348,15 +386,16 @@ bool MapChipField::stretch_clay(
 	}
 
 	const i32 target = flat_index(to.x, to.y, to.z);
-	if (chips[target] == MapChipType::GoalPiece) {
-		// 伸ばす先がゴール条件オブジェクトなら伸びずにブロック全体がつながる(1 ブロックにつき 1 つ)
+	if (chips[target] == MapChipType::GoalPiece || chips[target] == MapChipType::GoalPieceUpper) {
+		// 伸ばす先がゴール条件オブジェクト(上段でも可)なら伸びずにブロック全体がつながる(1 ブロックにつき 1 つ)。つながり先は下段のセル
 		if (clayPiece[source] != -1) {
 			return false;
 		}
+		const i32 piece = chips[target] == MapChipType::GoalPiece ? target : *shifted(target, MapChipIndex{ 0, -1, 0 });
 		cancel_visual_interpolation();
 		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 			if (chips[i] == MapChipType::Clay && clayOrigin[i] == root) {
-				clayPiece[i] = target;
+				clayPiece[i] = piece;
 				refresh_visual(i);
 			}
 		}
@@ -376,8 +415,7 @@ bool MapChipField::stretch_clay(
 	refresh_visual(target);
 	begin_visual_interpolation(
 		std::vector<i32>{ target },
-		to_world(to.x - from.x, to.y - from.y, to.z - from.z),
-		visualMoveDuration);
+		{ VisualMove{ to_world(to.x - from.x, to.y - from.y, to.z - from.z), visualMoveDuration } });
 	return true;
 }
 
@@ -385,16 +423,49 @@ bool MapChipField::can_move_goal_piece(const MapChipIndex& from, const MapChipIn
 	return !moving_cells(from, to).empty();
 }
 
-bool MapChipField::move_goal_piece(
+std::optional<MapChipIndex> MapChipField::move_goal_piece(
 	const MapChipIndex& from,
 	const MapChipIndex& to,
 	r32 visualMoveDuration) {
 	const std::vector<i32> cells = moving_cells(from, to);
 	if (cells.empty()) {
-		return false;
+		return std::nullopt;
 	}
 	const MapChipIndex delta{ to.x - from.x, 0, to.z - from.z };
+	std::vector<i32> targetCells = relocate_cells(cells, delta);
 
+	// グループ全セルの下が空(または自グループ)の間、落下マス数を増やす。y=0 は shifted が nullopt になるので床扱い
+	i32 fallCount = 0;
+	const auto isSupported = [&](const MapChipIndex& fallDelta) {
+		for (const i32 cell : targetCells) {
+			const std::optional<i32> below = shifted(cell, fallDelta);
+			if (!below) {
+				return true;
+			}
+			if (chips[*below] != MapChipType::Empty &&
+				std::find(targetCells.begin(), targetCells.end(), *below) == targetCells.end()) {
+				return true;
+			}
+		}
+		return false;
+	};
+	while (!isSupported(MapChipIndex{ 0, -(fallCount + 1), 0 })) {
+		++fallCount;
+	}
+	if (fallCount > 0) {
+		targetCells = relocate_cells(targetCells, MapChipIndex{ 0, -fallCount, 0 });
+	}
+	++revision;
+
+	std::vector<VisualMove> moves{ VisualMove{ to_world(delta.x, delta.y, delta.z), visualMoveDuration } };
+	if (fallCount > 0) {
+		moves.push_back(VisualMove{ to_world(0, -fallCount, 0), visualMoveDuration * static_cast<r32>(fallCount) });
+	}
+	begin_visual_interpolation(targetCells, moves);
+	return MapChipIndex{ to.x, to.y - fallCount, to.z };
+}
+
+std::vector<i32> MapChipField::relocate_cells(const std::vector<i32>& cells, const MapChipIndex& delta) {
 	struct Moved {
 		i32 target;
 		MapChipType type;
@@ -425,17 +496,12 @@ bool MapChipField::move_goal_piece(
 		clayColor[m.target] = m.color;
 		refresh_visual(m.target);
 	}
-	++revision;
 	std::vector<i32> targetCells;
 	targetCells.reserve(moved.size());
 	for (const Moved& m : moved) {
 		targetCells.push_back(m.target);
 	}
-	begin_visual_interpolation(
-		targetCells,
-		to_world(delta.x, delta.y, delta.z),
-		visualMoveDuration);
-	return true;
+	return targetCells;
 }
 
 std::vector<MapChipIndex> MapChipField::find_all(MapChipType type) const {
@@ -648,9 +714,13 @@ std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapC
 		return {};
 	}
 
-	// ピースと、それにつながった粘土の全セル
+	// ピース(下段と上段)と、それにつながった粘土の全セル
 	const i32 piece = flat_index(from.x, from.y, from.z);
 	std::vector<i32> cells{ piece };
+	if (const std::optional<i32> upper = shifted(piece, MapChipIndex{ 0, 1, 0 });
+		upper && chips[*upper] == MapChipType::GoalPieceUpper) {
+		cells.emplace_back(*upper);
+	}
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		if (chips[i] == MapChipType::Clay && clayPiece[i] == piece) {
 			cells.emplace_back(i);
@@ -682,7 +752,8 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		visuals[flat].reset();
 	}
 
-	if (chips[flat] == MapChipType::Empty || !root) {
+	// 上段はピースのモデル(下段)に含まれるので表示を持たない
+	if (chips[flat] == MapChipType::Empty || chips[flat] == MapChipType::GoalPieceUpper || !root) {
 		return;
 	}
 

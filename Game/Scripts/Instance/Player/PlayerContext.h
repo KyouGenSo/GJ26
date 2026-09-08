@@ -21,6 +21,8 @@ struct PlayerContext {
 	float fallSpeed{ 20.0f };
 	/// ブロックを掴んでいる間の横移動速度
 	float gripMoveSpeed{ 2.5f };
+	/// ゴール条件オブジェクトの上から縁へ押し出される速度(moveSpeed より速くして踏ん張れないようにする)
+	float pieceSlideSpeed{ 6.0f };
 	/// 上方向の速度。重力で毎フレーム減り、着地・頭打ちで0になる
 	float verticalVelocity{ 0.0f };
 

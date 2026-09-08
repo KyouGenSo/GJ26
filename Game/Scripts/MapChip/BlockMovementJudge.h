@@ -79,7 +79,7 @@ public:
 	/// <param name="field"></param>
 	void set_field(Reference<MapChipField> field) noexcept;
 
-	/// プレイヤーの現在マスに隣接する、向いている方向のブロックを取得
+	/// プレイヤーの現在マスに隣接する、向いている方向のブロックを取得(ゴール条件オブジェクトの上段なら下段の index)
 	std::optional<MapChipIndex> find_grip_target(
 		const Vector3& playerPosition,
 		const Vector3& playerDirection) const noexcept;
@@ -91,10 +91,16 @@ public:
 	bool is_goal_piece(const MapChipIndex& index) const noexcept;
 
 	/// <summary>
-	/// <para>ワールド座標のAABB [min, max] と重なるセルに固体(粘土・ゴール条件オブジェクト)があるか</para>
+	/// <para>ワールド座標のAABB [min, max] と重なるセルに固体(粘土・ゴール条件オブジェクトの下段と上段)があるか</para>
 	/// <para>ステージのXZ範囲外は固体(見えない壁)。Yの範囲外はEmpty(上へは飛べる。下は地面が受ける)</para>
 	/// </summary>
 	bool overlaps_solid(const Vector3& min, const Vector3& max) const noexcept;
+
+	/// <summary>
+	/// <para>ワールド座標のAABB [min, max] と重なるセルの支えがゴール条件オブジェクト(下段・上段)だけなら、AABB 中心に一番近いそのセル</para>
+	/// <para>粘土が 1 つでも重なっていれば nullopt(粘土に乗っている扱い)</para>
+	/// </summary>
+	std::optional<MapChipIndex> goal_piece_top_under(const Vector3& min, const Vector3& max) const noexcept;
 
 	/// 掴んだブロックがプレイヤー基準の前後左右へ移動できるかを取得
 	BlockMoveResult judge(
@@ -102,7 +108,7 @@ public:
 		const MapChipIndex& blockIndex,
 		const Vector3& playerDirection) const noexcept;
 
-	/// 判定に成功した場合だけGoalPieceを移動し、PlayerとGoalPieceの移動先を返す
+	/// 判定に成功した場合だけGoalPieceを移動し、PlayerとGoalPieceの移動先を返す(blockIndex は落下後の位置)
 	std::optional<BlockMoveDestination> try_move_goal_piece(
 		const Vector3& playerPosition,
 		const MapChipIndex& blockIndex,
