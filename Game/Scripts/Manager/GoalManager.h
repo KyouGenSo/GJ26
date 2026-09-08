@@ -4,6 +4,8 @@
 #include <vector>
 
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
+#include <Engine/Module/World/Particle/EmitterInstance.h>
+#include <Engine/Runtime/Particle/EmitterSettings.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Library/Utility/Template/Reference.h>
@@ -50,6 +52,13 @@ private:
 	void rebuild();
 	bool is_connected(const MapChipIndex& a, const MapChipIndex& b) const;
 	void create_link(const MapChipIndex& a, const MapChipIndex& b);
+	void destroy_links();
+
+	/// <summary>
+	/// 接続中ピースの星から出すパーティクルを、ピースの表示インスタンスの子として生成する
+	/// </summary>
+	void create_piece_emitter(const MapChipIndex& index);
+	void destroy_piece_emitters();
 
 private:
 	Reference<MapChipField> field;
@@ -57,8 +66,11 @@ private:
 	Reference<const Player> player;
 	GoalEffect goalEffect;
 	std::vector<Reference<szg::StaticMeshInstance>> links; // ピース間の線
+	std::vector<Reference<szg::EmitterInstance>> pieceEmitters; // 接続中ピースの星のパーティクル
+	std::optional<szg::EmitterInstanceSettings> pieceEmitterSettings;
 	std::optional<MapChipIndex> goal;
 	u32 lastVersion{ 0 };
+	bool rebuildPending{ false }; // 移動補間が終わってから再判定する
 	bool goalOpen{ false };
 	bool cleared{ false };
 };

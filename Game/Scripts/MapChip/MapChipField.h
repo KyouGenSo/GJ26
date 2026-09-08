@@ -315,6 +315,11 @@ public:
 	void update_visual_interpolation(r32 deltaSeconds);
 
 	/// <summary>
+	/// 表示モデルの移動補間が再生中か
+	/// </summary>
+	bool is_visual_interpolating() const { return !visualInterpolationSteps.empty(); }
+
+	/// <summary>
 	/// 指定種類の全セル
 	/// </summary>
 	std::vector<MapChipIndex> find_all(MapChipType type) const;
