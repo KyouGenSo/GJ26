@@ -90,7 +90,8 @@ void StageEditorScript::rebuild() {
 					cube->get_materials()[0].color = ChipColor(chip, doc.clay_color(x, y, z));
 				}
 				if (chip == MapChipType::Clay) {
-					MapChipField::AttachFacePlates(*worldRoot, cube, doc.blocked_faces(x, y, z));
+					// Cube.obj は中心原点の 1 辺 1 なので半幅 0.5・底面 -0.5
+					MapChipField::AttachFaceCrosses(*worldRoot, cube, doc.blocked_faces(x, y, z), 0.5f, -0.5f);
 				}
 				cubes.emplace_back(cube);
 			}

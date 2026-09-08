@@ -16,6 +16,7 @@
 #include <Engine/Assets/PolygonMesh/PolygonMeshLibrary.h>
 #include <Engine/Assets/Texture/TextureLibrary.h>
 #include <Library/Math/ColorRGB.h>
+#include <Library/Math/Quaternion.h>
 
 namespace {
 
@@ -86,8 +87,9 @@ i32 MapChipField::CountStages() {
 }
 
 void MapChipField::RegisterVisualAssets() {
-	// Cube は不明なチップの代替表示、粘土の塞がれた面、GoalManager の接続線でも使用する。
+	// Cube は不明なチップの代替表示、GoalManager の接続線でも使用する。
 	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/Cube.obj");
+	szg::PolygonMeshLibrary::RegisterLoadQue("[[game]]/cross/cross.obj");
 	for (const ChipVisualSetting& setting : CHIP_VISUAL_SETTINGS) {
 		szg::PolygonMeshLibrary::RegisterLoadQue(setting.assetPath);
 	}
@@ -551,22 +553,17 @@ bool MapChipField::SaveStageJsonClay(const std::string& directory, const std::ve
 	return true;
 }
 
-void MapChipField::AttachFacePlates(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces) {
-	// Clay モデルの親スケール 0.5 を適用した後に、厚さ 0.05 / 一辺 0.9 になるローカル寸法。
-	const r32 FACE_DISTANCE = 1.0f;
-	const r32 THICKNESS = 0.1f;
-	const r32 SIZE = 1.8f;
+void MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY) {
+	// cross.obj は底面原点・幅 2・高さ 2 で +Z を向く。親の面と同じ枠なので halfSize で等倍し、面の外向きへ回す
 	for (const ClayFace::Entry& face : ClayFace::Table) {
 		if (!(blockedFaces & face.bit)) {
 			continue;
 		}
-		Reference<szg::StaticMeshInstance> plate = worldRoot_.instantiate<szg::StaticMeshInstance>(parent, "Cube.obj");
+		Reference<szg::StaticMeshInstance> cross = worldRoot_.instantiate<szg::StaticMeshInstance>(parent, "cross.obj");
 		const Vector3 direction = to_world(face.direction.x, face.direction.y, face.direction.z);
-		plate->transform_mut().set_translate(direction * FACE_DISTANCE); // 親ローカルで面の中心
-		plate->transform_mut().set_scale(face.direction.x != 0 ? Vector3{ THICKNESS, SIZE, SIZE } : Vector3{ SIZE, SIZE, THICKNESS });
-		if (!plate->get_materials().empty()) {
-			plate->get_materials()[0].color = ColorRGB{ 0.05f, 0.05f, 0.05f };
-		}
+		cross->transform_mut().set_scale(Vector3{ halfSize, halfSize, halfSize });
+		cross->transform_mut().set_translate(direction * halfSize + Vector3{ 0.0f, bottomY, 0.0f });
+		cross->transform_mut().set_quaternion(Quaternion::LookForward(direction));
 	}
 }
 
@@ -713,9 +710,9 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 	if (chips[flat] == MapChipType::Clay && clayColor[flat] != 0 && !visual->get_materials().empty()) {
 		visual->get_materials()[0].texture = szg::TextureLibrary::GetTexture(ClayColor::Textures[clayColor[flat]]);
 	}
-	// 塞がれた面の板は元セルにだけ付ける
+	// 塞がれた面のバツ印は元セルにだけ付ける(clay.obj ローカルは半幅 1・底面 0)
 	if (chips[flat] == MapChipType::Clay && clayOrigin[flat] == flat) {
-		AttachFacePlates(*worldRoot, visual, clayBlockedFaces[flat]);
+		AttachFaceCrosses(*worldRoot, visual, clayBlockedFaces[flat], 1.0f, 0.0f);
 	}
 
 	visuals[flat] = visual;
