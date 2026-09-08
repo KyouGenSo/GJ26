@@ -5,6 +5,7 @@
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/Json/JsonAsset.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
+#include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 #include <Engine/Runtime/Scene/SceneManager2.h>
@@ -118,6 +119,14 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgWarning("GamePlayScript: ClayGlow bloom not found.");
 	}
 
+	resetGaugeFill_ = szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>("RuntimeInstance", "ResetGaugeFill").value_or(nullptr);
+	if (resetGaugeFill_) {
+		resetGaugeFullWidth_ = resetGaugeFill_->data_imm().size.x;
+	}
+	else {
+		szgWarning("GamePlayScript: ResetGaugeFill runtime instance not found.");
+	}
+
 	// 掴める対象の輪郭の色と太さ
 	{
 		szg::JsonAsset parameter{ "[[game]]/GripHighlight.param" };
@@ -147,6 +156,7 @@ void GamePlayScript::finalize() {
 	goalManager_.reset();
 	undoManager_.reset();
 	clayGlow_.reset();
+	resetGaugeFill_.reset();
 }
 
 void GamePlayScript::prev_update() {
@@ -179,6 +189,13 @@ void GamePlayScript::prev_update() {
 			followCamera_->stop_goal_effect();
 		}
 		mapTest_->reload();
+	}
+
+	// Y 長押し中はリセットゲージを左から伸ばす(離すと 0 に戻る)
+	if (resetGaugeFill_) {
+		const r32 ratio = std::clamp(padInput_.press_timer(szg::PadID::Y) / kResetHoldDurationSeconds, 0.0f, 1.0f);
+		resetGaugeFill_->data_mut().size.x = resetGaugeFullWidth_ * ratio;
+		resetGaugeFill_->material_mut().uvTransform.set_scale(Vector2{ ratio, 1.0f });
 	}
 
 	inGameScriptManager_.prev_update();
