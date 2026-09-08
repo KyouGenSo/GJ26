@@ -7,7 +7,6 @@
 #include <format>
 #include <fstream>
 #include <iomanip>
-#include <numbers>
 
 #include <json.hpp>
 
@@ -44,11 +43,12 @@ const std::array<ChipVisualSetting, 3> CHIP_VISUAL_SETTINGS{ {
 constexpr const char* GOAL_ACTIVE_ASSET_PATH = "[[game]]/goal/goal.obj";
 constexpr const char* GOAL_ACTIVE_MESH_NAME = "goal.obj";
 
-// 塞がれた面の cross の演出(振幅は親 clay.obj のローカル単位。親 scale 0.5 なのでワールドでは半分)
-constexpr r32 BLOCKED_FACE_WARN_DURATION = 0.5f;
-constexpr r32 BLOCKED_FACE_BLINK_PERIOD = 0.1f;
-constexpr r32 BLOCKED_FACE_SHAKE_FREQUENCY = 40.0f;
-constexpr r32 BLOCKED_FACE_SHAKE_AMPLITUDE = 0.05f;
+// 動かせなかった通知の演出
+constexpr r32 WARN_DURATION = 0.5f;
+constexpr r32 WARN_BLINK_PERIOD = 0.1f;
+constexpr i32 WARN_SHAKE_HOLD_FRAMES = 2; // 同じ側に留まるフレーム数(60 fps で 15 Hz)
+constexpr r32 CROSS_SHAKE_AMPLITUDE = 0.035f; // 親 clay.obj のローカル単位(親 scale 0.5 なのでワールドでは半分)
+constexpr r32 BLOCK_SHAKE_AMPLITUDE = 0.02f; // root ローカル単位(通常はワールドと同じ)
 
 /// <summary>
 /// チップ種類に対応する表示モデル設定を返す。
@@ -282,7 +282,7 @@ void MapChipField::destroy_root() {
 	}
 	visuals.clear();
 	faceCrosses.clear();
-	blockedFaceWarning.reset();
+	warnings.clear();
 }
 
 void MapChipField::warn_blocked_face(const MapChipIndex& index, const MapChipIndex& direction) {
@@ -296,28 +296,66 @@ void MapChipField::warn_blocked_face(const MapChipIndex& index, const MapChipInd
 	}
 }
 
-void MapChipField::update_blocked_face_warning(r32 deltaSeconds) {
-	if (!blockedFaceWarning) {
+void MapChipField::warn_block_stuck(const MapChipIndex& index, const MapChipIndex& direction) {
+	if (is_visual_interpolating() || visuals.empty() || !is_inside(index.x, index.y, index.z)) {
 		return;
 	}
-	BlockedFaceWarning& warning = *blockedFaceWarning;
-	warning.elapsed += std::max(deltaSeconds, 0.0f);
-	if (warning.elapsed >= BLOCKED_FACE_WARN_DURATION) {
-		end_blocked_face_warning();
-		return;
+	i32 flat = flat_index(index.x, index.y, index.z);
+	if (chips[flat] == MapChipType::GoalPieceUpper) {
+		flat = shifted(flat, MapChipIndex{ 0, -1, 0 }).value_or(flat);
 	}
 
-	const bool red = std::fmod(warning.elapsed, BLOCKED_FACE_BLINK_PERIOD) < BLOCKED_FACE_BLINK_PERIOD * 0.5f;
-	std::vector<szg::IMultiMeshInstance::Material>& materials = warning.cross->get_materials();
-	for (size_t i = 0; i < materials.size() && i < warning.baseColors.size(); ++i) {
-		materials[i].color = red ? CColorRGB::RED : warning.baseColors[i];
+	// 粘土は同じ元セルの全セル、ピースは下段・上段とつながった粘土の全セル
+	std::vector<i32> cells;
+	if (chips[flat] == MapChipType::Clay) {
+		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+			if (chips[i] == MapChipType::Clay && clayOrigin[i] == clayOrigin[flat]) {
+				cells.push_back(i);
+			}
+		}
 	}
-	const r32 shake = std::sin(warning.elapsed * 2.0f * std::numbers::pi_v<r32> * BLOCKED_FACE_SHAKE_FREQUENCY) * BLOCKED_FACE_SHAKE_AMPLITUDE;
-	warning.cross->transform_mut().set_translate(warning.basePosition + warning.shakeAxis * shake);
+	else if (chips[flat] == MapChipType::GoalPiece) {
+		cells.push_back(flat);
+		for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+			if (chips[i] == MapChipType::Clay && clayPiece[i] == flat) {
+				cells.push_back(i);
+			}
+		}
+	}
+
+	const Vector3 shakeAxis{ static_cast<r32>(direction.x), 0.0f, static_cast<r32>(direction.z) };
+	for (const i32 cell : cells) {
+		if (visuals[cell]) {
+			begin_warning(cell, visuals[cell], shakeAxis, BLOCK_SHAKE_AMPLITUDE, false);
+		}
+	}
+}
+
+void MapChipField::update_warnings(r32 deltaSeconds) {
+	for (auto it = warnings.begin(); it != warnings.end();) {
+		WarningEffect& warning = *it;
+		warning.elapsed += std::max(deltaSeconds, 0.0f);
+		if (warning.elapsed >= WARN_DURATION) {
+			end_warning(warning);
+			it = warnings.erase(it);
+			continue;
+		}
+
+		if (!warning.baseColors.empty()) {
+			const bool red = std::fmod(warning.elapsed, WARN_BLINK_PERIOD) < WARN_BLINK_PERIOD * 0.5f;
+			std::vector<szg::IMultiMeshInstance::Material>& materials = warning.visual->get_materials();
+			for (size_t i = 0; i < materials.size() && i < warning.baseColors.size(); ++i) {
+				materials[i].color = red ? CColorRGB::RED : warning.baseColors[i];
+			}
+		}
+		++warning.frames;
+		const r32 sign = (warning.frames / WARN_SHAKE_HOLD_FRAMES) % 2 == 0 ? 1.0f : -1.0f;
+		warning.visual->transform_mut().set_translate(warning.basePosition + warning.shakeAxis * (sign * warning.shakeAmplitude));
+		++it;
+	}
 }
 
 void MapChipField::begin_blocked_face_warning(i32 root, u8 bit) {
-	end_blocked_face_warning();
 	if (root < 0 || root >= static_cast<i32>(faceCrosses.size())) {
 		return;
 	}
@@ -326,32 +364,50 @@ void MapChipField::begin_blocked_face_warning(i32 root, u8 bit) {
 		if (ClayFace::Table[i].bit != bit || !cross) {
 			continue;
 		}
+		// 面に沿った水平方向に揺らす
 		const MapChipIndex direction = ClayFace::Table[i].direction;
-		BlockedFaceWarning warning{
-			.flat = root,
-			.cross = cross,
-			.basePosition = cross->transform_imm().get_translate(),
-			.shakeAxis = Vector3{ static_cast<r32>(std::abs(direction.z)), 0.0f, static_cast<r32>(std::abs(direction.x)) },
-		};
-		for (const szg::IMultiMeshInstance::Material& material : cross->get_materials()) {
-			warning.baseColors.push_back(material.color);
-		}
-		blockedFaceWarning = std::move(warning);
+		const Vector3 shakeAxis{ static_cast<r32>(std::abs(direction.z)), 0.0f, static_cast<r32>(std::abs(direction.x)) };
+		begin_warning(root, cross, shakeAxis, CROSS_SHAKE_AMPLITUDE, true);
 		return;
 	}
 }
 
-void MapChipField::end_blocked_face_warning() {
-	if (!blockedFaceWarning) {
-		return;
+void MapChipField::begin_warning(i32 flat, Reference<szg::StaticMeshInstance> visual, const Vector3& shakeAxis, r32 shakeAmplitude, bool blink) {
+	for (auto it = warnings.begin(); it != warnings.end(); ++it) {
+		if (it->visual == visual) {
+			end_warning(*it);
+			warnings.erase(it);
+			break;
+		}
 	}
-	BlockedFaceWarning& warning = *blockedFaceWarning;
-	std::vector<szg::IMultiMeshInstance::Material>& materials = warning.cross->get_materials();
+	WarningEffect warning{
+		.flat = flat,
+		.visual = visual,
+		.basePosition = visual->transform_imm().get_translate(),
+		.shakeAxis = shakeAxis,
+		.shakeAmplitude = shakeAmplitude,
+	};
+	if (blink) {
+		for (const szg::IMultiMeshInstance::Material& material : visual->get_materials()) {
+			warning.baseColors.push_back(material.color);
+		}
+	}
+	warnings.push_back(std::move(warning));
+}
+
+void MapChipField::end_warning(WarningEffect& warning) {
+	std::vector<szg::IMultiMeshInstance::Material>& materials = warning.visual->get_materials();
 	for (size_t i = 0; i < materials.size() && i < warning.baseColors.size(); ++i) {
 		materials[i].color = warning.baseColors[i];
 	}
-	warning.cross->transform_mut().set_translate(warning.basePosition);
-	blockedFaceWarning.reset();
+	warning.visual->transform_mut().set_translate(warning.basePosition);
+}
+
+void MapChipField::end_warnings() {
+	for (WarningEffect& warning : warnings) {
+		end_warning(warning);
+	}
+	warnings.clear();
 }
 
 void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
@@ -382,6 +438,8 @@ void MapChipField::begin_visual_interpolation(
 	const std::vector<i32>& targetCells,
 	const std::vector<VisualMove>& moves) {
 	cancel_visual_interpolation();
+	// 振動のオフセットを戻してから現在位置を控える
+	end_warnings();
 	Vector3 totalOffset = CVector3::ZERO;
 	for (const VisualMove& move : moves) {
 		if (move.duration > 0.0f) {
@@ -942,11 +1000,9 @@ void MapChipField::refresh_visual(i32 flat, bool goalActive) {
 		visuals[flat]->destroy_self();
 		visuals[flat].reset();
 	}
-	// cross は親ごと消えるので、その演出中なら参照を捨てる(復元は不要)
+	// 表示(と子の cross)は消えるので、そのセルの演出は参照を捨てる(復元は不要)
 	faceCrosses[flat] = {};
-	if (blockedFaceWarning && blockedFaceWarning->flat == flat) {
-		blockedFaceWarning.reset();
-	}
+	std::erase_if(warnings, [flat](const WarningEffect& warning) { return warning.flat == flat; });
 
 	// 上段はピースのモデル(下段)に含まれるので表示を持たない
 	if (chips[flat] == MapChipType::Empty || chips[flat] == MapChipType::GoalPieceUpper || !root) {

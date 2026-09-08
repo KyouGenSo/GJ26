@@ -90,6 +90,11 @@ public:
 	/// <returns>演出を始めたら true</returns>
 	bool warn_blocked_grip(const Vector3& playerPosition, const Vector3& playerDirection);
 
+	/// <summary>
+	/// 掴んだブロックを moveDirection へ動かせなかったとき、そのブロック全体を動かそうとした方向に振動させる
+	/// </summary>
+	void warn_block_stuck(const MapChipIndex& blockIndex, const Vector3& playerDirection, BlockMoveDirection moveDirection);
+
 	/// 指定セルが粘土か
 	bool is_clay(const MapChipIndex& index) const noexcept;
 

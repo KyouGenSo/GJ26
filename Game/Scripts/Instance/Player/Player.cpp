@@ -476,8 +476,9 @@ void Player::update_gripped_block_movement() {
 		context_.direction,
 		*moveDirection,
 		moveDuration);
-	// 移動できない場合は何もしない
+	// 移動できない場合はブロックを振動させて知らせる
 	if (!move) {
+		blockMovementJudge_->warn_block_stuck(*context_.grippedBlockIndex, context_.direction, *moveDirection);
 		return;
 	}
 

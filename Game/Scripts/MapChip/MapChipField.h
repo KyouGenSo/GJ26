@@ -262,9 +262,14 @@ public:
 	void warn_blocked_face(const MapChipIndex& index, const MapChipIndex& direction);
 
 	/// <summary>
-	/// warn_blocked_face / stretch_clay で始めた cross の演出を更新する
+	/// index のブロック(粘土なら同じ元セルの全セル、ゴール条件オブジェクトなら下段・上段とつながった粘土)を direction 方向に一定時間振動させる(動かせなかった通知)。表示の移動補間中は何もしない
 	/// </summary>
-	void update_blocked_face_warning(r32 deltaSeconds);
+	void warn_block_stuck(const MapChipIndex& index, const MapChipIndex& direction);
+
+	/// <summary>
+	/// warn_blocked_face / warn_block_stuck / stretch_clay で始めた演出を更新する
+	/// </summary>
+	void update_warnings(r32 deltaSeconds);
 
 	/// <summary>
 	/// セルの粘土の色番号(ClayColor の添字。粘土でない / 範囲外は 0)
@@ -403,8 +408,11 @@ private:
 		const std::vector<i32>& targetCells,
 		const std::vector<VisualMove>& moves); // moves を順に再生する。表示は現在位置を最終位置として moves の合計分だけ戻した所から始まる
 	void cancel_visual_interpolation();
-	void begin_blocked_face_warning(i32 root, u8 bit); // root(コア)の bit の面の cross で演出を始める(再生中なら先に戻す。cross が無ければ何もしない)
-	void end_blocked_face_warning(); // cross の色と位置を戻して演出を終える
+	void begin_blocked_face_warning(i32 root, u8 bit); // root(コア)の bit の面の cross を赤点滅・振動させる(cross が無ければ何もしない)
+	struct WarningEffect;
+	void begin_warning(i32 flat, Reference<szg::StaticMeshInstance> visual, const Vector3& shakeAxis, r32 shakeAmplitude, bool blink); // 同じ visual の演出があれば戻してから始める
+	void end_warning(WarningEffect& warning); // 色と位置を戻す
+	void end_warnings(); // 全演出を戻して消す
 	void refresh_visual(i32 flat, bool goalActive = false);
 	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
@@ -431,15 +439,17 @@ private:
 	std::deque<VisualInterpolationStep> visualInterpolationSteps; // front が再生中
 	r32 visualInterpolationElapsed{ 0.0f };
 	std::vector<std::array<Reference<szg::StaticMeshInstance>, 4>> faceCrosses; // chips と同じ添字。粘土のコアにだけ入る ClayFace::Table 並びの cross(無い面は null)
-	struct BlockedFaceWarning {
-		i32 flat; // cross を付けたコアの flat_index
-		Reference<szg::StaticMeshInstance> cross;
-		Vector3 basePosition; // 親(clay.obj)ローカルでの cross の位置
-		Vector3 shakeAxis; // 面に沿った水平方向
-		std::vector<ColorRGB> baseColors; // マテリアルごとの元の色
+	struct WarningEffect {
+		i32 flat; // refresh_visual で捨てるための添字(cross はコア、ブロックはそのセル)
+		Reference<szg::StaticMeshInstance> visual;
+		Vector3 basePosition; // 親ローカルでの元の位置
+		Vector3 shakeAxis;
+		r32 shakeAmplitude;
+		std::vector<ColorRGB> baseColors; // マテリアルごとの元の色。空なら点滅しない
 		r32 elapsed{ 0.0f };
+		i32 frames{ 0 }; // 更新回数。揺れの向きはフレーム単位で反転させる(時間基準だとフレームレートとの折り返しで幅が揺らぐ)
 	};
-	std::optional<BlockedFaceWarning> blockedFaceWarning; // 再生中の cross の演出
+	std::vector<WarningEffect> warnings; // 再生中の演出
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
 	u32 revision{ 0 };

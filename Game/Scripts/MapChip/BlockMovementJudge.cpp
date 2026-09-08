@@ -124,6 +124,12 @@ bool BlockMovementJudge::warn_blocked_grip(const Vector3& playerPosition, const 
 	return true;
 }
 
+void BlockMovementJudge::warn_block_stuck(const MapChipIndex& blockIndex, const Vector3& playerDirection, BlockMoveDirection moveDirection) {
+	if (field_) {
+		field_->warn_block_stuck(blockIndex, relative_direction(playerDirection, moveDirection));
+	}
+}
+
 bool BlockMovementJudge::is_clay(const MapChipIndex& index) const noexcept {
 	return field_ && field_->get(index.x, index.y, index.z) == MapChipType::Clay;
 }
