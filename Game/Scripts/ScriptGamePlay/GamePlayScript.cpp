@@ -67,7 +67,6 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
-	worldRoot_ = worldRoot;
 
 	ClayStretchMeshGenerator::GenerateAll();
 
