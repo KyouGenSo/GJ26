@@ -334,6 +334,186 @@
 			},
 			"Type": 2002,
 			"Use runtime": true
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"IsDraw": false,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.4000000059604645
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "stage1Ui.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "Stage1Guide",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 10.239999771118164,
+				"Y": 5.119999885559082
+			},
+			"Type": 2002,
+			"Use runtime": true
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"IsDraw": false,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.4000000059604645
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "stage7Ui.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "Stage7Guide",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 10.239999771118164,
+				"Y": 5.119999885559082
+			},
+			"Type": 2002,
+			"Use runtime": true
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"IsDraw": false,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.5
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 0.6499999761581421,
+					"B": 0.0,
+					"G": 0.0,
+					"R": 0.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "White.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "StageGuideDimmer",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 19.200000762939453,
+				"Y": 10.800000190734863
+			},
+			"Type": 2002,
+			"Use runtime": true
 		}
 	],
 	"Name": "UI",

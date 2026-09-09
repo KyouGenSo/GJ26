@@ -58,6 +58,8 @@ private:
 	void start_confetti_effect();
 	void stop_confetti_effect();
 	void set_gameplay_ui_visible(bool visible);
+	void setup_stage_guide_ui();
+	void hide_stage_guide_ui();
 	void reset_clear_sequence();
 	void advance_to_next_stage();
 
@@ -79,6 +81,10 @@ private:
 	Reference<szg::BloomPipeline::Data> clayGlow_;
 	/// リセットゲージの塗り(UI.json "ResetGaugeFill")。Y 長押し時間に応じて左から伸ばす
 	Reference<szg::Rect3d> resetGaugeFill_;
+	/// ステージ1・7の開始時に表示する暗幕と専用UI
+	Reference<szg::Rect3d> stageGuideDimmer_;
+	Reference<szg::Rect3d> stage1Guide_;
+	Reference<szg::Rect3d> stage7Guide_;
 	/// 掴める対象の輪郭の見た目(GripHighlight.param)
 	MapChipField::HighlightStyle gripHighlight_;
 	szg::InputHandler<szg::KeyID> keyInput_;
@@ -92,6 +98,11 @@ private:
 	bool confettiEffectStarted_{ false };
 	/// ズーム完了後にAを一度離してから決定できる状態
 	bool nextStageInputReady_{ false };
+	bool stageGuideVisible_{ false };
+	/// セレクト決定時から押しっぱなしのAで即座に閉じないためのフラグ
+	bool stageGuideInputReady_{ false };
+	/// prev_updateを止めたフレームにpost_updateだけを実行しないためのフラグ
+	bool stageGuideBlockedFrame_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
 	/// ゴール出現 / クリアの立ち上がりで SE を鳴らすための前フレームの状態
