@@ -9,6 +9,7 @@
 	],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
+		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj",
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
@@ -26,10 +27,11 @@
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
 	"Texture": [
-		".\\Game\\Assets\\textures\\ui\\ui.png",
-		".\\Game\\Assets\\textures\\ui\\ui2.png",
+		".\\SyzygyEngine\\Assets\\Texture\\White.png",
 		".\\Game\\Assets\\textures\\ui\\toSelect.png",
 		".\\Game\\Assets\\textures\\ui\\gageWhite.png",
+		".\\Game\\Assets\\textures\\ui\\ui.png",
+		".\\Game\\Assets\\textures\\ui\\ui2.png",
 		".\\Game\\Assets\\textures\\ui\\gageBrown.png"
 	]
 }

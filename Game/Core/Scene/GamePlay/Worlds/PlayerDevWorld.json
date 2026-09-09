@@ -369,6 +369,58 @@
 			"Use runtime": false
 		},
 		{
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.000003695487976,
+					"Y": 1.0000020265579224,
+					"Z": 1.0000020265579224
+				},
+				"Translate": {
+					"X": -8.0,
+					"Y": -3.253801107406616,
+					"Z": 1.0000003576278687
+				}
+			},
+			"Name": "ConfettiLeftEmitter",
+			"ParticleFile": "confettiEffect_leftBottom.particle",
+			"Type": 6000,
+			"Use runtime": true
+		},
+		{
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 8.0,
+					"Y": -3.251824140548706,
+					"Z": 1.0
+				}
+			},
+			"Name": "ConfettiRightEmitter",
+			"ParticleFile": "confettiEffect_rightBottom.particle",
+			"Type": 6000,
+			"Use runtime": true
+		},
+		{
 			"BlendMode": 1,
 			"Children": [],
 			"Color": {

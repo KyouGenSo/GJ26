@@ -13,7 +13,7 @@
 					"Y": 1080.0
 				},
 				"Height": 1080.0,
-				"LayerIndex": 1,
+				"LayerIndex": 0,
 				"Left": 0.0,
 				"MaxDepth": 1.0,
 				"MinDepth": 0.0,
@@ -332,8 +332,8 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 2600.0,
-					"Y": 350.0
+					"X": 3070.0,
+					"Y": 220.0
 				}
 			},
 			"Links": {
@@ -346,8 +346,8 @@
 		"Connect": 12,
 		"Debug": {
 			"Position": {
-				"X": 2900.0,
-				"Y": 350.0
+				"X": 3420.0,
+				"Y": 340.0
 			}
 		}
 	}
