@@ -13,6 +13,7 @@
 #include "Scripts/Instance/Skydome/Skydome.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/ScriptStageSelect/StageSelectScript.h"
+#include "Scripts/ScriptStageSelect/StageSelectBackgroundEffect.h"
 
 SelectScene::SelectScene() noexcept {
 	set_name("SelectScene");
@@ -20,6 +21,7 @@ SelectScene::SelectScene() noexcept {
 
 void SelectScene::custom_load_asset() {
 	MapChipField::RegisterVisualAssets();
+	StageSelectBackgroundEffect::RegisterVisualAssets();
 	StageSelectScript::RegisterAudioAssets();
 }
 
@@ -46,6 +48,10 @@ void SelectScene::custom_setup() {
 		szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>("RuntimeInstance", "SelectAllowSprite_Left");
 	const auto rightArrow =
 		szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>("RuntimeInstance", "SelectAllowSprite_Right");
+
+	auto background = eps::CreateUnique<StageSelectBackgroundEffect>();
+	background->setup(worldRoot, previewCamera.value_or(nullptr));
+	sceneScriptManager.register_script(std::move(background));
 
 	// クリア済みステージの印。UI ワールド(正射影カメラ)に置く
 	Reference<szg::StaticMeshInstance> clearBadge;

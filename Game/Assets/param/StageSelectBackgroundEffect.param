@@ -1,0 +1,130 @@
+{
+	"FallSpeedMin": {
+		"type": "R32",
+		"value": 0.4000000059604645
+	},
+	"FallSpeedMax": {
+		"type": "R32",
+		"value": 0.5
+	},
+	"RotationSpeedMin": {
+		"type": "R32",
+		"value": 30.0
+	},
+	"RotationSpeedMax": {
+		"type": "R32",
+		"value": 55.0
+	},
+	"SwayAmplitude": {
+		"type": "R32",
+		"value": 0.03999999910593033
+	},
+	"SwayPeriod": {
+		"type": "R32",
+		"value": 3.5
+	},
+	"CameraDepth": {
+		"type": "R32",
+		"value": 18.0
+	},
+	"OffscreenMargin": {
+		"type": "R32",
+		"value": 0.15000000596046448
+	},
+	"goalCount": {
+		"type": "I32",
+		"value": 3
+	},
+	"goalScale": {
+		"type": "R32",
+		"value": 0.44999998807907104
+	},
+	"goalRotationDegrees": {
+		"type": "Vector3",
+		"value": {
+			"X": 0.0,
+			"Y": 0.0,
+			"Z": 0.0
+		}
+	},
+	"rulerCount": {
+		"type": "I32",
+		"value": 3
+	},
+	"rulerScale": {
+		"type": "R32",
+		"value": 0.18000000715255737
+	},
+	"rulerRotationDegrees": {
+		"type": "Vector3",
+		"value": {
+			"X": 75.0,
+			"Y": 0.0,
+			"Z": 0.0
+		}
+	},
+	"drawingPaperCount": {
+		"type": "I32",
+		"value": 3
+	},
+	"drawingPaperScale": {
+		"type": "R32",
+		"value": 0.4000000059604645
+	},
+	"drawingPaperRotationDegrees": {
+		"type": "Vector3",
+		"value": {
+			"X": 75.0,
+			"Y": 0.0,
+			"Z": 0.0
+		}
+	},
+	"scissorsCount": {
+		"type": "I32",
+		"value": 3
+	},
+	"scissorsScale": {
+		"type": "R32",
+		"value": 0.23000000417232513
+	},
+	"scissorsRotationDegrees": {
+		"type": "Vector3",
+		"value": {
+			"X": 75.0,
+			"Y": 0.0,
+			"Z": 0.0
+		}
+	},
+	"thumbtackCount": {
+		"type": "I32",
+		"value": 3
+	},
+	"thumbtackScale": {
+		"type": "R32",
+		"value": 0.6499999761581421
+	},
+	"thumbtackRotationDegrees": {
+		"type": "Vector3",
+		"value": {
+			"X": 25.0,
+			"Y": 0.0,
+			"Z": 0.0
+		}
+	},
+	"goalPieceCount": {
+		"type": "I32",
+		"value": 2
+	},
+	"goalPieceScale": {
+		"type": "R32",
+		"value": 0.30000001192092896
+	},
+	"goalPieceRotationDegrees": {
+		"type": "Vector3",
+		"value": {
+			"X": 0.0,
+			"Y": 0.0,
+			"Z": 0.0
+		}
+	}
+}
