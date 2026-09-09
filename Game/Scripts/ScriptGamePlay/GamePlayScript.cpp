@@ -190,6 +190,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		resetGaugeFullWidth_ = resetGaugeFill_->data_imm().size.x;
 	}
 	set_gameplay_ui_visible(true);
+	setup_stage_guide_ui();
 
 	// 掴める対象の輪郭の色と太さ
 	{
@@ -225,6 +226,12 @@ void GamePlayScript::finalize() {
 	isSetup_ = false;
 	clayGlow_.reset();
 	resetGaugeFill_.reset();
+	stageGuideDimmer_.reset();
+	stage1Guide_.reset();
+	stage7Guide_.reset();
+	stageGuideVisible_ = false;
+	stageGuideInputReady_ = false;
+	stageGuideBlockedFrame_ = false;
 	clearSequenceStarted_ = false;
 	clearCameraEffectStarted_ = false;
 	goalClearEffectStarted_ = false;
@@ -238,6 +245,7 @@ void GamePlayScript::prev_update() {
 	}
 	keyInput_.update();
 	padInput_.update();
+	stageGuideBlockedFrame_ = false;
 
 	// Startボタンが押され続けたらステージ選択画面へ遷移する
 	if (!sceneTransitionRequested_ && padInput_.trigger(szg::PadID::Start)) {
@@ -246,6 +254,22 @@ void GamePlayScript::prev_update() {
 
 		// ステージ選択画面へ遷移する
 		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
+		return;
+	}
+
+	// ステージ専用UIの表示中はインゲームを更新しない。
+	// セレクト画面から押し続けているAでは閉じず、一度離した後のA入力だけを受け付ける。
+	if (stageGuideVisible_) {
+		stageGuideBlockedFrame_ = true;
+		if (!stageGuideInputReady_ && padInput_.idle(szg::PadID::A)) {
+			stageGuideInputReady_ = true;
+		}
+		if (stageGuideInputReady_ && padInput_.trigger(szg::PadID::A)) {
+			hide_stage_guide_ui();
+			if (player_) {
+				player_->set_input_enabled(true);
+			}
+		}
 		return;
 	}
 
@@ -277,6 +301,10 @@ void GamePlayScript::prev_update() {
 
 void GamePlayScript::post_update() {
 	if (!isSetup_) {
+		return;
+	}
+	if (stageGuideBlockedFrame_) {
+		stageGuideBlockedFrame_ = false;
 		return;
 	}
 
@@ -487,6 +515,56 @@ void GamePlayScript::set_gameplay_ui_visible(bool visible) {
 		if (ui) {
 			ui->set_draw(visible);
 		}
+	}
+}
+
+void GamePlayScript::setup_stage_guide_ui() {
+	stageGuideDimmer_ = szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>(
+		"RuntimeInstance", "StageGuideDimmer").value_or(nullptr);
+	stage1Guide_ = szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>(
+		"RuntimeInstance", "Stage1Guide").value_or(nullptr);
+	stage7Guide_ = szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>(
+		"RuntimeInstance", "Stage7Guide").value_or(nullptr);
+
+	if (!stageGuideDimmer_ || !stage1Guide_ || !stage7Guide_) {
+		szgWarning("GamePlayScript: stage guide UI runtime instance not found.");
+	}
+
+	const i32 stageNumber =
+		szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1);
+	const bool isGuideStage = stageNumber == 1 || stageNumber == 7;
+	const bool isCleared = szg::RuntimeStorage::GetValue<bool>(
+		"Temp", StageSelectScript::ClearedKey(stageNumber)).value_or(false);
+	const bool hasSelectedGuide = stageNumber == 1
+		? static_cast<bool>(stage1Guide_)
+		: stageNumber == 7 && static_cast<bool>(stage7Guide_);
+	stageGuideVisible_ = isGuideStage && !isCleared && stageGuideDimmer_ && hasSelectedGuide;
+	stageGuideInputReady_ = false;
+
+	if (stageGuideDimmer_) {
+		stageGuideDimmer_->set_draw(stageGuideVisible_);
+	}
+	if (stage1Guide_) {
+		stage1Guide_->set_draw(stageGuideVisible_ && stageNumber == 1);
+	}
+	if (stage7Guide_) {
+		stage7Guide_->set_draw(stageGuideVisible_ && stageNumber == 7);
+	}
+	if (player_) {
+		player_->set_input_enabled(!stageGuideVisible_);
+	}
+}
+
+void GamePlayScript::hide_stage_guide_ui() {
+	stageGuideVisible_ = false;
+	if (stageGuideDimmer_) {
+		stageGuideDimmer_->set_draw(false);
+	}
+	if (stage1Guide_) {
+		stage1Guide_->set_draw(false);
+	}
+	if (stage7Guide_) {
+		stage7Guide_->set_draw(false);
 	}
 }
 

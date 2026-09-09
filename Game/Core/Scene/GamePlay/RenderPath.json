@@ -40,12 +40,13 @@
 		},
 		{
 			"Data": {
-				"EffectTag": "GoalGrayscale",
+				"EffectTag": "",
 				"OutputSize": {
 					"X": 1920.0,
 					"Y": 1080.0
 				},
-				"Type": 4
+				"Type": 4,
+				"UseRuntime": false
 			},
 			"Debug": {
 				"Position": {
@@ -138,12 +139,13 @@
 		},
 		{
 			"Data": {
-				"EffectTag": null,
+				"EffectTag": "",
 				"OutputSize": {
 					"X": 960.0,
 					"Y": 540.0
 				},
-				"Type": 3
+				"Type": 3,
+				"UseRuntime": false
 			},
 			"Debug": {
 				"Position": {
@@ -158,12 +160,13 @@
 		},
 		{
 			"Data": {
-				"EffectTag": null,
+				"EffectTag": "",
 				"OutputSize": {
 					"X": 480.0,
 					"Y": 270.0
 				},
-				"Type": 3
+				"Type": 3,
+				"UseRuntime": false
 			},
 			"Debug": {
 				"Position": {
@@ -178,12 +181,13 @@
 		},
 		{
 			"Data": {
-				"EffectTag": null,
+				"EffectTag": "",
 				"OutputSize": {
 					"X": 240.0,
 					"Y": 135.0
 				},
-				"Type": 3
+				"Type": 3,
+				"UseRuntime": false
 			},
 			"Debug": {
 				"Position": {
@@ -198,12 +202,13 @@
 		},
 		{
 			"Data": {
-				"EffectTag": null,
+				"EffectTag": "",
 				"OutputSize": {
 					"X": 120.0,
 					"Y": 67.0
 				},
-				"Type": 3
+				"Type": 3,
+				"UseRuntime": false
 			},
 			"Debug": {
 				"Position": {
@@ -218,12 +223,13 @@
 		},
 		{
 			"Data": {
-				"EffectTag": null,
+				"EffectTag": "",
 				"OutputSize": {
 					"X": 1920.0,
 					"Y": 1080.0
 				},
-				"Type": 6
+				"Type": 6,
+				"UseRuntime": false
 			},
 			"Debug": {
 				"Position": {

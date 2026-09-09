@@ -4,8 +4,8 @@
 	"Font": [],
 	"Json": [],
 	"Mesh": [
-		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
 		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj",
+		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
@@ -25,6 +25,8 @@
 		".\\Game\\Assets\\textures\\ui\\gageWhite.png",
 		".\\Game\\Assets\\textures\\ui\\ui.png",
 		".\\Game\\Assets\\textures\\ui\\ui2.png",
-		".\\Game\\Assets\\textures\\ui\\gageBrown.png"
+		".\\Game\\Assets\\textures\\ui\\gageBrown.png",
+		".\\Game\\Assets\\textures\\ui\\stage1Ui.png",
+		".\\Game\\Assets\\textures\\ui\\stage7Ui.png"
 	]
 }
