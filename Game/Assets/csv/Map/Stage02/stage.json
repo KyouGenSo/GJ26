@@ -1,3 +1,93 @@
 {
-	"Clay": []
+	"Clay": [
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				1,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				1,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				1,
+				1,
+				7
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				7
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				7
+			]
+		}
+	],
+	"PlayerSpawn": {
+		"Direction": "+Z",
+		"Position": [
+			2,
+			0,
+			0
+		]
+	}
 }

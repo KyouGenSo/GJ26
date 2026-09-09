@@ -1,0 +1,219 @@
+{
+	"Clay": [
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				1
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"-Z"
+			],
+			"Color": 1,
+			"Position": [
+				3,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 1,
+			"Position": [
+				4,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 1,
+			"Position": [
+				5,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 1,
+			"Position": [
+				3,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				3,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				3,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				3,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				3,
+				2,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				2,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				2,
+				6
+			]
+		}
+	],
+	"PlayerSpawn": {
+		"Direction": "+Z",
+		"Position": [
+			5,
+			0,
+			0
+		]
+	}
+}

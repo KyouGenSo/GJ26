@@ -1,6 +1,7 @@
 #include "StageSelectScript.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <format>
 #include <numbers>
@@ -32,6 +33,8 @@ namespace {
 constexpr r32 kFloorTextureGridSize = 5.0f;
 // 画面外スロットの縮小率。0 だとワールド行列が非可逆になりエンジンが毎フレーム警告するので、見えない程度の正の値にする
 constexpr r32 kHiddenPreviewScale = 0.001f;
+/// セレクトで使う音。BGM はループ、決定音と戻る音はシーン遷移をまたいで鳴らす
+constexpr std::array<string_literal, 4> kSounds{ "selectBgm.wav", "decision.wav", "choice.wav", "back.wav" };
 
 r32 NearestEquivalentDegrees(r32 targetDegrees, r32 referenceDegrees) {
 	return targetDegrees +
@@ -48,6 +51,10 @@ r32 Lerp(r32 from, r32 to, r32 t) {
 }
 
 } // namespace
+
+void StageSelectScript::RegisterAudioAssets() {
+	SoundPlayer::RegisterLoadQue(kSounds);
+}
 
 void StageSelectScript::setup(
 	Reference<szg::WorldRoot> worldRoot_,
@@ -76,6 +83,8 @@ void StageSelectScript::setup(
 		szg::InputInitializeMode::Current);
 	pad.initialize({ szg::PadID::A, szg::PadID::Start }, szg::InputInitializeMode::Current);
 	mouse.initialize({ szg::MouseID::Left }, szg::InputInitializeMode::Current);
+	sound.initialize(kSounds);
+	sound.play("selectBgm.wav");
 
 	// ステージの総数を取得
 	stageCount = MapChipField::CountStages();
@@ -113,6 +122,7 @@ void StageSelectScript::prev_update() {
 		pad.trigger(szg::PadID::Start);
 	if (!sceneTransitionRequested && backTriggered) {
 		sceneTransitionRequested = true;
+		SoundPlayer::PlayAcrossScene("back.wav");
 		szg::SceneManager2::SceneChange(SceneListGJ26::Title, 0.0f);
 		return;
 	}
@@ -127,13 +137,15 @@ void StageSelectScript::prev_update() {
 		mouse.trigger(szg::MouseID::Left);
 	if (!isTransitioning && !sceneTransitionRequested && selectTriggered) {
 		sceneTransitionRequested = true;
+		SoundPlayer::PlayAcrossScene("decision.wav");
 		szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", i32{ selectedStage });
 		szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
 		return;
 	}
 
 	const i32 currentStickDirection = stick_direction();
-	if (!isTransitioning) {
+	// 決定後はカルーセルを動かさない(選択音も鳴らさない)
+	if (!isTransitioning && !sceneTransitionRequested) {
 		i32 step = 0;
 		if (keys.trigger(szg::KeyID::A)) {
 			step = -1;
@@ -259,6 +271,8 @@ bool StageSelectScript::begin_transition(i32 step) {
 			build_preview(*incoming, incomingCarouselIndex, step * 2);
 		}
 	}
+
+	sound.restart("choice.wav");
 
 	// 選択中のステージのインデックスを更新
 	selectedCarouselIndex = nextCarouselIndex;

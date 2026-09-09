@@ -1,15 +1,39 @@
 {
 	"Clay": [
 		{
-			"BlockedFaces": [
-				"+X"
-			],
-			"Color": 0,
+			"BlockedFaces": [],
+			"Color": 2,
 			"Position": [
-				2,
+				0,
+				0,
+				1
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 2,
+			"Position": [
+				0,
 				0,
 				2
 			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 2,
+			"Position": [
+				0,
+				1,
+				2
+			]
 		}
-	]
+	],
+	"PlayerSpawn": {
+		"Direction": "+Z",
+		"Position": [
+			4,
+			0,
+			0
+		]
+	}
 }

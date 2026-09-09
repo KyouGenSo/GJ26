@@ -7,6 +7,7 @@
 #include <Library/Utility/Template/Reference.h>
 
 #include "Scripts/MapChip/MapChipField.h"
+#include "Scripts/Manager/SoundPlayer.h"
 
 namespace szg {
 class CameraInstance;
@@ -26,6 +27,11 @@ public:
 	SZG_CLASS_MOVE_ONLY(StageSelectScript)
 
 public:
+	/// <summary>
+	/// SelectScene::custom_load_asset で呼ぶ。このシーンの BGM / SE を登録する
+	/// </summary>
+	static void RegisterAudioAssets();
+
 	void setup(
 		Reference<szg::WorldRoot> worldRoot_,
 		Reference<szg::CameraInstance> previewCamera_,
@@ -123,6 +129,8 @@ private:
 	// ステージ決定入力
 	szg::InputHandler<szg::PadID> pad;
 	szg::InputHandler<szg::MouseID> mouse;
+	// このシーンの BGM / SE
+	SoundPlayer sound;
 	// 選択中のステージ番号
 	i32 selectedStage{ 1 };
 	// 循環境界をまたぐ移動補間に使う連続したインデックス

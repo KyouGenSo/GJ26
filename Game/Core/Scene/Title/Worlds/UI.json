@@ -1,19 +1,14 @@
 {
 	"Instances": [
 		{
+			"BlendMode": 1,
 			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 1.0,
-				"G": 1.0,
-				"R": 1.0
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
 			"IsDraw": true,
+			"IsFlipY": false,
 			"Layer": 0,
 			"Local transform": {
 				"Rotation": {
-					"W": -0.0001727921044221148,
+					"W": 0.0,
 					"XYZ": {
 						"X": 0.0,
 						"Y": 1.0,
@@ -21,66 +16,49 @@
 					}
 				},
 				"Scale": {
-					"X": 0.9999988079071045,
-					"Y": 1.0000025033950806,
-					"Z": 0.9999988079071045
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
 				},
 				"Translate": {
-					"X": 1.851585906820219e-08,
-					"Y": -2.2020280361175537,
-					"Z": 0.0
+					"X": 0.0,
+					"Y": -3.2,
+					"Z": 1.0
 				}
 			},
-			"Name": "StartButtonText",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 1.0,
-			"Text": "A",
-			"Type": 2003,
-			"Use runtime": false
-		},
-		{
-			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 0.021025575697422028,
-				"G": 0.021025575697422028,
-				"R": 0.6127451062202454
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": -2.811227375332237e-07,
-					"XYZ": {
-						"X": 2.755163652778947e-09,
-						"Y": 0.9999520778656006,
-						"Z": -0.009798611514270306
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "titleA.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
 					}
-				},
-				"Scale": {
-					"X": 1.0000572204589844,
-					"Y": 1.0000253915786743,
-					"Z": 1.0000194311141968
-				},
-				"Translate": {
-					"X": 4.547473075183772e-12,
-					"Y": 3.0661489963531494,
-					"Z": 0.0
 				}
 			},
-			"Name": "TitleText",
+			"Name": "StartButton",
 			"Pivot": {
 				"X": 0.5,
 				"Y": 0.5
 			},
-			"Size": 1.5,
-			"Text": "Title",
-			"Type": 2003,
-			"Use runtime": false
+			"Size": {
+				"X": 3.584,
+				"Y": 1.792
+			},
+			"Type": 2002,
+			"Use runtime": true
 		},
 		{
 			"Children": [],

@@ -7,8 +7,10 @@
 #include <Library/Utility/Template/Reference.h>
 
 #include "Scripts/MapChip/MapChipField.h"
+#include "Scripts/Manager/SoundPlayer.h"
 
 namespace szg {
+class Rect3d;
 class WorldRoot;
 }
 
@@ -30,6 +32,11 @@ public:
 
 public:
 	/// <summary>
+	/// GamePlayScene::custom_load_asset で呼ぶ。インゲームの BGM / SE を登録する
+	/// </summary>
+	static void RegisterAudioAssets();
+
+	/// <summary>
 	/// マップ、Player、追従カメラ、ゴール判定をセットアップする
 	/// </summary>
 	void setup(Reference<szg::WorldRoot> worldRoot);
@@ -44,6 +51,9 @@ public:
 private:
 	void setup_json_asset();
 
+	/// BGM / SE。Player と UndoManager が参照するので inGameScriptManager_ より先に宣言して後に破棄する
+	SoundPlayer sound_;
+
 	/// 登録順が各インゲームスクリプトの更新順になる
 	szg::SceneScriptManager inGameScriptManager_;
 
@@ -55,6 +65,8 @@ private:
 	Reference<UndoManager> undoManager_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
 	Reference<szg::BloomPipeline::Data> clayGlow_;
+	/// リセットゲージの塗り(UI.json "ResetGaugeFill")。Y 長押し時間に応じて左から伸ばす
+	Reference<szg::Rect3d> resetGaugeFill_;
 	/// 掴める対象の輪郭の見た目(GripHighlight.param)
 	MapChipField::HighlightStyle gripHighlight_;
 	szg::InputHandler<szg::KeyID> keyInput_;
@@ -65,10 +77,15 @@ private:
 	bool clearCameraEffectStarted_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
+	/// ゴール出現 / クリアの立ち上がりで SE を鳴らすための前フレームの状態
+	bool wasGoalOpen_{ false };
+	bool wasCleared_{ false };
 
 	r32 clearCameraDuration_{ 1.4f };
 	r32 clearCameraDistance_{ 4.5f };
 	r32 clearCameraElevationDegrees_{ 38.0f };
 	r32 clearCameraTargetHeight_{ 0.8f };
 	r32 clearCameraBounceStrength_{ 1.1f };
+	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
+	r32 resetGaugeFullWidth_{ 0.0f };
 };

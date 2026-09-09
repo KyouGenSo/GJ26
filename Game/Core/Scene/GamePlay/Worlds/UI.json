@@ -1,0 +1,341 @@
+{
+	"Instances": [
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "2dCamera",
+			"Projection": {
+				"Bottom": -5.4,
+				"FarClip": 10.0,
+				"Left": -9.6,
+				"NearClip": 0.0,
+				"Right": 9.6,
+				"Top": 5.4,
+				"Type": 1
+			},
+			"Type": 3000,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": -6.72,
+					"Y": 4.44,
+					"Z": 1.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "toSelect.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ToSelectLegend",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 5.12,
+				"Y": 2.56
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": -7.0,
+					"Y": -3.85,
+					"Z": 1.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "ui.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ButtonLegend",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 5.12,
+				"Y": 5.12
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 7.5,
+					"Y": -4.63,
+					"Z": 1.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "ui2.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "UndoResetLegend",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 5.12,
+				"Y": 5.12
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 7.19,
+					"Y": -4.89,
+					"Z": 1.0
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "gageWhite.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ResetGaugeBack",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 4.2,
+				"Y": 1.1
+			},
+			"Type": 2002,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 0,
+			"Children": [],
+			"IsDraw": true,
+			"IsFlipY": false,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 5.09,
+					"Y": -4.89,
+					"Z": 0.9
+				}
+			},
+			"Material": {
+				"Color": {
+					"A": 1.0,
+					"B": 1.0,
+					"G": 1.0,
+					"R": 1.0
+				},
+				"LightingType": 0,
+				"Shininess": 50.0,
+				"Texture": "gageBrown.png",
+				"UV Transform": {
+					"Rotation": 0.0,
+					"Scale": {
+						"X": 1.0,
+						"Y": 1.0
+					},
+					"Translate": {
+						"X": 0.0,
+						"Y": 0.0
+					}
+				}
+			},
+			"Name": "ResetGaugeFill",
+			"Pivot": {
+				"X": 1.0,
+				"Y": 0.5
+			},
+			"Size": {
+				"X": 4.2,
+				"Y": 1.1
+			},
+			"Type": 2002,
+			"Use runtime": true
+		}
+	],
+	"Name": "UI",
+	"NumLayer": 1
+}
