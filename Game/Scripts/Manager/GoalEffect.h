@@ -39,8 +39,10 @@ public:
 	/// </summary>
 	void update();
 
-	/// クリア時にGoal本体を上空へ上げ、その後プレイヤーの頭上へ降ろす
-	bool start_clear_effect(const Vector3& playerWorldPosition);
+	/// クリア時にGoal本体を上空へ上げ、その後プレイヤーの前へ移動する
+	bool start_clear_effect(
+		const Vector3& playerWorldPosition,
+		const Vector3& playerDirection);
 	/// クリア時のGoal移動パラメータを設定する
 	void set_clear_effect_parameters(
 		const Vector3& finalPlayerOffset,
@@ -49,7 +51,7 @@ public:
 		r32 fallDuration) noexcept;
 	/// クリア移動を解除し、Goalをステージ上の基準位置へ戻す
 	void stop_clear_effect();
-	/// Goalがプレイヤーの頭上へ到着済みか
+	/// Goalがプレイヤーの前へ到着済みか
 	bool is_clear_effect_finished() const noexcept;
 
 private:
@@ -90,7 +92,8 @@ private:
 	r32 clearRiseHeight{ 3.0f };
 	r32 clearRiseDuration{ 0.55f };
 	r32 clearFallDuration{ 0.75f };
-	Vector3 clearFinalPlayerOffset{ 0.0f, 1.8f, 0.0f };
+	/// プレイヤー基準のローカル座標(X=右、Y=上、Z=前)
+	Vector3 clearFinalPlayerOffset{ 0.0f, 0.0f, 1.5f };
 	std::optional<ClearMotion> clearMotion;
 	bool isActive{ false };
 };

@@ -1,16 +1,4 @@
 {
-	"ClearTextStartX": {
-		"type": "R32",
-		"value": -14.0
-	},
-	"ClearTextTargetX": {
-		"type": "R32",
-		"value": 0.0
-	},
-	"ClearTextSlideDuration": {
-		"type": "R32",
-		"value": 0.6499999761581421
-	},
 	"カメラの初期位置(ステージ中心からの距離)": {
 		"type": "R32",
 		"value": 20.0

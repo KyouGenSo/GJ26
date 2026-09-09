@@ -7,7 +7,9 @@
 		".\\Game\\Assets\\Models\\player\\playerPush.gltf",
 		".\\Game\\Assets\\Models\\player\\playerPull.gltf",
 		".\\Game\\Assets\\Models\\player\\playerPush_left.gltf",
-		".\\Game\\Assets\\Models\\player\\playerPush_right.gltf"
+		".\\Game\\Assets\\Models\\player\\playerPush_right.gltf",
+		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
+		".\\Game\\Assets\\Models\\player\\playerClearStand.gltf"
 	],
 	"Audio": [],
 	"Font": [],
