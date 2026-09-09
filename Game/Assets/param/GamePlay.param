@@ -1,30 +1,18 @@
 {
-	"ClearTextStartX": {
+	"カメラの初期位置(ステージ中心からの距離)": {
 		"type": "R32",
-		"value": -14.0
+		"value": 20.0
 	},
-	"ClearTextTargetX": {
+	"カメラのステージサイズに合わせる際の余白倍率": {
 		"type": "R32",
-		"value": 0.0
+		"value": 1.100000023841858
 	},
-	"ClearTextSlideDuration": {
+	"カメラ初期回転(Yaw)": {
 		"type": "R32",
-		"value": 0.65
+		"value": -5.0
 	},
-	"CameraInitialDistance": {
+	"カメラ初期回転(Pitch)": {
 		"type": "R32",
-		"value": 0.0
-	},
-	"CameraFitPadding": {
-		"type": "R32",
-		"value": 1.1
-	},
-	"CameraInitialYawDegrees": {
-		"type": "R32",
-		"value": 0.0
-	},
-	"CameraInitialPitchDegrees": {
-		"type": "R32",
-		"value": 17.188734
+		"value": 43.78900146484375
 	}
 }

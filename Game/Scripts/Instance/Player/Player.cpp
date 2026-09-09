@@ -54,6 +54,16 @@ std::optional<BlockMoveDirection> ResolveBlockMoveDirection(const PlayerContext&
 		: BlockMoveDirection::Left;
 }
 
+bool IsGripMoveDirectionHeld(
+	const PlayerContext& context,
+	BlockMoveDirection direction) noexcept {
+	if (context.input.move.length() < kGripMoveTriggerThreshold) {
+		return false;
+	}
+	const std::optional<BlockMoveDirection> heldDirection = ResolveBlockMoveDirection(context);
+	return heldDirection && *heldDirection == direction;
+}
+
 } // namespace
 
 Player::Player() {
@@ -87,6 +97,9 @@ void Player::finalize() {
 	previousState_ = PlayerState::Idle;
 	moveSoundPlaying_ = false;
 	inputEnabled_ = true;
+	gravityEnabled_ = true;
+	clearPresentationActive_ = false;
+	clearAnimationFinished_ = false;
 }
 
 //================================
@@ -129,10 +142,19 @@ void Player::prev_update() {
 			}
 		}
 	}
-	if (gripMoveInterpolation_) {
+	bool gravityApplied = false;
+	const bool wasGripInterpolating = gripMoveInterpolation_.has_value();
+	if (wasGripInterpolating) {
 		update_grip_move_interpolation();
 	}
-	else {
+	if (!gripMoveInterpolation_) {
+		// 次のブロック操作より先に移動先の接地を更新する。
+		// 足場がなければGripStateが掴みを解除し、連続伸長せず落下する。
+		if (gravityEnabled_ &&
+			(wasGripInterpolating || stateManager_.get_current_state() == PlayerState::Grip)) {
+			PlayerMovement::apply_gravity(context_);
+			gravityApplied = true;
+		}
 		stateManager_.update(context_);
 		update_gripped_block_movement();
 	}
@@ -145,8 +167,9 @@ void Player::prev_update() {
 	}
 	update_state_sound();
 	update_animation();
+	update_clear_animation_sequence();
 	// Gripのグリッド移動中は、補間位置が重力やブロック衝突で上書きされないようにする。
-	if (!gripMoveInterpolation_) {
+	if (gravityEnabled_ && !gripMoveInterpolation_ && !gravityApplied) {
 		PlayerMovement::apply_gravity(context_);
 	}
 	update_mesh_direction();
@@ -344,6 +367,33 @@ bool Player::is_input_enabled() const noexcept {
 	return inputEnabled_;
 }
 
+void Player::start_clear_presentation() {
+	if (clearPresentationActive_) {
+		return;
+	}
+
+	clearPresentationActive_ = true;
+	clearAnimationFinished_ = false;
+	gravityEnabled_ = false;
+	context_.verticalVelocity = 0.0f;
+	activeAnimationKey_.clear();
+	update_animation();
+}
+
+void Player::stop_clear_presentation() {
+	if (!clearPresentationActive_) {
+		gravityEnabled_ = true;
+		return;
+	}
+
+	clearPresentationActive_ = false;
+	clearAnimationFinished_ = false;
+	gravityEnabled_ = true;
+	context_.verticalVelocity = 0.0f;
+	activeAnimationKey_.clear();
+	update_animation();
+}
+
 void Player::cancel_grip_move_interpolation() noexcept {
 	gripMoveInterpolation_.reset();
 	gripMoveAnimationDirection_.reset();
@@ -373,10 +423,18 @@ void Player::setup_json_asset() {
 	pullAnimation_.fileName = readString("PullAnimationFile", pullAnimation_.fileName);
 	pushLeftAnimation_.fileName = readString("PushLeftAnimationFile", pushLeftAnimation_.fileName);
 	pushRightAnimation_.fileName = readString("PushRightAnimationFile", pushRightAnimation_.fileName);
-	set_move_speed(readFloat("MoveSpeed", context_.moveSpeed));
-	set_jump_power(readFloat("JumpPower", context_.jumpPower));
+	clearAnimation_.fileName = readString("ClearAnimationFile", clearAnimation_.fileName);
+	clearStandAnimation_.fileName = readString(
+		"ClearStandAnimationFile", clearStandAnimation_.fileName);
+	set_move_speed(readFloat("移動スピード", context_.moveSpeed));
+	set_jump_power(readFloat("ジャンプ力", context_.jumpPower));
 	set_fall_speed(readFloat("FallSpeed", context_.fallSpeed));
 	set_grip_move_speed(readFloat("GripMoveSpeed", context_.gripMoveSpeed));
+	szgInformation(
+		"Player: movement parameter loaded. MoveSpeed-{}, JumpPower-{}, FallSpeed-{}.",
+		context_.moveSpeed,
+		context_.jumpPower,
+		context_.fallSpeed);
 }
 
 //================================
@@ -388,9 +446,11 @@ void Player::update_animation() {
 	}
 	
 	const PlayerState state = stateManager_.get_current_state();
-	const AnimationSetting& setting = gripMoveInterpolation_ && gripMoveAnimationDirection_
-		? resolve_grip_move_animation(*gripMoveAnimationDirection_)
-		: resolve_animation_setting(state);
+	const AnimationSetting& setting = clearPresentationActive_
+		? (clearAnimationFinished_ ? clearStandAnimation_ : clearAnimation_)
+		: gripMoveInterpolation_ && gripMoveAnimationDirection_
+			? resolve_grip_move_animation(*gripMoveAnimationDirection_)
+			: resolve_animation_setting(state);
 	const std::string animationKey = setting.fileName + '-' + animationClipName_;
 	if (activeAnimationKey_ == animationKey) {
 		return;
@@ -412,6 +472,24 @@ void Player::update_animation() {
 		animation->restart();
 	}
 	activeAnimationKey_ = animationKey;
+}
+
+//================================
+// クリア動作の終了後、クリア待機アニメーションへ切り替える
+//================================
+void Player::update_clear_animation_sequence() {
+	if (!clearPresentationActive_ || clearAnimationFinished_ || !meshInstance_) {
+		return;
+	}
+
+	const szg::NodeAnimationPlayer* animation = meshInstance_->get_animation();
+	if (!animation || !animation->is_end()) {
+		return;
+	}
+
+	clearAnimationFinished_ = true;
+	activeAnimationKey_.clear();
+	update_animation();
 }
 
 //================================
@@ -455,7 +533,7 @@ void Player::update_gripped_block_movement() {
 
 	// Grip中でない、またはブロック移動判定が設定されていない場合は何もしない
 	if (stateManager_.get_current_state() != PlayerState::Grip ||
-		!blockMovementJudge_ || !context_.worldInstance || !context_.grippedBlockIndex) {
+		!context_.isGrounded || !blockMovementJudge_ || !context_.worldInstance || !context_.grippedBlockIndex) {
 		gripMoveInputReady_ = true;
 		return;
 	}
@@ -476,6 +554,9 @@ void Player::update_gripped_block_movement() {
 	if (!moveDirection) {
 		return;
 	}
+
+	// 補間完了・接地更新後の座標で次のマスを判定する。
+	context_.worldInstance->update_affine();
 
 	// 粘土の伸縮判定を行う
 	const float moveDuration = context_.gripMoveSpeed > 0.0f
@@ -586,6 +667,7 @@ void Player::begin_grip_move_interpolation(
 		context_.worldInstance->transform_mut().set_translate(targetPosition);
 		gripMoveInterpolation_.reset();
 		gripMoveAnimationDirection_.reset();
+		gripMoveInputReady_ = IsGripMoveDirectionHeld(context_, moveDirection);
 		return;
 	}
 
@@ -619,8 +701,11 @@ void Player::update_grip_move_interpolation() noexcept {
 		eased));
 
 	if (t >= 1.0f) {
+		const std::optional<BlockMoveDirection> completedDirection = gripMoveAnimationDirection_;
 		gripMoveInterpolation_.reset();
 		gripMoveAnimationDirection_.reset();
+		gripMoveInputReady_ = completedDirection &&
+			IsGripMoveDirectionHeld(context_, *completedDirection);
 	}
 }
 

@@ -60,10 +60,13 @@ public:
 	/// </summary>
 	bool is_cleared() const { return cleared; }
 
-	/// Goal本体を上空からプレイヤーの頭上へ移動させる
-	bool start_clear_effect(const Vector3& playerWorldPosition);
+	/// Goal本体を上空からプレイヤーの前へ移動させる
+	bool start_clear_effect(
+		const Vector3& playerWorldPosition,
+		const Vector3& playerDirection);
 	void set_clear_effect_parameters(
 		const Vector3& finalPlayerOffset,
+		const Vector3& finalScale,
 		r32 riseHeight,
 		r32 riseDuration,
 		r32 fallDuration) noexcept;

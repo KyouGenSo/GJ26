@@ -35,11 +35,19 @@
 		"type": "String",
 		"value": "playerPush_right.gltf"
 	},
-	"MoveSpeed": {
+	"ClearAnimationFile": {
+		"type": "String",
+		"value": "playerClear.gltf"
+	},
+	"ClearStandAnimationFile": {
+		"type": "String",
+		"value": "playerClearStand.gltf"
+	},
+	"移動スピード": {
 		"type": "R32",
 		"value": 5.0
 	},
-	"JumpPower": {
+	"ジャンプ力": {
 		"type": "R32",
 		"value": 8.0
 	},

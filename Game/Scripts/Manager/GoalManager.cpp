@@ -82,17 +82,21 @@ void GoalManager::post_update() {
 	}
 }
 
-bool GoalManager::start_clear_effect(const Vector3& playerWorldPosition) {
-	return cleared && goalEffect.start_clear_effect(playerWorldPosition);
+bool GoalManager::start_clear_effect(
+	const Vector3& playerWorldPosition,
+	const Vector3& playerDirection) {
+	return cleared && goalEffect.start_clear_effect(playerWorldPosition, playerDirection);
 }
 
 void GoalManager::set_clear_effect_parameters(
 	const Vector3& finalPlayerOffset,
+	const Vector3& finalScale,
 	r32 riseHeight,
 	r32 riseDuration,
 	r32 fallDuration) noexcept {
 	goalEffect.set_clear_effect_parameters(
 		finalPlayerOffset,
+		finalScale,
 		riseHeight,
 		riseDuration,
 		fallDuration);
