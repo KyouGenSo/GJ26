@@ -960,18 +960,9 @@ bool MapChipField::moves_with_goal_piece(const MapChipIndex& piece, const MapChi
 	if (!is_inside(piece.x, piece.y, piece.z) || !is_inside(cell.x, cell.y, cell.z)) {
 		return false;
 	}
-	const i32 pieceFlat = flat_index(piece.x, piece.y, piece.z);
 	const i32 cellFlat = flat_index(cell.x, cell.y, cell.z);
-	switch (chips[cellFlat]) {
-	case MapChipType::GoalPiece:
-		return cellFlat == pieceFlat;
-	case MapChipType::GoalPieceUpper:
-		return cell == MapChipIndex{ piece.x, piece.y + 1, piece.z };
-	case MapChipType::Clay:
-		return clayPiece[cellFlat] == pieceFlat;
-	default:
-		return false;
-	}
+	const std::vector<i32> cells = collect_moving_cells(piece);
+	return std::find(cells.begin(), cells.end(), cellFlat) != cells.end();
 }
 
 Reference<szg::StaticMeshInstance> MapChipField::AttachOutline(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const HighlightStyle& style) {
@@ -1100,11 +1091,8 @@ u8 MapChipField::clay_stretch_face(i32 flat) const {
 	return ClayFace::FromDirection({ dx == 0 ? 0 : (dx < 0 ? -1 : 1), 0, dz == 0 ? 0 : (dz < 0 ? -1 : 1) });
 }
 
-std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapChipIndex& to) const {
-	if (from.y != to.y || std::abs(to.x - from.x) + std::abs(to.z - from.z) != 1) {
-		return {};
-	}
-	if (get(from.x, from.y, from.z) != MapChipType::GoalPiece || !is_inside(to.x, to.y, to.z)) {
+std::vector<i32> MapChipField::collect_moving_cells(const MapChipIndex& from) const {
+	if (get(from.x, from.y, from.z) != MapChipType::GoalPiece) {
 		return {};
 	}
 
@@ -1120,6 +1108,52 @@ std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapC
 			cells.emplace_back(i);
 		}
 	}
+
+	// 接続とは別に、移動する粘土の上にある未接続オブジェクトを運ぶ。
+	// 追加した粘土の上も調べるが、横に接しているだけの別粘土は含めない。
+	std::vector<bool> included(chips.size(), false);
+	for (const i32 cell : cells) included[cell] = true;
+	const auto add = [&](i32 cell) {
+		if (!included[cell]) {
+			included[cell] = true;
+			cells.push_back(cell);
+		}
+	};
+	for (size_t cursor = 0; cursor < cells.size(); ++cursor) {
+		const i32 support = cells[cursor];
+		if (chips[support] != MapChipType::Clay) continue;
+		const auto above = shifted(support, MapChipIndex{ 0, 1, 0 });
+		if (!above || included[*above]) continue;
+		if (chips[*above] == MapChipType::GoalPiece && !has_connected_clay(*above)) {
+			add(*above);
+			const auto upper = shifted(*above, MapChipIndex{ 0, 1, 0 });
+			if (upper && chips[*upper] == MapChipType::GoalPieceUpper) add(*upper);
+		}
+		else if (chips[*above] == MapChipType::Clay && clayPiece[*above] == -1) {
+			const i32 origin = clayOrigin[*above];
+			if (origin < 0) continue;
+			std::vector<i32> clayCells;
+			bool connected = false;
+			for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+				if (chips[i] == MapChipType::Clay && clayOrigin[i] == origin) {
+					clayCells.push_back(i);
+					connected = connected || clayPiece[i] != -1;
+				}
+			}
+			if (!connected) {
+				for (const i32 cell : clayCells) add(cell);
+			}
+		}
+	}
+	return cells;
+}
+
+std::vector<i32> MapChipField::moving_cells(const MapChipIndex& from, const MapChipIndex& to) const {
+	if (from.y != to.y || std::abs(to.x - from.x) + std::abs(to.z - from.z) != 1 ||
+		!is_inside(to.x, to.y, to.z)) {
+		return {};
+	}
+	const std::vector<i32> cells = collect_moving_cells(from);
 
 	// 移動先は空か、一緒に動くセルが空ける場所
 	const MapChipIndex delta{ to.x - from.x, 0, to.z - from.z };

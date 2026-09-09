@@ -367,6 +367,7 @@ public:
 	/// <summary>
 	/// cell がピース piece(下段)と一緒に動くセルか(ピースの下段・上段、つながった粘土。範囲外は false)
 	/// </summary>
+	// 上に乗っている未接続GoalPiece・Clayも含む。
 	bool moves_with_goal_piece(const MapChipIndex& piece, const MapChipIndex& cell) const;
 
 	/// <summary>
@@ -461,7 +462,8 @@ private:
 	u8 clay_stretch_face(i32 flat) const; // 伸ばして出た粘土がコアから伸びた方向(ClayFace のビット。コア・粘土以外は None)
 	bool has_connected_clay(i32 piece) const; // piece(ゴール条件オブジェクトの下段)につながった粘土が 1 つでもあるか
 	void set_highlight_flat(std::optional<i32> flat); // set_highlight の本体(flat_index 版)
-	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
+	std::vector<i32> collect_moving_cells(const MapChipIndex& from) const; // 接続グループと粘土上の未接続オブジェクト。伸長時には使わない
+	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // 運搬対象も含めて移動先を検証(動かせない時は空)
 	std::vector<i32> relocate_cells(const std::vector<i32>& cells, const MapChipIndex& delta); // cells を delta だけずらして置き直し、移動後の flat 一覧を返す(表示も更新)
 	struct VisualMove {
 		Vector3 offset;
