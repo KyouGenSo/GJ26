@@ -146,7 +146,7 @@ bool GoalEffect::start_clear_effect(const Vector3& playerWorldPosition) {
 
 	const Vector3 start = goalVisual->transform_imm().get_translate();
 	const Vector3 destination = to_goal_parent_local(
-		playerWorldPosition + Vector3{ 0.0f, clearHeadOffset, 0.0f });
+		playerWorldPosition + clearFinalPlayerOffset);
 	// まずGoalが現在位置から垂直に浮上し、その後頭上へ降ろす。
 	Vector3 peak = start;
 	peak.y = std::max(start.y, destination.y) + clearRiseHeight;
@@ -158,6 +158,17 @@ bool GoalEffect::start_clear_effect(const Vector3& playerWorldPosition) {
 		.finished = false,
 	};
 	return true;
+}
+
+void GoalEffect::set_clear_effect_parameters(
+	const Vector3& finalPlayerOffset,
+	r32 riseHeight,
+	r32 riseDuration,
+	r32 fallDuration) noexcept {
+	clearFinalPlayerOffset = finalPlayerOffset;
+	clearRiseHeight = std::max(riseHeight, 0.0f);
+	clearRiseDuration = std::max(riseDuration, 0.001f);
+	clearFallDuration = std::max(fallDuration, 0.001f);
 }
 
 void GoalEffect::stop_clear_effect() {
@@ -189,10 +200,6 @@ void GoalEffect::setup_json_asset() {
 	rotationSpeedDegrees = readR32("RotationSpeedDegrees", rotationSpeedDegrees);
 	stateTransitionDuration = std::max(
 		readR32("StateTransitionDuration", stateTransitionDuration), 0.001f);
-	clearRiseHeight = std::max(readR32("ClearRiseHeight", clearRiseHeight), 0.0f);
-	clearRiseDuration = std::max(readR32("ClearRiseDuration", clearRiseDuration), 0.001f);
-	clearFallDuration = std::max(readR32("ClearFallDuration", clearFallDuration), 0.001f);
-	clearHeadOffset = readR32("ClearHeadOffset", clearHeadOffset);
 }
 
 void GoalEffect::load_particle_settings() {
@@ -205,23 +212,32 @@ void GoalEffect::load_particle_settings() {
 	}
 }
 
+//===========================================================================
+// Emitterの生成
+//===========================================================================
 void GoalEffect::create_emitters() {
 	if (!worldRoot || !goalVisual) {
 		return;
 	}
 
 	for (size_t i = 0; i < emitterSettings.size(); ++i) {
+
+		// EmitterInstanceSettingsがロードされていない場合はスキップする
 		if (!emitterSettings[i]) {
 			continue;
 		}
 		Reference<szg::EmitterInstance> emitter =
 			worldRoot->instantiate<szg::EmitterInstance>(goalVisual);
+
+		// EmitterInstanceSettingsをEmitterInstanceに適用する
 		emitter->setup_settings(*emitterSettings[i]);
 		Reference<szg::ParticlePool> pool = worldRoot->create_particle_pool(
 			emitter,
 			emitterSettings[i]->capacity == 0 ? 1 : emitterSettings[i]->capacity,
 			emitterSettings[i]->overflowPolicy);
 		emitter->setup_pool(pool);
+
+		// EmitterInstanceの描画指定と更新者マスクを設定する
 		if (pool) {
 			pool->setup_draw_spec(emitterSettings[i]->drawSpec);
 			pool->setup_updaters(
@@ -239,6 +255,9 @@ void GoalEffect::create_emitters() {
 	}
 }
 
+//===========================================================================
+// Emitterの破棄
+//===========================================================================
 void GoalEffect::destroy_emitters() {
 	for (Reference<szg::EmitterInstance>& emitter : emitters) {
 		if (!emitter) {

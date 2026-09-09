@@ -45,13 +45,12 @@ public:
 	void fit_to_bounds(const Vector3& boundsSize, float padding = 1.1f) noexcept;
 
 	/// <summary>
-	/// プレイヤーの斜め上空へズームし、到着時に一度バウンドするゴール演出を開始する
+	/// 現在位置から指定位置へズームし、プレイヤーを注視するゴール演出を開始する
 	/// </summary>
 	bool start_goal_effect(
 		const Vector3& targetPosition,
+		const Vector3& destinationPosition,
 		float duration,
-		float distance,
-		float elevationDegrees,
 		float bounceStrength) noexcept;
 	/// ゴール演出を終了し、通常のステージ追従へ戻す
 	void stop_goal_effect() noexcept;

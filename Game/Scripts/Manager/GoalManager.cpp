@@ -22,6 +22,9 @@ constexpr r32 kLinkY = kPieceStarLocalY * kPieceModelScale - 0.5f;
 
 } // namespace
 
+//============================================================================
+//　セットアップ
+//============================================================================
 void GoalManager::setup(Reference<MapChipField> field_, Reference<szg::WorldRoot> worldRoot_) {
 	field = field_;
 	worldRoot = worldRoot_;
@@ -34,15 +37,24 @@ void GoalManager::setup(Reference<MapChipField> field_, Reference<szg::WorldRoot
 	}
 }
 
+//============================================================================
+// クリア判定に使うプレイヤーの設定
+//============================================================================
 void GoalManager::set_player(Reference<const Player> player_) {
 	player = player_;
 }
 
+//============================================================================
+//　終了処理
+//============================================================================
 void GoalManager::finalize() {
 	destroy_piece_emitters();
 	goalEffect.finalize();
 }
 
+//============================================================================
+//　更新処理
+//============================================================================
 void GoalManager::post_update() {
 	if (!field) {
 		return;
@@ -72,6 +84,18 @@ void GoalManager::post_update() {
 
 bool GoalManager::start_clear_effect(const Vector3& playerWorldPosition) {
 	return cleared && goalEffect.start_clear_effect(playerWorldPosition);
+}
+
+void GoalManager::set_clear_effect_parameters(
+	const Vector3& finalPlayerOffset,
+	r32 riseHeight,
+	r32 riseDuration,
+	r32 fallDuration) noexcept {
+	goalEffect.set_clear_effect_parameters(
+		finalPlayerOffset,
+		riseHeight,
+		riseDuration,
+		fallDuration);
 }
 
 void GoalManager::stop_clear_effect() {

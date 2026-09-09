@@ -144,8 +144,8 @@
 					"Z": 0.0
 				}
 			},
-			"Name": "GoalEffect",
-			"ParticleFile": "GoalEffect.particle",
+			"Name": "confettiEffect_rightBottom",
+			"ParticleFile": "confettiEffect_rightBottom.particle",
 			"Type": 6000,
 			"Use runtime": true
 		}

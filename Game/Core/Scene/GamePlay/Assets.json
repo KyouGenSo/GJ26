@@ -4,26 +4,28 @@
 	"Font": [
 		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
 	],
-	"Json": [],
+	"Json": [
+		".\\Game\\Assets\\json\\GoalParameter.json"
+	],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
 	"Particle": [
-		".\\Game\\Assets\\particle\\GoalEffect.particle",
-		".\\Game\\Assets\\particle\\GoalEffect2.particle",
-		".\\Game\\Assets\\particle\\confettiEffect.particle"
+		".\\Game\\Assets\\particle\\confettiEffect_leftBottom.particle",
+		".\\Game\\Assets\\particle\\confettiEffect_rightBottom.particle"
 	],
 	"Shader": [
-		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
+		"[[szg]]/PostEffect/Grayscale.PS.hlsl",
+		"[[szg]]/PostEffect/GaussianBlur.PS.hlsl",
+		"[[szg]]/PostEffect/MargeTexture4.PS.hlsl",
+		"[[szg]]/PostEffect/Bloom.PS.hlsl"
 	],
 	"Skeleton": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
 	"Texture": [
-		".\\Game\\Assets\\textures\\Cross.png",
-		".\\Game\\Assets\\textures\\texture_Star_512px (1).png",
 		".\\Game\\Assets\\textures\\ui\\ui.png",
 		".\\Game\\Assets\\textures\\ui\\ui2.png",
 		".\\Game\\Assets\\textures\\ui\\toSelect.png",

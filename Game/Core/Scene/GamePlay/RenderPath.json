@@ -89,92 +89,12 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 1390.0,
-					"Y": -20.0
+					"X": 700.0,
+					"Y": 350.0
 				}
 			},
 			"Links": {
 				"Base": 1
-			},
-			"Type": 0
-		},
-		{
-			"Data": {
-				"BottomRight": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"CameraId": 1,
-				"ClearDepthStencil": true,
-				"GBufferSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Height": 1080.0,
-				"LayerIndex": 3,
-				"Left": 0.0,
-				"MaxDepth": 1.0,
-				"MinDepth": 0.0,
-				"OutputSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Top": 0.0,
-				"TopLeft": {
-					"X": 0.0,
-					"Y": 0.0
-				},
-				"Width": 1920.0,
-				"WorldIndex": 0
-			},
-			"Debug": {
-				"Position": {
-					"X": 1390.0,
-					"Y": 250.0
-				}
-			},
-			"Links": {
-				"Base": 2
-			},
-			"Type": 0
-		},
-		{
-			"Data": {
-				"BottomRight": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"CameraId": 0,
-				"ClearDepthStencil": true,
-				"GBufferSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Height": 1080.0,
-				"LayerIndex": 0,
-				"Left": 0.0,
-				"MaxDepth": 1.0,
-				"MinDepth": 0.0,
-				"OutputSize": {
-					"X": 1920.0,
-					"Y": 1080.0
-				},
-				"Top": 0.0,
-				"TopLeft": {
-					"X": 0.0,
-					"Y": 0.0
-				},
-				"Width": 1920.0,
-				"WorldIndex": 1
-			},
-			"Debug": {
-				"Position": {
-					"X": 1390.0,
-					"Y": 510.0
-				}
-			},
-			"Links": {
-				"Base": 3
 			},
 			"Type": 0
 		},
@@ -232,7 +152,7 @@
 				}
 			},
 			"Links": {
-				"Base": 5
+				"Base": 3
 			},
 			"Type": 1
 		},
@@ -252,7 +172,7 @@
 				}
 			},
 			"Links": {
-				"Base": 6
+				"Base": 4
 			},
 			"Type": 1
 		},
@@ -272,7 +192,7 @@
 				}
 			},
 			"Links": {
-				"Base": 7
+				"Base": 5
 			},
 			"Type": 1
 		},
@@ -292,7 +212,7 @@
 				}
 			},
 			"Links": {
-				"Base": 8
+				"Base": 6
 			},
 			"Type": 1
 		},
@@ -312,10 +232,10 @@
 				}
 			},
 			"Links": {
-				"Base": 6,
-				"MixTexture1": 7,
-				"MixTexture2": 8,
-				"MixTexture3": 9
+				"Base": 4,
+				"MixTexture1": 5,
+				"MixTexture2": 6,
+				"MixTexture3": 7
 			},
 			"Type": 1
 		},
@@ -336,10 +256,50 @@
 				}
 			},
 			"Links": {
-				"Base": 4,
-				"CombinedTexture": 10
+				"Base": 2,
+				"CombinedTexture": 8
 			},
 			"Type": 1
+		},
+		{
+			"Data": {
+				"BottomRight": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"CameraId": 1,
+				"ClearDepthStencil": true,
+				"GBufferSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Height": 1080.0,
+				"LayerIndex": 3,
+				"Left": 0.0,
+				"MaxDepth": 1.0,
+				"MinDepth": 0.0,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Top": 0.0,
+				"TopLeft": {
+					"X": 0.0,
+					"Y": 0.0
+				},
+				"Width": 1920.0,
+				"WorldIndex": 0
+			},
+			"Debug": {
+				"Position": {
+					"X": 2600.0,
+					"Y": 250.0
+				}
+			},
+			"Links": {
+				"Base": 9
+			},
+			"Type": 0
 		},
 		{
 			"Data": {
@@ -377,13 +337,13 @@
 				}
 			},
 			"Links": {
-				"Base": 9
+				"Base": 10
 			},
 			"Type": 0
 		}
 	],
 	"ResultNode": {
-		"Connect": 11,
+		"Connect": 12,
 		"Debug": {
 			"Position": {
 				"X": 2900.0,
