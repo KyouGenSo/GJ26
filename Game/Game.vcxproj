@@ -186,6 +186,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <TreatWarningAsError>true</TreatWarningAsError>
       <ForcedIncludeFiles>$(SolutionDir)SyzygyEngine\Library\Utility\BuiltinTypes.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <FxCompile>
       <ShaderModel>6.6</ShaderModel>
