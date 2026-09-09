@@ -419,6 +419,1050 @@
 			"ParticleFile": "confettiEffect_rightBottom.particle",
 			"Type": 6000,
 			"Use runtime": true
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 2.5,
+					"Y": 1.0,
+					"Z": 2.5
+				},
+				"Translate": {
+					"X": 2.4500670433044434,
+					"Y": -0.814322829246521,
+					"Z": 2.6290295124053955
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "desk.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "desk.obj",
+			"Name": "Desk",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.9455186128616333,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.32556813955307007,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.5000001192092896,
+					"Y": 1.0,
+					"Z": 1.5000001192092896
+				},
+				"Translate": {
+					"X": 9.075347900390625,
+					"Y": -0.580141007900238,
+					"Z": 4.414125919342041
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "drawingPaper.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "drawingPaper.obj",
+			"Name": "Paper1",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.8987940549850464,
+					"XYZ": {
+						"X": 0.0,
+						"Y": -0.4383711814880371,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.5000108480453491,
+					"Y": 1.000009536743164,
+					"Z": 1.5000108480453491
+				},
+				"Translate": {
+					"X": 10.031282424926758,
+					"Y": -0.5818076133728027,
+					"Z": -1.3094374935462838e-06
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "drawingPaper2.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "drawingPaper2.obj",
+			"Name": "Paper2",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.6018149256706238,
+					"XYZ": {
+						"X": 0.0,
+						"Y": -0.7986355423927307,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.5000007152557373,
+					"Y": 1.0000004768371582,
+					"Z": 1.5000007152557373
+				},
+				"Translate": {
+					"X": 6.9835381507873535,
+					"Y": -0.6413111090660095,
+					"Z": 2.121859550476074
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "drawingPaper3.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "drawingPaper3.obj",
+			"Name": "Paper3",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.9135454893112183,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.40673670172691345,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 0.5000011324882507,
+					"Y": 1.0000190734863281,
+					"Z": 0.5000011324882507
+				},
+				"Translate": {
+					"X": -7.821545124053955,
+					"Y": -0.5924451947212219,
+					"Z": 1.287145733833313
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "scissorsBlade.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "scissorsHandle.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "scissorsTag.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "scissors.obj",
+			"Name": "scissors",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": -8.395217895507813,
+					"Y": -0.6934551000595093,
+					"Z": 7.586145877838135
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece1.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiecePole.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPieceStar.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece2.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece3.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece4.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "goalPiece.obj",
+			"Name": "holder1",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": -6.1122870445251465,
+					"Y": -0.6398786306381226,
+					"Z": 7.349106788635254
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece1.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiecePole.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPieceStar.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece4.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece1.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "goalPiece2.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "goalPiece.obj",
+			"Name": "holder2",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.4226182699203491,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.9063078761100769,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0000015497207642,
+					"Y": 1.0000011920928955,
+					"Z": 1.0000015497207642
+				},
+				"Translate": {
+					"X": -6.900486469268799,
+					"Y": -0.6193439364433289,
+					"Z": 3.3120968341827393
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "ruler.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "ruler.obj",
+			"Name": "ruler",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 0.5,
+					"Y": 0.5,
+					"Z": 0.5
+				},
+				"Translate": {
+					"X": 13.141097068786621,
+					"Y": -0.7146300077438354,
+					"Z": 0.8116489052772522
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "thumbtack.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "thumbtackNeedle.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "thumbtack.obj",
+			"Name": "thumbtack",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": -0.46174857020378113,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.8870108723640442,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 0.7999999523162842,
+					"Y": 0.8000001311302185,
+					"Z": 0.7999999523162842
+				},
+				"Translate": {
+					"X": 14.306299209594727,
+					"Y": -0.8019352555274963,
+					"Z": 8.918158531188965
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerFace.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerEyes.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerShirt.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerOveralls.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerHand.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerShoes.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "player.obj",
+			"Name": "dole1",
+			"Type": 2000,
+			"Use runtime": false
+		},
+		{
+			"IsDraw": true,
+			"Layer": 0,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.24192169308662415,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.970295786857605,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 0.3000006377696991,
+					"Y": 0.30000048875808716,
+					"Z": 0.3000006377696991
+				},
+				"Translate": {
+					"X": 12.2186918258667,
+					"Y": -0.6696230173110962,
+					"Z": 9.4932222366333
+				}
+			},
+			"Materials": [
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerFace.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerEyes.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerShirt.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerOveralls.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerHand.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				},
+				{
+					"Color": {
+						"B": 1.0,
+						"G": 1.0,
+						"R": 1.0
+					},
+					"LightingType": 2,
+					"Shininess": 50.0,
+					"Texture": "playerShoes.png",
+					"UV Transform": {
+						"Rotation": 0.0,
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0
+						},
+						"Translate": {
+							"X": 0.0,
+							"Y": 0.0
+						}
+					}
+				}
+			],
+			"Mesh": "player.obj",
+			"Name": "dole2",
+			"Type": 2000,
+			"Use runtime": false
 		}
 	],
 	"Name": "PlayerDevWorld",
