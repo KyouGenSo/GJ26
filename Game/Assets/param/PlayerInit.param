@@ -45,11 +45,11 @@
 	},
 	"移動スピード": {
 		"type": "R32",
-		"value": 5.0
+		"value": 3.0
 	},
 	"ジャンプ力": {
 		"type": "R32",
-		"value": 8.0
+		"value": 7.5
 	},
 	"FallSpeed": {
 		"type": "R32",
