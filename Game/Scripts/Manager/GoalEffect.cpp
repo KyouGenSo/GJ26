@@ -80,6 +80,7 @@ void GoalEffect::set_goal(const std::optional<MapChipIndex>& goalIndex_, bool ac
 		clearMotion.reset();
 		if (goalVisual) {
 			basePosition = goalVisual->transform_imm().get_translate();
+			baseScale = goalVisual->transform_imm().get_scale();
 			baseRotation = goalVisual->transform_imm().get_quaternion();
 			create_emitters();
 		}
@@ -106,8 +107,10 @@ void GoalEffect::update() {
 	const r32 easedBlend = activeBlend * activeBlend * (3.0f - 2.0f * activeBlend);
 
 	Vector3 position = basePosition;
+	Vector3 scale = baseScale;
 	if (clearMotion) {
 		ClearMotion& motion = *clearMotion;
+		scale = motion.startScale;
 		if (!motion.finished) {
 			motion.elapsed += std::max(deltaSeconds, 0.0f);
 			if (motion.elapsed < clearRiseDuration) {
@@ -121,9 +124,10 @@ void GoalEffect::update() {
 				const r32 t = std::clamp(
 					(motion.elapsed - clearRiseDuration) /
 					std::max(clearFallDuration, 0.001f), 0.0f, 1.0f);
-				// 頭上で急停止しないよう、降下の始終を滑らかにする。
+				// プレイヤーの前で急停止しないよう、降下とスケール変更を滑らかにする。
 				const r32 eased = t * t * (3.0f - 2.0f * t);
 				position = Vector3::Lerp(motion.peakPosition, motion.destinationPosition, eased);
+				scale = Vector3::Lerp(motion.startScale, clearFinalScale, eased);
 				if (t >= 1.0f) {
 					motion.finished = true;
 				}
@@ -131,6 +135,7 @@ void GoalEffect::update() {
 		}
 		if (motion.finished) {
 			position = motion.destinationPosition;
+			scale = clearFinalScale;
 		}
 	}
 	else if (activeBlend > 0.0f) {
@@ -140,6 +145,7 @@ void GoalEffect::update() {
 		position.y += std::sin(phase) * floatAmplitude * easedBlend;
 	}
 	goalVisual->transform_mut().set_translate(position);
+	goalVisual->transform_mut().set_scale(scale);
 
 	// OFFは逆回転、ONは正回転。ブレンド中は速度が連続的に反転する。
 	const r32 rotationDirection = easedBlend * 2.0f - 1.0f;
@@ -170,6 +176,7 @@ bool GoalEffect::start_clear_effect(
 		.startPosition = start,
 		.peakPosition = peak,
 		.destinationPosition = destination,
+		.startScale = goalVisual->transform_imm().get_scale(),
 		.elapsed = 0.0f,
 		.finished = false,
 	};
@@ -178,10 +185,16 @@ bool GoalEffect::start_clear_effect(
 
 void GoalEffect::set_clear_effect_parameters(
 	const Vector3& finalPlayerOffset,
+	const Vector3& finalScale,
 	r32 riseHeight,
 	r32 riseDuration,
 	r32 fallDuration) noexcept {
 	clearFinalPlayerOffset = finalPlayerOffset;
+	clearFinalScale = Vector3{
+		std::max(finalScale.x, 0.001f),
+		std::max(finalScale.y, 0.001f),
+		std::max(finalScale.z, 0.001f),
+	};
 	clearRiseHeight = std::max(riseHeight, 0.0f);
 	clearRiseDuration = std::max(riseDuration, 0.001f);
 	clearFallDuration = std::max(fallDuration, 0.001f);
@@ -189,10 +202,7 @@ void GoalEffect::set_clear_effect_parameters(
 
 void GoalEffect::stop_clear_effect() {
 	clearMotion.reset();
-	if (goalVisual) {
-		goalVisual->transform_mut().set_translate(basePosition);
-		goalVisual->transform_mut().set_quaternion(baseRotation);
-	}
+	restore_visual_transform();
 	currentYawDegrees = 0.0f;
 }
 
@@ -344,6 +354,7 @@ void GoalEffect::restore_visual_transform() {
 	}
 	goalVisual->transform_mut().set_translate(basePosition);
 	goalVisual->transform_mut().set_quaternion(baseRotation);
+	goalVisual->transform_mut().set_scale(baseScale);
 }
 
 Vector3 GoalEffect::to_goal_parent_local(const Vector3& worldPosition) const {
