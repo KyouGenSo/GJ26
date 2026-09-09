@@ -18,10 +18,14 @@
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
 	],
 	"Param": [],
-	"Particle": [],
+	"Particle": [
+		".\\Game\\Assets\\particle\\zzz.particle"
+	],
 	"Shader": [],
 	"Skeleton": [
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
 	],
-	"Texture": []
+	"Texture": [
+		".\\Game\\Assets\\textures\\z.png"
+	]
 }

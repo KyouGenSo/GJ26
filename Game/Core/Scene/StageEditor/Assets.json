@@ -10,7 +10,10 @@
 		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj"
 	],
 	"Param": [],
-	"Particle": [],
+	"Particle": [
+		".\\Game\\Assets\\particle\\confettiEffect_leftBottom.particle",
+		".\\Game\\Assets\\particle\\confettiEffect_rightBottom.particle"
+	],
 	"Shader": [
 		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
 	],

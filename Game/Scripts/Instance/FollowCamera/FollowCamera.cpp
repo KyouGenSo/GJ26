@@ -125,46 +125,20 @@ void FollowCamera::fit_to_bounds(const Vector3& boundsSize, float padding) noexc
 
 bool FollowCamera::start_goal_effect(
 	const Vector3& targetPosition,
+	const Vector3& destinationPosition,
 	float duration,
-	float distance,
-	float elevationDegrees,
 	float bounceStrength) noexcept {
 	if (!cameraInstance_ || !owner_) {
 		return false;
 	}
 
 	const Vector3 cameraPosition = cameraInstance_->transform_imm().get_translate();
-	Vector3 horizontalDirection{
-		cameraPosition.x - targetPosition.x,
-		0.0f,
-		cameraPosition.z - targetPosition.z,
-	};
-	float horizontalLength = std::sqrt(
-		horizontalDirection.x * horizontalDirection.x +
-		horizontalDirection.z * horizontalDirection.z);
-	if (horizontalLength <= 0.001f) {
-		const Vector3 fallback = Vector3{ 0.0f, 0.0f, -1.0f } *
-			Quaternion::EulerRadian(0.0f, yaw_, 0.0f);
-		horizontalDirection = { fallback.x, 0.0f, fallback.z };
-		horizontalLength = std::max(std::sqrt(
-			horizontalDirection.x * horizontalDirection.x +
-			horizontalDirection.z * horizontalDirection.z), 0.001f);
-	}
-	horizontalDirection /= horizontalLength;
-
-	const float safeDistance = std::max(distance, 0.1f);
-	const float elevation = std::clamp(elevationDegrees, 0.0f, 89.0f) *
-		(std::numbers::pi_v<float> / 180.0f);
-	const float horizontalDistance = std::cos(elevation) * safeDistance;
-	const float height = std::sin(elevation) * safeDistance;
-	const Vector3 destination = targetPosition +
-		horizontalDirection * horizontalDistance + Vector3{ 0.0f, height, 0.0f };
 
 	goalEffect_ = GoalCameraEffect{
 		.startPosition = cameraPosition,
 		.startTarget = calculate_target_position(),
 		.targetPosition = targetPosition,
-		.destinationPosition = destination,
+		.destinationPosition = destinationPosition,
 		.elapsed = 0.0f,
 		.duration = std::max(duration, 0.001f),
 		.bounceStrength = std::max(bounceStrength, 0.0f),

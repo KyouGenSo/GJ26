@@ -1,0 +1,54 @@
+{
+	"GoalFinalPlayerOffset": {
+		"type": "Vector3",
+		"value": {
+			"X": 0.0,
+			"Y": 1.8,
+			"Z": 0.0
+		}
+	},
+	"GoalClearRiseHeight": {
+		"type": "R32",
+		"value": 3.0
+	},
+	"GoalClearRiseDuration": {
+		"type": "R32",
+		"value": 0.55
+	},
+	"GoalClearFallDuration": {
+		"type": "R32",
+		"value": 0.75
+	},
+	"CameraFinalPlayerOffset": {
+		"type": "Vector3",
+		"value": {
+			"X": 0.0,
+			"Y": 3.57,
+			"Z": -3.55
+		}
+	},
+	"CameraTargetPlayerOffset": {
+		"type": "Vector3",
+		"value": {
+			"X": 0.0,
+			"Y": 0.8,
+			"Z": 0.0
+		}
+	},
+	"CameraZoomDuration": {
+		"type": "R32",
+		"value": 1.4
+	},
+	"CameraBounceStrength": {
+		"type": "R32",
+		"value": 1.1
+	},
+	"ConfettiCameraLocalOffset": {
+		"type": "Vector3",
+		"value": {
+			"X": 0.8,
+			"Y": -0.4,
+			"Z": 2.0
+		}
+	}
+}

@@ -11,7 +11,7 @@
 			"X": 0.5,
 			"Y": 0.5
 		},
-		"Texture": "White.png"
+		"Texture": "z.png"
 	},
 	"EmissionDirection": {
 		"AngleBaseDirection": {
@@ -38,19 +38,19 @@
 			"Y": 1.0,
 			"Z": 1.0
 		},
-		"ConeAngle": 2.799999952316284,
+		"ConeAngle": 0.5,
 		"ConeDirection": {
-			"X": 1.0,
-			"Y": 0.0,
+			"X": 0.0,
+			"Y": 1.0,
 			"Z": 0.0
 		},
-		"ConeRadius": 0.20000000298023224,
-		"Shape": 2,
+		"ConeRadius": 1.0,
+		"Shape": 1,
 		"SphereRadius": 0.10000000149011612
 	},
 	"Fade": {
-		"FadeIn": 0.0,
-		"FadeOut": 0.10000000149011612,
+		"FadeIn": 0.10000000149011612,
+		"FadeOut": 0.0,
 		"UseAlphaFade": true
 	},
 	"Flipbook": {
@@ -62,79 +62,79 @@
 	},
 	"Initial": {
 		"AccelerationMax": {
-			"X": 6.0,
-			"Y": -4.199999809265137,
+			"X": -2.0,
+			"Y": 2.0,
 			"Z": 0.0
 		},
 		"AccelerationMin": {
-			"X": -0.8999999761581421,
-			"Y": -16.399999618530273,
+			"X": -1.0,
+			"Y": 0.6000000238418579,
 			"Z": 0.0
 		},
 		"ColorEndMax": {
-			"A": 0.7480000257492065,
-			"B": 1.0,
+			"A": 0.0,
+			"B": 0.0,
 			"G": 1.0,
 			"R": 1.0
 		},
 		"ColorEndMin": {
-			"A": 0.6600000262260437,
-			"B": 0.09000000357627869,
-			"G": 0.9919999837875366,
-			"R": 0.00800000037997961
-		},
-		"ColorMax": {
-			"A": 0.9610000252723694,
+			"A": 0.0,
 			"B": 1.0,
 			"G": 1.0,
-			"R": 0.9901960492134094
+			"R": 1.0
+		},
+		"ColorMax": {
+			"A": 1.0,
+			"B": 1.0,
+			"G": 1.0,
+			"R": 1.0
 		},
 		"ColorMin": {
-			"A": 0.9340000152587891,
-			"B": 0.0,
-			"G": 0.0,
-			"R": 0.0
+			"A": 1.0,
+			"B": 1.0,
+			"G": 1.0,
+			"R": 1.0
 		},
 		"Easing": 0,
 		"LifetimeMax": 1.0,
 		"LifetimeMin": 1.0,
 		"ScaleEndMax": {
-			"X": 0.30000001192092896,
-			"Y": 0.30000001192092896,
-			"Z": 0.30000001192092896
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
 		},
 		"ScaleEndMin": {
-			"X": 0.30000001192092896,
-			"Y": 0.30000001192092896,
-			"Z": 0.30000001192092896
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
 		},
 		"SizeMax": {
-			"X": 0.30000001192092896,
-			"Y": 0.30000001192092896,
-			"Z": 0.30000001192092896
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
 		},
 		"SizeMin": {
-			"X": 0.30000001192092896,
-			"Y": 0.30000001192092896,
-			"Z": 0.30000001192092896
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
 		},
-		"SpeedMax": 15.300000190734863,
-		"SpeedMin": 7.199999809265137
+		"SpeedMax": 0.0,
+		"SpeedMin": 0.0
 	},
 	"Motion": {
-		"Drag": 1.0,
+		"Drag": 0.0,
 		"Gravity": {
 			"X": 0.0,
 			"Y": 0.0,
 			"Z": 0.0
 		},
-		"UseDragGravity": true
+		"UseDragGravity": false
 	},
 	"Rotation": {
-		"AngleMax": 0.6000000238418579,
+		"AngleMax": 0.0,
 		"AngleMin": 0.0,
-		"AngularVelocityMax": 0.30000001192092896,
-		"AngularVelocityMin": 0.6000000238418579,
+		"AngularVelocityMax": 0.0,
+		"AngularVelocityMin": 0.0,
 		"AxisBillboardAngle": 0.0,
 		"AxisBillboardAxis": {
 			"X": 0.0,
@@ -157,11 +157,11 @@
 		"RotationKind": 0
 	},
 	"Schedule": {
-		"Count": 50,
+		"Count": 1,
 		"Cycles": 0,
 		"Delay": 0.0,
 		"Infinite": true,
-		"Interval": 1.0
+		"Interval": 1.5
 	},
 	"UV": {
 		"UVSpeedMax": {

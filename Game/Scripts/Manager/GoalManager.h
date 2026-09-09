@@ -28,6 +28,12 @@ public:
 	SZG_CLASS_MOVE_ONLY(GoalManager)
 
 public:
+
+	/// <summary>
+	/// セットアップ
+	/// </summary>
+	/// <param name="field_"></param>
+	/// <param name="worldRoot_"></param>
 	void setup(Reference<MapChipField> field_, Reference<szg::WorldRoot> worldRoot_);
 
 	/// <summary>
@@ -35,7 +41,13 @@ public:
 	/// </summary>
 	void set_player(Reference<const Player> player_);
 
+	/// <summary>
+	/// 終了処理
+	/// </summary>
 	void finalize() override;
+	/// <summary>
+	/// 更新処理
+	/// </summary>
 	void post_update() override;
 
 	/// <summary>
@@ -47,6 +59,16 @@ public:
 	/// 出現したゴールのセルに、着地中のプレイヤーがいるか
 	/// </summary>
 	bool is_cleared() const { return cleared; }
+
+	/// Goal本体を上空からプレイヤーの頭上へ移動させる
+	bool start_clear_effect(const Vector3& playerWorldPosition);
+	void set_clear_effect_parameters(
+		const Vector3& finalPlayerOffset,
+		r32 riseHeight,
+		r32 riseDuration,
+		r32 fallDuration) noexcept;
+	void stop_clear_effect();
+	bool is_clear_effect_finished() const noexcept;
 
 private:
 	void rebuild();

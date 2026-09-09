@@ -1,14 +1,21 @@
 {
 	"Animation": [],
 	"Audio": [],
-	"Font": [],
-	"Json": [],
+	"Font": [
+		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
+	],
+	"Json": [
+		".\\Game\\Assets\\json\\GoalParameter.json"
+	],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
-	"Particle": [],
+	"Particle": [
+		".\\Game\\Assets\\particle\\confettiEffect_leftBottom.particle",
+		".\\Game\\Assets\\particle\\confettiEffect_rightBottom.particle"
+	],
 	"Shader": [
 		"[[szg]]/PostEffect/Grayscale.PS.hlsl",
 		"[[szg]]/PostEffect/GaussianBlur.PS.hlsl",
@@ -18,5 +25,11 @@
 	"Skeleton": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf"
 	],
-	"Texture": []
+	"Texture": [
+		".\\Game\\Assets\\textures\\ui\\ui.png",
+		".\\Game\\Assets\\textures\\ui\\ui2.png",
+		".\\Game\\Assets\\textures\\ui\\toSelect.png",
+		".\\Game\\Assets\\textures\\ui\\gageWhite.png",
+		".\\Game\\Assets\\textures\\ui\\gageBrown.png"
+	]
 }

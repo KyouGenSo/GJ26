@@ -117,10 +117,7 @@ void StageSelectScript::prev_update() {
 	const r32 deltaSeconds = szg::WorldClock::DeltaSeconds();
 	update_arrow_animation(deltaSeconds);
 
-	const bool backTriggered =
-		keys.trigger(szg::KeyID::Escape) ||
-		pad.trigger(szg::PadID::Start);
-	if (!sceneTransitionRequested && backTriggered) {
+	if (!sceneTransitionRequested && pad.trigger(szg::PadID::Start)) {
 		sceneTransitionRequested = true;
 		SoundPlayer::PlayAcrossScene("back.wav");
 		szg::SceneManager2::SceneChange(SceneListGJ26::Title, 0.0f);
@@ -131,11 +128,7 @@ void StageSelectScript::prev_update() {
 		return;
 	}
 
-	const bool selectTriggered =
-		keys.trigger(szg::KeyID::Space) ||
-		pad.trigger(szg::PadID::A) ||
-		mouse.trigger(szg::MouseID::Left);
-	if (!isTransitioning && !sceneTransitionRequested && selectTriggered) {
+	if (!isTransitioning && !sceneTransitionRequested && pad.trigger(szg::PadID::A)) {
 		sceneTransitionRequested = true;
 		SoundPlayer::PlayAcrossScene("decision.wav");
 		szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", i32{ selectedStage });

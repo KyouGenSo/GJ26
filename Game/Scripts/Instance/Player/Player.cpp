@@ -86,13 +86,15 @@ void Player::finalize() {
 	gripMoveInputReady_ = true;
 	previousState_ = PlayerState::Idle;
 	moveSoundPlaying_ = false;
+	inputEnabled_ = true;
 }
 
 //================================
 // world更新前処理
 //================================
 void Player::prev_update() {
-	context_.input = playerInput_.update();
+	const PlayerInputFrame polledInput = playerInput_.update();
+	context_.input = inputEnabled_ ? polledInput : PlayerInputFrame{};
 	if (!context_.input.gripPressed) {
 		gripInputReady_ = true;
 		gripWarnReady_ = true;
@@ -275,6 +277,24 @@ void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance
 	update_animation();
 }
 
+void Player::set_input_enabled(bool enabled) noexcept {
+	if (inputEnabled_ == enabled) {
+		return;
+	}
+
+	inputEnabled_ = enabled;
+	if (inputEnabled_) {
+		return;
+	}
+
+	// クリア演出開始フレームの入力を残さず、Gripも安全に終了させる。
+	context_.input = {};
+	stateManager_.reset(context_);
+	context_.gripTargetIndex.reset();
+	context_.blockMoveResult.reset();
+	gripMoveInputReady_ = true;
+}
+
 //================================
 // 移動速度の取得
 //================================
@@ -311,6 +331,10 @@ const std::optional<BlockMoveResult>& Player::get_block_move_result() const noex
 
 bool Player::can_move_gripped_block(BlockMoveDirection direction) const noexcept {
 	return context_.blockMoveResult && context_.blockMoveResult->can_move(direction);
+}
+
+bool Player::is_input_enabled() const noexcept {
+	return inputEnabled_;
 }
 
 void Player::cancel_grip_move_interpolation() noexcept {
@@ -507,6 +531,9 @@ void Player::update_gripped_block_movement() {
 	}
 
 	// ゴール条件オブジェクトを移動する
+	if (sound_) {
+		sound_->restart("objectMove.wav");
+	}
 	begin_grip_move_interpolation(MapChipField::to_world(
 		move->playerIndex.x,
 		move->playerIndex.y,
