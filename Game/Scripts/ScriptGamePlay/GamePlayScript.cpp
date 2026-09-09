@@ -181,11 +181,8 @@ void GamePlayScript::prev_update() {
 	keyInput_.update();
 	padInput_.update();
 
-	// EscapeキーまたはStartボタンが一定時間押され続けた場合、ステージ選択画面へ遷移する
-	const r32 backHoldSeconds = std::max(
-		keyInput_.press_timer(szg::KeyID::Escape),
-		padInput_.press_timer(szg::PadID::Start));
-	if (!sceneTransitionRequested_ && backHoldSeconds >= kBackHoldDurationSeconds) {
+	// Startボタンが押され続けたらステージ選択画面へ遷移する
+	if (!sceneTransitionRequested_ && padInput_.trigger(szg::PadID::Start)) {
 		sceneTransitionRequested_ = true;
 		SoundPlayer::PlayAcrossScene("back.wav");
 
