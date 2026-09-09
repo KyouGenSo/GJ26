@@ -43,6 +43,9 @@
     <Filter Include="Scripts\ScriptGamePlay">
       <UniqueIdentifier>{bf4f764e-d904-457b-ae68-a8fe08a24ae6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\Common">
+      <UniqueIdentifier>{B6A7E4D-9B6F-4F1E-9B7A-1C5A2C1D9E1F}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp">
@@ -152,6 +155,15 @@
     </ClCompile>
     <ClCompile Include="Scripts\MapChip\ClayStretchMeshGenerator.cpp">
       <Filter>Scripts\MapChip</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Common\BouncingTextVisual.cpp">
+      <Filter>Scripts\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Common\FadeOverlay.cpp">
+      <Filter>Scripts\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Common\LoadingTransitionController.cpp">
+      <Filter>Scripts\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -276,5 +288,14 @@
       <Filter>Scripts\Instance\Player\State</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\MapChip\ClayMeshGenerator.h" />
+    <ClInclude Include="Scripts\Common\BouncingTextVisual.h">
+      <Filter>Scripts\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Common\FadeOverlay.h">
+      <Filter>Scripts\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Common\LoadingTransitionController.h">
+      <Filter>Scripts\Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

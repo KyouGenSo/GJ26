@@ -9,12 +9,14 @@
 #include <Library/Math/Vector3.h>
 #include <Library/Utility/Template/Reference.h>
 
+#include "Scripts/Common/LoadingTransitionController.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Manager/SoundPlayer.h"
 
 namespace szg {
 class EmitterInstance;
 class Rect3d;
+class WorldCluster;
 class WorldRoot;
 }
 
@@ -41,9 +43,10 @@ public:
 	static void RegisterAudioAssets();
 
 	/// <summary>
-	/// マップ、Player、追従カメラ、ゴール判定をセットアップする
+	/// マップ、Player、追従カメラ、ゴール判定をセットアップする。
+	/// uiWorld はフェード演出を配置する UI World Cluster (world_mut(1))。null の場合はフェードを無効化する
 	/// </summary>
-	void setup(Reference<szg::WorldRoot> worldRoot);
+	void setup(Reference<szg::WorldRoot> worldRoot, Reference<szg::WorldCluster> uiWorld);
 
 	void finalize() override;
 	void prev_update() override;
@@ -128,4 +131,7 @@ private:
 	r32 cameraInitialPitchDegrees_{ 17.188734f };
 	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
 	r32 resetGaugeFullWidth_{ 0.0f };
+
+	/// シーン開始時のフェードインと決定時のフェードアウトを管理する
+	LoadingTransitionController loadingTransition_;
 };

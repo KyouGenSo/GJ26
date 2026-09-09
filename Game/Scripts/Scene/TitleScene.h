@@ -20,4 +20,3 @@ private:
 
 	std::unique_ptr<FollowCamera> followCameraScript;
 };
-

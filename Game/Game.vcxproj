@@ -29,6 +29,9 @@
     <ClCompile Include="Scripts\Instance\Player\PlayerMovement.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
+    <ClCompile Include="Scripts\Common\BouncingTextVisual.cpp" />
+    <ClCompile Include="Scripts\Common\FadeOverlay.cpp" />
+    <ClCompile Include="Scripts\Common\LoadingTransitionController.cpp" />
     <ClCompile Include="Scripts\MapChip\BlockMovementJudge.cpp" />
     <ClCompile Include="Scripts\MapChip\ClayMeshGenerator.cpp" />
     <ClCompile Include="Scripts\MapChip\ClayStretchAnimator.cpp" />
@@ -79,6 +82,9 @@
     <ClInclude Include="Scripts\MapChip\ClayMeshGenerator.h" />
     <ClInclude Include="Scripts\MapChip\ClayStretchAnimator.h" />
     <ClInclude Include="Scripts\MapChip\ClayStretchMeshGenerator.h" />
+    <ClInclude Include="Scripts\Common\BouncingTextVisual.h" />
+    <ClInclude Include="Scripts\Common\FadeOverlay.h" />
+    <ClInclude Include="Scripts\Common\LoadingTransitionController.h" />
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
     <ClInclude Include="Scripts\GJ26.h" />
     <ClInclude Include="Scripts\MapChip\MapChipField.h" />

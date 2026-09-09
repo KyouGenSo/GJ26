@@ -12,6 +12,7 @@
 #include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/Particle/ParticlePool.h>
+#include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 #include <Engine/Runtime/Scene/SceneManager2.h>
 #include <Engine/Runtime/Scene/World/WorldRoot.h>
@@ -31,6 +32,23 @@ namespace {
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
 constexpr r32 kResetHoldDurationSeconds = 1.0f;
 constexpr r32 kClayGlowWeightDefault = 0.3f;
+/// シーン開始時のフェードインにかける時間[秒]
+constexpr r32 kFadeInDurationSeconds = 0.8f;
+/// 決定後のフェードアウトにかける時間[秒]
+constexpr r32 kFadeOutDurationSeconds = 0.5f;
+/// SceneChange の interval 引数に渡す、フェードアウト完了を待つためのマージン[秒]
+constexpr r32 kSceneChangeIntervalSeconds = 5.0f;
+/// フェードイン途中での決定受付を開始する閾値(進捗[0,1]). 2 割未満なら入力を無視してフェードインを継続させる
+constexpr r32 kFadeInSkipProgressThreshold = 0.2f;
+/// UI カメラ(直交投影)の表示範囲。フェード用 Rect3d のサイズをこれに合わせて画面外にはみ出させる
+constexpr Vector2 kFadeOverlaySize{ 19.2f, 10.8f };
+/// フェード用 Rect3d を置く Z 座標。UI カメラの可視範囲 [0, 5] 内で StageGuideDimmer(Z=0.5) より手前に置く
+constexpr r32 kFadeOverlayDepth = 2.0f;
+/// "NOW LOADING" テキストの接地点 Z 座標。フェード(Z=2.0)より手前かつ FarClip(Z=10)以内に置く
+constexpr r32 kLoadingTextDepth = 2.95f;
+/// UI カメラスケールに合わせたロード演出テキストの文字サイズ
+constexpr r32 kLoadingTextFontSize = 1.0f;
+
 constexpr std::array<const char*, 5> kGameplayUiNames{
 	"ToSelectLegend",
 	"ButtonLegend",
@@ -69,7 +87,7 @@ void GamePlayScript::RegisterAudioAssets() {
 	SoundPlayer::RegisterLoadQue(kSounds);
 }
 
-void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
+void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot, Reference<szg::WorldCluster> uiWorld) {
 	if (isSetup_) {
 		szgWarning("GamePlayScript: setup was called more than once.");
 		return;
@@ -206,6 +224,28 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		mapTest_->field_mut().set_highlight_style(gripHighlight_);
 	}
 
+	// シーン開始時の暗転と、決定時のフェードアウトを構築する
+	if (uiWorld) {
+		LoadingTransitionController::Config config{};
+		config.fadeSize = kFadeOverlaySize;
+		config.fadeLayer = 1;     // UI 既存要素(レイヤー 0)より手前
+		config.fadeDepth = kFadeOverlayDepth;
+		config.fadeDuration = kFadeOutDurationSeconds;
+		config.fadeColor = ColorRGB(0.0f, 0.0f, 0.0f);
+
+		config.loadingText = "NOW LOADING";
+		config.textBasePosition = Vector3{ 0.0f, 0.0f, kLoadingTextDepth };
+		config.textFontSize = kLoadingTextFontSize;
+		config.textLayer = 1;     // フェードと同じレイヤー。Z ソートでフェード(Z=2.0)の奥にテキスト(Z=2.95)が来るので、暗転中もテキストは見える
+
+		loadingTransition_.Create(uiWorld, config);
+		// シーン開始時は暗転状態からフェードイン。StartFadeIn 完了(または閾値到達)まで入力を無視する
+		loadingTransition_.StartFadeIn(kFadeInDurationSeconds);
+	}
+	else {
+		szgWarning("GamePlay: UI world not provided. Loading transition is disabled.");
+	}
+
 	isSetup_ = true;
 }
 
@@ -243,17 +283,36 @@ void GamePlayScript::prev_update() {
 	if (!isSetup_) {
 		return;
 	}
+	const r32 deltaSeconds = szg::WorldClock::DeltaSeconds();
+	// LoadingTransitionController を駆動する。フェードイン/アウト両方を Update 1 つで進行させる
+	loadingTransition_.Update(deltaSeconds);
+
 	keyInput_.update();
 	padInput_.update();
 	stageGuideBlockedFrame_ = false;
 
+	// フェードアウトが完了し BG ロードも終わっていれば、強制的にシーン遷移を発火させる
+	if (sceneTransitionRequested_ && loadingTransition_.IsReadyToProceed()) {
+		szg::SceneManager2::EndSceneChangeIntervalForce();
+		sceneTransitionRequested_ = false;
+		return;
+	}
+
+	// フェードイン中は進捗が閾値未満なら決定入力を受け付けない(序盤で誤遷移するのを防止)。
+	// 閾値以上なら Begin() が現在のアルファ値から暗転復帰を開始する
+	if (loadingTransition_.IsFadingIn() && loadingTransition_.FadeInProgress() < kFadeInSkipProgressThreshold) {
+		return;
+	}
+
 	// Startボタンが押され続けたらステージ選択画面へ遷移する
 	if (!sceneTransitionRequested_ && padInput_.trigger(szg::PadID::Start)) {
 		sceneTransitionRequested_ = true;
+		SceneListGJ26 nextScene = SceneListGJ26::Select;
 		SoundPlayer::PlayAcrossScene("back.wav");
 
-		// ステージ選択画面へ遷移する
-		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
+		// フェードアウト→IsReadyToProceed() 成立で EndSceneChangeIntervalForce() を呼んで遷移する
+		loadingTransition_.Begin();
+		szg::SceneManager2::SceneChange(nextScene, kSceneChangeIntervalSeconds, false, false);
 		return;
 	}
 
@@ -595,20 +654,24 @@ void GamePlayScript::advance_to_next_stage() {
 
 	sceneTransitionRequested_ = true;
 	const i32 stageCount = MapChipField::CountStages();
+	SceneListGJ26 nextScene = SceneListGJ26::GamePlay;
 	if (stageCount <= 0) {
-		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
-		return;
+		nextScene = SceneListGJ26::Select;
+	}
+	else {
+		const i32 currentStage = std::clamp(
+			szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1),
+			1,
+			stageCount);
+		if (currentStage >= stageCount) {
+			nextScene = SceneListGJ26::Select;
+		}
+		else {
+			szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", currentStage + 1);
+		}
 	}
 
-	const i32 currentStage = std::clamp(
-		szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1),
-		1,
-		stageCount);
-	if (currentStage >= stageCount) {
-		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
-		return;
-	}
-
-	szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", currentStage + 1);
-	szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
+	// フェードアウトしてからシーン遷移する。IsReadyToProceed() 成立時に prev_update が EndSceneChangeIntervalForce() を呼ぶ
+	loadingTransition_.Begin();
+	szg::SceneManager2::SceneChange(nextScene, kSceneChangeIntervalSeconds, false, false);
 }

@@ -1,7 +1,9 @@
 {
 	"Animation": [],
 	"Audio": [],
-	"Font": [],
+	"Font": [
+		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
+	],
 	"Json": [],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\skydome\\skydome.obj",
