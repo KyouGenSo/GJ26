@@ -65,7 +65,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
-	worldRoot_ = worldRoot;
+
 	setup_json_asset();
 	setup_clear_presentation();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
@@ -347,11 +347,17 @@ void GamePlayScript::setup_json_asset() {
 		clearTextSlideDuration_ = std::max(
 			readR32("ClearTextSlideDuration", clearTextSlideDuration_), 0.001f);
 		cameraInitialDistance_ = std::max(
-			readR32("CameraInitialDistance", cameraInitialDistance_), 0.0f);
+			readR32("カメラの初期位置(ステージ中心からの距離)", cameraInitialDistance_), 0.0f);
 		cameraFitPadding_ = std::max(
-			readR32("CameraFitPadding", cameraFitPadding_), 1.0f);
-		cameraInitialYawDegrees_ = readR32("CameraInitialYawDegrees", cameraInitialYawDegrees_);
-		cameraInitialPitchDegrees_ = readR32("CameraInitialPitchDegrees", cameraInitialPitchDegrees_);
+			readR32("カメラのステージサイズに合わせる際の余白倍率", cameraFitPadding_), 1.0f);
+		cameraInitialYawDegrees_ = readR32("カメラ初期回転(Yaw)", cameraInitialYawDegrees_);
+		cameraInitialPitchDegrees_ = readR32("カメラ初期回転(Pitch)", cameraInitialPitchDegrees_);
+		szgInformation(
+			"GamePlayScript: camera parameter loaded. Distance-{}, Padding-{}, Yaw-{}, Pitch-{}.",
+			cameraInitialDistance_,
+			cameraFitPadding_,
+			cameraInitialYawDegrees_,
+			cameraInitialPitchDegrees_);
 	}
 	else {
 		szgWarning("GamePlayScript: GamePlay.param could not be loaded. Default values are used.");

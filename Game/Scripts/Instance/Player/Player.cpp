@@ -373,10 +373,15 @@ void Player::setup_json_asset() {
 	pullAnimation_.fileName = readString("PullAnimationFile", pullAnimation_.fileName);
 	pushLeftAnimation_.fileName = readString("PushLeftAnimationFile", pushLeftAnimation_.fileName);
 	pushRightAnimation_.fileName = readString("PushRightAnimationFile", pushRightAnimation_.fileName);
-	set_move_speed(readFloat("MoveSpeed", context_.moveSpeed));
-	set_jump_power(readFloat("JumpPower", context_.jumpPower));
+	set_move_speed(readFloat("移動スピード", context_.moveSpeed));
+	set_jump_power(readFloat("ジャンプ力", context_.jumpPower));
 	set_fall_speed(readFloat("FallSpeed", context_.fallSpeed));
 	set_grip_move_speed(readFloat("GripMoveSpeed", context_.gripMoveSpeed));
+	szgInformation(
+		"Player: movement parameter loaded. MoveSpeed-{}, JumpPower-{}, FallSpeed-{}.",
+		context_.moveSpeed,
+		context_.jumpPower,
+		context_.fallSpeed);
 }
 
 //================================

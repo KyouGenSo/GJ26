@@ -9,22 +9,22 @@
 	},
 	"ClearTextSlideDuration": {
 		"type": "R32",
-		"value": 0.65
+		"value": 0.6499999761581421
 	},
-	"CameraInitialDistance": {
+	"カメラの初期位置(ステージ中心からの距離)": {
 		"type": "R32",
-		"value": 0.0
+		"value": 20.0
 	},
-	"CameraFitPadding": {
+	"カメラのステージサイズに合わせる際の余白倍率": {
 		"type": "R32",
-		"value": 1.1
+		"value": 1.100000023841858
 	},
-	"CameraInitialYawDegrees": {
+	"カメラ初期回転(Yaw)": {
 		"type": "R32",
-		"value": 0.0
+		"value": -5.0
 	},
-	"CameraInitialPitchDegrees": {
+	"カメラ初期回転(Pitch)": {
 		"type": "R32",
-		"value": 17.188734
+		"value": 43.78900146484375
 	}
 }

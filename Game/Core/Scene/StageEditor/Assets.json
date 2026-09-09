@@ -10,15 +10,12 @@
 		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj"
 	],
 	"Param": [],
-	"Particle": [
-		".\\Game\\Assets\\particle\\confettiEffect_leftBottom.particle",
-		".\\Game\\Assets\\particle\\confettiEffect_rightBottom.particle"
-	],
+	"Particle": [],
 	"Shader": [
 		"[[szg]]/PostEffect/Grayscale.PS.hlsl"
 	],
 	"Skeleton": [],
 	"Texture": [
-		".\\Game\\Assets\\textures\\texture_Star_512px (1).png"
+		".\\SyzygyEngine\\Assets\\Texture\\White.png"
 	]
 }

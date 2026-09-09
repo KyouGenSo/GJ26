@@ -35,13 +35,13 @@
 		"type": "String",
 		"value": "playerPush_right.gltf"
 	},
-	"MoveSpeed": {
+	"移動スピード": {
 		"type": "R32",
 		"value": 5.0
 	},
-	"JumpPower": {
+	"ジャンプ力": {
 		"type": "R32",
-		"value": 8.0
+		"value": 50.400001525878906
 	},
 	"FallSpeed": {
 		"type": "R32",
