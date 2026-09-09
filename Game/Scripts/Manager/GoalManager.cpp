@@ -112,7 +112,8 @@ void GoalManager::rebuild() {
 			queue.push(next);
 		}
 	}
-	goalOpen = visitedCount == pieces.size();
+
+	goalOpen = !pieces.empty() && visitedCount == pieces.size();
 
 	const std::vector<MapChipIndex> goals = field->find_all(MapChipType::Goal);
 	if (goals.size() > 1) {
