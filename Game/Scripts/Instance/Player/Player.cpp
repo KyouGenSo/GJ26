@@ -531,6 +531,9 @@ void Player::update_gripped_block_movement() {
 	}
 
 	// ゴール条件オブジェクトを移動する
+	if (sound_) {
+		sound_->restart("objectMove.wav");
+	}
 	begin_grip_move_interpolation(MapChipField::to_world(
 		move->playerIndex.x,
 		move->playerIndex.y,
