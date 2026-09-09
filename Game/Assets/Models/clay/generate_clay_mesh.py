@@ -203,10 +203,10 @@ def create_voxel_mesh(chips, clayOrigin, clayColorMap, sizeX, sizeY, sizeZ):
             #
             # Blender OBJ エクスポーターのデフォルト変換 (X,Y,Z) → (X,Z,-Y) が
             # 適用されるため、それを考慮してマッピングする:
-            #   px (Blender X) = stage x   → OBJ X (右)               ✓
+            #   px (Blender X) = -(stage x) → OBJ X (右、符号反転)     ✓
             #   py (Blender Y) = -(stage z) → OBJ Z (前、符号反転)     ✓
-            #   pz (Blender Z) = stage y   → OBJ Y (上)               ✓
-            px = x - ox
+            #   pz (Blender Z) = stage y    → OBJ Y (上)              ✓
+            px = -(x - ox)
             py = -(z - oz)
             pz = y - oy
 
