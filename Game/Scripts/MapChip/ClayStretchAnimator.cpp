@@ -47,6 +47,9 @@ void ClayStretchAnimator::begin(
 	Reference<szg::WorldInstance> root,
 	Reference<szg::StaticMeshInstance> baseVisual_) {
 
+	if (active) {
+		finish(field);
+	}
 	if (!root || !baseVisual_) {
 		return;
 	}
@@ -86,9 +89,17 @@ void ClayStretchAnimator::begin(
 
 	if (!anim.capVisual->get_materials().empty() && !baseVisual_->get_materials().empty()) {
 		anim.capVisual->get_materials()[0].color = baseVisual_->get_materials()[0].color;
+		anim.texture = baseVisual_->get_materials()[0].texture;
 	}
+	ApplyTexture(anim);
 
 	active = std::move(anim);
+}
+
+void ClayStretchAnimator::ApplyTexture(StretchAnimation& anim) {
+	if (anim.texture && anim.capVisual && !anim.capVisual->get_materials().empty()) {
+		anim.capVisual->get_materials()[0].texture = anim.texture;
+	}
 }
 
 void ClayStretchAnimator::update(r32 deltaSeconds, MapChipField& field) {
@@ -110,11 +121,25 @@ void ClayStretchAnimator::update(r32 deltaSeconds, MapChipField& field) {
 	if (frame != active->currentFrame && active->capVisual) {
 		active->capVisual->reset_mesh(active->keyframeMeshNames[frame]);
 		active->currentFrame = frame;
+		ApplyTexture(*active);
 	}
 
 	if (normalizedTime >= 1.0f) {
 		complete(field);
 	}
+}
+
+void ClayStretchAnimator::finish(MapChipField& field) {
+	if (!active) {
+		return;
+	}
+	const i32 last = static_cast<i32>(active->keyframeMeshNames.size()) - 1;
+	if (active->capVisual && last >= 0 && active->currentFrame != last) {
+		active->capVisual->reset_mesh(active->keyframeMeshNames[last]);
+		active->currentFrame = last;
+		ApplyTexture(*active);
+	}
+	complete(field);
 }
 
 void ClayStretchAnimator::cancel(MapChipField& field) {
@@ -135,6 +160,8 @@ void ClayStretchAnimator::complete(MapChipField& field) {
 	if (!active) {
 		return;
 	}
-
+	// adopt_visual から戻ってきても再入しないよう先に active を空にする
+	StretchAnimation anim = std::move(*active);
 	active.reset();
+	field.adopt_visual(anim.toFlat, anim.capVisual);
 }
