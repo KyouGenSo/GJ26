@@ -55,6 +55,7 @@ void GoalEffect::finalize() {
 		grayscaleData->isGray = 1u;
 	}
 	destroy_emitters();
+	destroy_glow();
 	grayscaleData.reset();
 	goalVisual.reset();
 	goalIndex.reset();
@@ -72,6 +73,7 @@ void GoalEffect::set_goal(const std::optional<MapChipIndex>& goalIndex_, bool ac
 	if (visualChanged) {
 		restore_visual_transform();
 		destroy_emitters();
+		destroy_glow();
 		goalVisual = nextVisual;
 		goalIndex = goalIndex_;
 		floatAnimationTime = 0.0f;
@@ -300,6 +302,17 @@ void GoalEffect::destroy_emitters() {
 	}
 }
 
+void GoalEffect::destroy_glow() {
+	if (!glowVisual) {
+		return;
+	}
+	glowVisual->reparent(nullptr, true);
+	if (!glowVisual->is_marked_destroy()) {
+		glowVisual->destroy_self();
+	}
+	glowVisual.reset();
+}
+
 void GoalEffect::sync_emitter_transforms() {
 	for (Reference<szg::EmitterInstance> emitter : emitters) {
 		if (!emitter) {
@@ -326,6 +339,7 @@ void GoalEffect::apply_active_state(bool active) {
 		grayscaleData->isGray = isActive ? 0u : 1u;
 	}
 	if (!isActive) {
+		destroy_glow();
 		for (Reference<szg::EmitterInstance> emitter : emitters) {
 			if (!emitter) {
 				continue;
@@ -338,6 +352,10 @@ void GoalEffect::apply_active_state(bool active) {
 		return;
 	}
 
+	// 粘土がつながったピースと同じブルームで光らせる
+	if (!glowVisual && worldRoot) {
+		glowVisual = MapChipField::AttachGlow(*worldRoot, goalVisual);
+	}
 	for (Reference<szg::EmitterInstance> emitter : emitters) {
 		if (!emitter) {
 			continue;

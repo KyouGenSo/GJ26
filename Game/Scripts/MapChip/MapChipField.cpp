@@ -1156,9 +1156,9 @@ std::array<Reference<szg::StaticMeshInstance>, 4> MapChipField::AttachFaceCrosse
 	return crosses;
 }
 
-void MapChipField::AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const Vector3& scaleCenter) {
+Reference<szg::StaticMeshInstance> MapChipField::AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const Vector3& scaleCenter) {
 	if (!visual || visual->get_materials().empty()) {
-		return;
+		return nullptr;
 	}
 	Reference<szg::StaticMeshInstance> glow = worldRoot_.instantiate<szg::StaticMeshInstance>(visual, visual->key_id());
 	// レイヤーは初回描画登録時に固定されるので生成直後に設定する
@@ -1170,6 +1170,7 @@ void MapChipField::AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticM
 	for (auto& material : glow->get_materials()) {
 		material.lightingType = szg::LighingType::None;
 	}
+	return glow;
 }
 
 bool MapChipField::has_connected_clay(i32 piece) const {
