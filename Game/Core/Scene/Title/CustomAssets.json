@@ -12,6 +12,7 @@
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": [
-		".\\Game\\Assets\\textures\\ui\\titleA.png"
+		".\\Game\\Assets\\textures\\ui\\titleA.png",
+		".\\Game\\Assets\\textures\\z.png"
 	]
 }
