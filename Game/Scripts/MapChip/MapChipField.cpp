@@ -135,7 +135,8 @@ std::optional<MapChipIndex> ReadPosition(const nlohmann::json& entry) {
 MapChipField::MapChipField() = default;
 MapChipField::~MapChipField() = default;
 
-bool MapChipField::load_stage(i32 stageNumber) {
+bool MapChipField::load_stage(i32 stageNumber_) {
+	stageNumber = stageNumber_;
 	return load(StageDirectory(stageNumber));
 }
 
@@ -316,13 +317,25 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 		}
 	}
 	for (const i32 originFlat : uniqueOrigins) {
-		ClayMeshGenerator::Generate(originFlat, *this);
+		const u8 originClayColor = clayColor[originFlat];
+		const std::string meshName = ClayMeshGenerator::MeshName(stageNumber, originFlat);
+
+		// OBJファイルが存在すればそれをロード、なければプロシージャル生成
+		const std::string objPath = std::format("Game/Assets/Models/clay/blocks/__clay_block_{:02}_{}.obj", stageNumber, originFlat);
+		if (std::filesystem::exists(objPath)) {
+			// OBJファイルを直接ロード
+			szgInformation("MapChipField: Loading clay mesh from OBJ: {}", objPath);
+			szg::PolygonMeshLibrary::RegisterLoadQue(objPath);
+		} else {
+			// プロシージャル生成（従来通り）
+			ClayMeshGenerator::Generate(stageNumber, originFlat, *this, originClayColor);
+		}
+
 		const MapChipIndex origin{
 			originFlat % sizeX,
 			originFlat / (sizeX * sizeZ),
 			(originFlat / sizeX) % sizeZ,
 		};
-		const std::string meshName = ClayMeshGenerator::MeshName(originFlat);
 		Reference<szg::StaticMeshInstance> blockVisual =
 			worldRoot->instantiate<szg::StaticMeshInstance>(root, meshName);
 		Vector3 localPosition = to_world(origin.x, origin.y, origin.z) - center();
@@ -344,7 +357,7 @@ void MapChipField::destroy_root() {
 		stretchAnimator.reset();
 	}
 	for (const i32 originFlat : generatedClayMeshes) {
-		ClayMeshGenerator::Remove(originFlat);
+		ClayMeshGenerator::Remove(stageNumber, originFlat);
 	}
 	generatedClayMeshes.clear();
 	clayBlockVisuals.clear();

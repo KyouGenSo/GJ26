@@ -1,6 +1,9 @@
 #pragma once
 
 #include <deque>
+#include <filesystem>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include <Library/Utility/Template/SingletonInterface.h>
@@ -132,6 +135,26 @@ public:
 	void undo();
 	void redo();
 
+	/// <summary>
+	/// Blender の実行ファイルパスを取得する。
+	/// <para>useCache=true: キャッシュがあれば即座に返し、無ければ探索して保存する。</para>
+	/// <para>useCache=false: キャッシュを無視して環境変数・設定ファイル・PATH・一般場所から再探索する。</para>
+	/// <para>見つからなければ空のパスを返す。</para>
+	/// </summary>
+	std::filesystem::path GetBlenderPath(bool useCache = true);
+
+	/// <summary>
+	/// キャッシュを破棄して Blender パスを強制再検出する（"再探査" ボタン用）。
+	/// <para>結果が見つかればキャッシュを更新して返す。見つからなければ空のパスを返す。</para>
+	/// </summary>
+	std::filesystem::path RedetectBlenderPath();
+
+	/// <summary>
+	/// キャッシュ済みの Blender パスを取得（探索は行わない）。
+	/// <para>UI に現在のパスを表示する目的。キャッシュが無ければ空のパスを返す。</para>
+	/// </summary>
+	std::filesystem::path GetCachedBlenderPath() const;
+
 public:
 	/// <summary>
 	/// サイズ上限
@@ -147,6 +170,11 @@ private:
 	void rebuild_chips(i32 newX, i32 newY, i32 newZ);
 	i32 flat_index(i32 x, i32 y, i32 z) const;
 	bool is_inside(i32 x, i32 y, i32 z) const;
+
+	/// <summary>
+	/// Blenderを呼び出して粘土メッシュを生成する
+	/// </summary>
+	void GenerateClayMeshWithBlender();
 
 private:
 	i32 sizeX{ 0 };

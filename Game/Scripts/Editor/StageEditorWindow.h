@@ -31,6 +31,7 @@ private:
 	void draw_grid();
 	void draw_preview_note();
 	void draw_undo_redo();
+	void draw_blender_path();
 
 private:
 	static int chip_to_int(MapChipType type);

@@ -110,6 +110,8 @@ void StageEditorWindow::draw() {
 	ImGui::Separator();
 	draw_stage_operations();
 	ImGui::Separator();
+	draw_blender_path();
+	ImGui::Separator();
 	draw_new_stage();
 	ImGui::Separator();
 	draw_resize();
@@ -132,6 +134,38 @@ void StageEditorWindow::draw_undo_redo() {
 	ImGui::SameLine();
 	if (ImGui::Button("やり直し")) {
 		doc.redo();
+	}
+}
+
+void StageEditorWindow::draw_blender_path() {
+	StageEditorDocument& doc = StageEditorDocument::GetInstance();
+
+	ImGui::Text("Blender パス");
+
+	// 現在のキャッシュパスを表示（高速・IO なし）
+	const std::filesystem::path cached = doc.GetCachedBlenderPath();
+	if (cached.empty()) {
+		ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "未設定（再検出してください）");
+	}
+	else {
+		ImGui::TextWrapped("現在: %s", cached.string().c_str());
+	}
+
+	if (ImGui::Button("Blender パスを再検出")) {
+		const std::filesystem::path detected = doc.RedetectBlenderPath();
+		if (detected.empty()) {
+			szgWarning("StageEditor: Blender path re-detection failed");
+		}
+		else {
+			szgInformation("StageEditor: Blender path set to {}", detected.string().c_str());
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("コピー")) {
+		const std::filesystem::path current = doc.GetCachedBlenderPath();
+		if (!current.empty()) {
+			ImGui::SetClipboardText(current.string().c_str());
+		}
 	}
 }
 

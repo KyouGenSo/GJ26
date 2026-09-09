@@ -491,6 +491,7 @@ private:
 	i32 sizeX{ 0 };
 	i32 sizeY{ 0 };
 	i32 sizeZ{ 0 };
+	i32 stageNumber{ 0 }; // 現在ロード中のステージ番号。clay block メッシュ名・OBJ ファイル検索に使用
 	std::vector<MapChipType> chips;
 	std::vector<i32> clayOrigin; // chips と同じ添字。粘土なら元セルの flat_index、他は -1
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1

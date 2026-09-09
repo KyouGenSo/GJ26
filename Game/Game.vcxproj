@@ -42,6 +42,8 @@
     <ClCompile Include="Scripts\Manager\GoalEffect.cpp" />
     <ClCompile Include="Scripts\Manager\GoalManager.cpp" />
     <ClCompile Include="Scripts\Manager\UndoManager.cpp" />
+    <ClCompile Include="Scripts\Editor\BlenderPathResolver.cpp" />
+    <ClCompile Include="Scripts\Editor\ClayMeshOBJExporter.cpp" />
     <ClCompile Include="Scripts\Editor\StageEditorDocument.cpp" />
     <ClCompile Include="Scripts\Editor\StageEditorWindow.cpp" />
     <ClCompile Include="Scripts\Scene\StageEditorScene.cpp" />
@@ -83,6 +85,8 @@
     <ClInclude Include="Scripts\Manager\GoalEffect.h" />
     <ClInclude Include="Scripts\Manager\GoalManager.h" />
     <ClInclude Include="Scripts\Manager\UndoManager.h" />
+    <ClInclude Include="Scripts\Editor\BlenderPathResolver.h" />
+    <ClInclude Include="Scripts\Editor\ClayMeshOBJExporter.h" />
     <ClInclude Include="Scripts\Editor\StageEditorDocument.h" />
     <ClInclude Include="Scripts\Editor\StageEditorWindow.h" />
     <ClInclude Include="Scripts\Scene\StageEditorScene.h" />

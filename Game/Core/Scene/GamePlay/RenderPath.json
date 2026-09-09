@@ -40,7 +40,7 @@
 		},
 		{
 			"Data": {
-				"EffectTag": "GoalGrayscale",
+				"EffectTag": null,
 				"OutputSize": {
 					"X": 1920.0,
 					"Y": 1080.0
@@ -241,13 +241,12 @@
 		},
 		{
 			"Data": {
-				"EffectTag": "ClayGlow",
+				"EffectTag": null,
 				"OutputSize": {
 					"X": 1920.0,
 					"Y": 1080.0
 				},
-				"Type": 1,
-				"UseRuntime": true
+				"Type": 1
 			},
 			"Debug": {
 				"Position": {

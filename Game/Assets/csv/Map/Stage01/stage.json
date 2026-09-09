@@ -1,14 +1,57 @@
 {
 	"Clay": [
 		{
-			"BlockedFaces": [
-				"+X",
-				"+Z"
-			],
+			"BlockedFaces": [],
+			"Color": 3,
 			"Position": [
-				1,
+				4,
 				0,
-				0
+				1
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				0,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				0,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				0,
+				1,
+				3
 			]
 		}
 	]

@@ -497,7 +497,7 @@ void generate_corner_fillet(
 
 } // namespace
 
-void ClayMeshGenerator::Generate(i32 originFlat, const MapChipField& field) {
+void ClayMeshGenerator::Generate(i32 stageNumber, i32 originFlat, const MapChipField& field, u8 clayColor) {
 	const GenerationParams params = load_params();
 	const auto cellsData = field.cells();
 
@@ -584,10 +584,13 @@ void ClayMeshGenerator::Generate(i32 originFlat, const MapChipField& field) {
 		return;
 	}
 
-	const std::string meshName = MeshName(originFlat);
+	const std::string meshName = MeshName(stageNumber, originFlat);
+	const std::string textureName = (0 < clayColor && clayColor < ClayColor::Count)
+		? ClayColor::Textures[clayColor]
+		: "clay.png";
 	szg::ProceduralMeshBuilder builder;
 	builder.add_submesh(std::move(vertices), std::move(indices), "clayMaterial")
-		.set_material("clayMaterial", "clay.png");
+		.set_material("clayMaterial", textureName);
 	builder.build_and_register(meshName);
 }
 

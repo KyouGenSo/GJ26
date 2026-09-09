@@ -9,6 +9,9 @@
 #include <Engine/Assets/IAssetBuilder.h>
 #include <Engine/Saver/CSVAssetSaver.h>
 
+#include "BlenderPathResolver.h"
+#include "ClayMeshOBJExporter.h"
+
 namespace {
 
 constexpr i32 MIN_SIZE = 1;
@@ -239,6 +242,10 @@ bool StageEditorDocument::save() {
 	MapChipField::SaveStageJsonPlayerSpawn(MapChipField::StageDirectory(currentStageNumber), playerSpawn);
 
 	szgInformation("StageEditorDocument: saved Stage{:02} ({}x{}x{})", currentStageNumber, sizeX, sizeY, sizeZ);
+
+	// Blenderでメッシュを自動生成
+	GenerateClayMeshWithBlender();
+
 	return true;
 }
 
@@ -368,4 +375,20 @@ i32 StageEditorDocument::flat_index(i32 x, i32 y, i32 z) const {
 
 bool StageEditorDocument::is_inside(i32 x, i32 y, i32 z) const {
 	return 0 <= x && x < sizeX && 0 <= y && y < sizeY && 0 <= z && z < sizeZ;
+}
+
+std::filesystem::path StageEditorDocument::GetBlenderPath(bool useCache) {
+	return BlenderPathResolver::Get(useCache);
+}
+
+std::filesystem::path StageEditorDocument::RedetectBlenderPath() {
+	return BlenderPathResolver::Redetect();
+}
+
+std::filesystem::path StageEditorDocument::GetCachedBlenderPath() const {
+	return BlenderPathResolver::GetCached();
+}
+
+void StageEditorDocument::GenerateClayMeshWithBlender() {
+	ClayMeshOBJExporter::Export(currentStageNumber);
 }
