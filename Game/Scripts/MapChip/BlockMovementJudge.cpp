@@ -138,6 +138,10 @@ bool BlockMovementJudge::is_goal_piece(const MapChipIndex& index) const noexcept
 	return field_ && field_->get(index.x, index.y, index.z) == MapChipType::GoalPiece;
 }
 
+bool BlockMovementJudge::is_visual_interpolating() const noexcept {
+	return field_ && field_->is_visual_interpolating();
+}
+
 //===========================================
 // AABBと重なるセルに固体があるか
 //===========================================

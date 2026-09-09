@@ -149,6 +149,7 @@ private:
 	bool gripInputReady_{ true };
 	bool gripWarnReady_{ true }; // 塞がれた面への Grip 拒否演出を押しっぱなしで繰り返さないためのゲート
 	bool gripMoveInputReady_{ true };
+	bool fallSoundPending_{ false }; // 押したゴール条件オブジェクトが落下中。着地音を待っている
 	PlayerState previousState_{ PlayerState::Idle }; // state の切り替わりで SE を鳴らすための前フレームの state
 	bool moveSoundPlaying_{ false };
 	float meshTurnSpeed_{ 12.0f };
