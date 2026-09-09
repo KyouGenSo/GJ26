@@ -194,6 +194,12 @@ void StageEditorWindow::draw_stage_operations() {
 		}
 		if (ImGui::ListBox("ステージ一覧", &selectedStageIndex, items.data(), static_cast<i32>(items.size()), 4)) {
 			loadStageNumber = selectedStageIndex + 1;
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				doc.load(loadStageNumber);
+				resizeWidth = doc.width();
+				resizeHeight = doc.height();
+				resizeDepth = doc.depth();
+			}
 		}
 	}
 	else {

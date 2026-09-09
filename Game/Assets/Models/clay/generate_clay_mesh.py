@@ -183,10 +183,11 @@ def create_voxel_mesh(chips, clayOrigin, clayColorMap, sizeX, sizeY, sizeZ):
     mesh_objects = []
 
     for origin, cells in blocks.items():
-        # ブロックの中心を計算
-        cx = sum(c[0] for c in cells) / len(cells)
-        cy = sum(c[1] for c in cells) / len(cells)
-        cz = sum(c[2] for c in cells) / len(cells)
+        # 起点セルの座標（エンジンの配置基準）
+        # origin セルが mesh のローカル原点 (0, 0, 0) に来るようにする
+        ox = origin % sizeX
+        oz = (origin // sizeX) % sizeZ
+        oy = origin // (sizeX * sizeZ)
 
         # ブロックメッシュを作成
         mesh = bpy.data.meshes.new(f"clay_block_{origin}")
@@ -198,10 +199,16 @@ def create_voxel_mesh(chips, clayOrigin, clayColorMap, sizeX, sizeY, sizeZ):
 
         for (x, y, z) in cells:
             # 各セルを1x1x1のキューブとして追加
-            # 中心をブロック中心に合わせる
-            px = x - cx + 0.5
-            py = y - cy + 0.5
-            pz = z - cz + 0.5
+            # 起点セルからの相対位置（整数座標）→ キューブ中心が整数位置になる
+            #
+            # Blender OBJ エクスポーターのデフォルト変換 (X,Y,Z) → (X,Z,-Y) が
+            # 適用されるため、それを考慮してマッピングする:
+            #   px (Blender X) = stage x   → OBJ X (右)               ✓
+            #   py (Blender Y) = -(stage z) → OBJ Z (前、符号反転)     ✓
+            #   pz (Blender Z) = stage y   → OBJ Y (上)               ✓
+            px = x - ox
+            py = -(z - oz)
+            pz = y - oy
 
             # キューブの8頂点
             verts = [
@@ -279,6 +286,10 @@ def create_voxel_mesh(chips, clayOrigin, clayColorMap, sizeX, sizeY, sizeZ):
 
         bm.normal_update()
 
+        # 座標系は Blender OBJ エクスポーターのデフォルト変換に任せる
+        # (頂点配置マッピングで対応済み、px=stage_x, py=-(stage_z), pz=stage_y)
+
+        bm.normal_update()
         bm.to_mesh(mesh)
         bm.free()
 
@@ -598,7 +609,6 @@ def main():
         triangulate_mesh(obj)
         finalize_mesh(obj, texture_load_path)
         output_path = export_obj(obj, args.output_dir, args.stage_id, origin, color, texture_file_name)
-        print(f"Exported: {output_path} (color={color}, texture={texture_file_name})")
 
         # オブジェクトを削除
         bpy.data.objects.remove(obj, do_unlink=True)
