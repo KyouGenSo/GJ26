@@ -14,7 +14,6 @@
 
 namespace szg {
 class EmitterInstance;
-class StringRectInstance;
 class Rect3d;
 class WorldRoot;
 }
@@ -50,16 +49,14 @@ public:
 	void prev_update() override;
 	void post_update() override;
 
-	/// クリアカメラ演出が最終位置へ到着済みか（クリアUI表示開始の判定用）
+	/// クリアカメラ演出が最終位置へ到着済みか
 	bool is_clear_camera_effect_finished() const noexcept;
 
 private:
 	void setup_json_asset();
-	void setup_clear_presentation();
+	void setup_confetti_effect();
 	void start_confetti_effect();
 	void stop_confetti_effect();
-	void start_clear_ui();
-	void update_clear_ui();
 	void set_gameplay_ui_visible(bool visible);
 	void reset_clear_sequence();
 
@@ -75,7 +72,6 @@ private:
 	Reference<FollowCamera> followCamera_;
 	Reference<GoalManager> goalManager_;
 	Reference<UndoManager> undoManager_;
-	Reference<szg::StringRectInstance> clearText_;
 	std::array<Reference<szg::Rect3d>, 5> gameplayUi_;
 	std::array<Reference<szg::EmitterInstance>, 2> confettiEmitters_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
@@ -92,7 +88,6 @@ private:
 	bool clearSequenceStarted_{ false };
 	bool clearCameraEffectStarted_{ false };
 	bool goalClearEffectStarted_{ false };
-	bool clearPresentationStarted_{ false };
 	bool confettiEffectStarted_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
@@ -100,11 +95,13 @@ private:
 	bool wasGoalOpen_{ false };
 	bool wasCleared_{ false };
 
-	Vector3 goalFinalPlayerOffset_{ 0.0f, 1.8f, 0.0f };
+	/// プレイヤー基準のローカル座標(X=右、Y=上、Z=前)
+	Vector3 goalFinalPlayerOffset_{ 0.0f, 0.0f, 1.5f };
 	r32 goalClearRiseHeight_{ 3.0f };
 	r32 goalClearRiseDuration_{ 0.55f };
 	r32 goalClearFallDuration_{ 0.75f };
-	Vector3 clearCameraFinalOffset_{ 0.0f, 3.57f, -3.55f };
+	/// プレイヤー基準のローカル座標。正のZへ置くことでプレイヤーの正面へ回り込む
+	Vector3 clearCameraFinalOffset_{ 0.0f, 3.57f, 3.55f };
 	Vector3 clearCameraTargetOffset_{ 0.0f, 0.8f, 0.0f };
 	r32 clearCameraDuration_{ 1.4f };
 	r32 clearCameraBounceStrength_{ 1.1f };
@@ -115,8 +112,4 @@ private:
 	r32 cameraInitialPitchDegrees_{ 17.188734f };
 	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
 	r32 resetGaugeFullWidth_{ 0.0f };
-	r32 clearTextStartX_{ -14.0f };
-	r32 clearTextTargetX_{ 0.0f };
-	r32 clearTextSlideDuration_{ 0.65f };
-	r32 clearTextElapsed_{ 0.0f };
 };

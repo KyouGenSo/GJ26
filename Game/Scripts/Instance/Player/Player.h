@@ -77,7 +77,6 @@ public:
 	void cancel_grip_move_interpolation() noexcept;
 	/// ゲームプレイ入力が有効か
 	bool is_input_enabled() const noexcept;
-
 public:
 
 	/// 操作対象のWorldInstanceを設定
@@ -106,6 +105,10 @@ public:
 	void set_sound(Reference<SoundPlayer> sound) noexcept;
 	/// 移動・ジャンプ・Grip・カメラ回転入力の有効/無効を切り替える
 	void set_input_enabled(bool enabled) noexcept;
+	/// クリアアニメーションを開始し、重力による落下を停止する
+	void start_clear_presentation();
+	/// クリアアニメーションを解除し、重力を再開する
+	void stop_clear_presentation();
 
 private:
 	struct AnimationSetting {
@@ -121,6 +124,7 @@ private:
 
 	void setup_json_asset();
 	void update_animation();
+	void update_clear_animation_sequence();
 	const AnimationSetting& resolve_animation_setting(PlayerState state) const noexcept;
 	const AnimationSetting& resolve_grip_move_animation(BlockMoveDirection direction) const noexcept;
 	void update_gripped_block_movement();
@@ -150,6 +154,8 @@ private:
 	AnimationSetting pullAnimation_{ "playerPull.gltf", false };
 	AnimationSetting pushLeftAnimation_{ "playerPush_left.gltf", false };
 	AnimationSetting pushRightAnimation_{ "playerPush_right.gltf", false };
+	AnimationSetting clearAnimation_{ "playerClear.gltf", false };
+	AnimationSetting clearStandAnimation_{ "playerClearStand.gltf", true };
 	bool gripInputReady_{ true };
 	bool gripWarnReady_{ true }; // 塞がれた面への Grip 拒否演出を押しっぱなしで繰り返さないためのゲート
 	bool gripMoveInputReady_{ true };
@@ -157,6 +163,9 @@ private:
 	PlayerState previousState_{ PlayerState::Idle }; // state の切り替わりで SE を鳴らすための前フレームの state
 	bool moveSoundPlaying_{ false };
 	bool inputEnabled_{ true };
+	bool gravityEnabled_{ true };
+	bool clearPresentationActive_{ false };
+	bool clearAnimationFinished_{ false };
 	float meshTurnSpeed_{ 12.0f };
 
 	PlayerInput playerInput_;

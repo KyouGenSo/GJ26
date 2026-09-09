@@ -3,8 +3,8 @@
 		"type": "Vector3",
 		"value": {
 			"X": 0.0,
-			"Y": 1.8,
-			"Z": 0.0
+			"Y": -0.800000011920929,
+			"Z": 1.5
 		}
 	},
 	"GoalClearRiseHeight": {
@@ -13,7 +13,7 @@
 	},
 	"GoalClearRiseDuration": {
 		"type": "R32",
-		"value": 0.55
+		"value": 0.550000011920929
 	},
 	"GoalClearFallDuration": {
 		"type": "R32",
@@ -23,31 +23,31 @@
 		"type": "Vector3",
 		"value": {
 			"X": 0.0,
-			"Y": 3.57,
-			"Z": -3.55
+			"Y": 0.0,
+			"Z": 4.0
 		}
 	},
 	"CameraTargetPlayerOffset": {
 		"type": "Vector3",
 		"value": {
 			"X": 0.0,
-			"Y": 0.8,
+			"Y": 0.30000001192092896,
 			"Z": 0.0
 		}
 	},
 	"CameraZoomDuration": {
 		"type": "R32",
-		"value": 1.4
+		"value": 1.399999976158142
 	},
 	"CameraBounceStrength": {
 		"type": "R32",
-		"value": 1.1
+		"value": 1.100000023841858
 	},
 	"ConfettiCameraLocalOffset": {
 		"type": "Vector3",
 		"value": {
-			"X": 0.8,
-			"Y": -0.4,
+			"X": 0.800000011920929,
+			"Y": -0.4000000059604645,
 			"Z": 2.0
 		}
 	}

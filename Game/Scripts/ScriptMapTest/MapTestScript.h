@@ -65,8 +65,13 @@ private:
 	Reference<FollowCamera> followCamera;
 	Reference<UndoManager> undoManager;
 	szg::InputHandler<szg::KeyID> keys;
+
+	// カメラの初期距離
 	r32 cameraInitialDistance{ 0.0f };
+	// カメラのステージサイズに合わせる際の余白倍率
 	r32 cameraFitPadding{ 1.1f };
+	// 現在のステージ番号(1始まり)
 	i32 stageNumber{ 1 };
+	// ステージ数
 	i32 stageCount{ 0 };
 };

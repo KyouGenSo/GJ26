@@ -2,18 +2,15 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <numbers>
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/Json/JsonAsset.h>
 #include <Engine/Loader/EmitterInstanceLoader.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
-#include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
 #include <Engine/Module/World/Particle/EmitterInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
-#include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/Particle/ParticlePool.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 #include <Engine/Runtime/Scene/SceneManager2.h>
@@ -44,6 +41,20 @@ constexpr std::array<const char*, 2> kConfettiEmitterNames{
 	"ConfettiLeftEmitter",
 	"ConfettiRightEmitter",
 };
+
+Vector3 PlayerLocalToWorldOffset(
+	const Vector3& localOffset,
+	const Vector3& playerDirection) noexcept {
+	const Vector3 forward = Vector3{
+		playerDirection.x,
+		0.0f,
+		playerDirection.z,
+	}.normalize_safe(Vector3{ 0.0f, 0.0f, 1.0f });
+	const Vector3 right{ forward.z, 0.0f, -forward.x };
+	return right * localOffset.x +
+		Vector3{ 0.0f, localOffset.y, 0.0f } +
+		forward * localOffset.z;
+}
 /// インゲームで使う音。BGM と移動音はループ、戻る音はシーン遷移をまたいで鳴らす
 constexpr std::array<string_literal, 16> kSounds{
 	"gameBgm.wav", "clearBgm.wav", "back.wav", "reset.wav", "undo.wav",
@@ -66,9 +77,9 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
-	worldRoot_ = worldRoot;
+
 	setup_json_asset();
-	setup_clear_presentation();
+	setup_confetti_effect();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
 	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
 	sound_.initialize(kSounds);
@@ -203,7 +214,6 @@ void GamePlayScript::finalize() {
 	followCamera_.reset();
 	goalManager_.reset();
 	undoManager_.reset();
-	clearText_.reset();
 	gameplayUi_.fill(nullptr);
 	confettiEmitters_.fill(nullptr);
 	isSetup_ = false;
@@ -212,7 +222,6 @@ void GamePlayScript::finalize() {
 	clearSequenceStarted_ = false;
 	clearCameraEffectStarted_ = false;
 	goalClearEffectStarted_ = false;
-	clearPresentationStarted_ = false;
 	confettiEffectStarted_ = false;
 }
 
@@ -296,27 +305,27 @@ void GamePlayScript::post_update() {
 
 	if (!clearSequenceStarted_ && goalManager_ && goalManager_->is_cleared() && player_) {
 		clearSequenceStarted_ = true;
-		clearPresentationStarted_ = true;
 		player_->set_input_enabled(false);
+		player_->start_clear_presentation();
 		set_gameplay_ui_visible(false);
-		start_clear_ui();
 
 		const Reference<const szg::WorldInstance> playerInstance = player_->get_world_instance_imm();
 		if (playerInstance) {
 			const Vector3 playerPosition = playerInstance->world_position();
-			goalClearEffectStarted_ = goalManager_->start_clear_effect(playerPosition);
+			const Vector3 playerDirection = player_->get_direction();
+			goalClearEffectStarted_ = goalManager_->start_clear_effect(
+				playerPosition,
+				playerDirection);
 			if (followCamera_) {
 				clearCameraEffectStarted_ = followCamera_->start_goal_effect(
-					playerPosition + clearCameraTargetOffset_,
-					playerPosition + clearCameraFinalOffset_,
+					playerPosition + PlayerLocalToWorldOffset(
+						clearCameraTargetOffset_, playerDirection),
+					playerPosition + PlayerLocalToWorldOffset(
+						clearCameraFinalOffset_, playerDirection),
 					clearCameraDuration_,
 					clearCameraBounceStrength_);
 			}
 		}
-	}
-
-	if (clearPresentationStarted_) {
-		update_clear_ui();
 	}
 
 	const bool cameraFinished = !clearCameraEffectStarted_ ||
@@ -346,16 +355,18 @@ void GamePlayScript::setup_json_asset() {
 		const auto readR32 = [&json](const char* name, r32 fallback) {
 			return json.value(name, nlohmann::json::object()).value("value", fallback);
 		};
-		clearTextStartX_ = readR32("ClearTextStartX", clearTextStartX_);
-		clearTextTargetX_ = readR32("ClearTextTargetX", clearTextTargetX_);
-		clearTextSlideDuration_ = std::max(
-			readR32("ClearTextSlideDuration", clearTextSlideDuration_), 0.001f);
 		cameraInitialDistance_ = std::max(
-			readR32("CameraInitialDistance", cameraInitialDistance_), 0.0f);
+			readR32("カメラの初期位置(ステージ中心からの距離)", cameraInitialDistance_), 0.0f);
 		cameraFitPadding_ = std::max(
-			readR32("CameraFitPadding", cameraFitPadding_), 1.0f);
-		cameraInitialYawDegrees_ = readR32("CameraInitialYawDegrees", cameraInitialYawDegrees_);
-		cameraInitialPitchDegrees_ = readR32("CameraInitialPitchDegrees", cameraInitialPitchDegrees_);
+			readR32("カメラのステージサイズに合わせる際の余白倍率", cameraFitPadding_), 1.0f);
+		cameraInitialYawDegrees_ = readR32("カメラ初期回転(Yaw)", cameraInitialYawDegrees_);
+		cameraInitialPitchDegrees_ = readR32("カメラ初期回転(Pitch)", cameraInitialPitchDegrees_);
+		szgInformation(
+			"GamePlayScript: camera parameter loaded. Distance-{}, Padding-{}, Yaw-{}, Pitch-{}.",
+			cameraInitialDistance_,
+			cameraFitPadding_,
+			cameraInitialYawDegrees_,
+			cameraInitialPitchDegrees_);
 	}
 	else {
 		szgWarning("GamePlayScript: GamePlay.param could not be loaded. Default values are used.");
@@ -402,19 +413,7 @@ void GamePlayScript::setup_json_asset() {
 		readGoalR32("CameraBounceStrength", clearCameraBounceStrength_), 0.0f);
 }
 
-void GamePlayScript::setup_clear_presentation() {
-	clearText_ = szg::RuntimeStorage::GetValue<Reference<szg::StringRectInstance>>(
-		"RuntimeInstance", "StageClearText").value_or(nullptr);
-	if (clearText_) {
-		Vector3 position = clearText_->transform_imm().get_translate();
-		position.x = clearTextStartX_;
-		clearText_->transform_mut().set_translate(position);
-		clearText_->set_draw(false);
-	}
-	else {
-		szgWarning("GamePlayScript: StageClearText runtime instance not found.");
-	}
-
+void GamePlayScript::setup_confetti_effect() {
 	for (size_t i = 0; i < kConfettiEmitterNames.size(); ++i) {
 		Reference<szg::EmitterInstance>& emitter = confettiEmitters_[i];
 		emitter = szg::RuntimeStorage::GetValue<Reference<szg::EmitterInstance>>(
@@ -465,29 +464,6 @@ void GamePlayScript::stop_confetti_effect() {
 	}
 }
 
-void GamePlayScript::start_clear_ui() {
-	clearTextElapsed_ = 0.0f;
-	if (!clearText_) {
-		return;
-	}
-	Vector3 position = clearText_->transform_imm().get_translate();
-	position.x = clearTextStartX_;
-	clearText_->transform_mut().set_translate(position);
-	clearText_->set_draw(true);
-}
-
-void GamePlayScript::update_clear_ui() {
-	if (!clearText_) {
-		return;
-	}
-	clearTextElapsed_ += std::max(szg::WorldClock::DeltaSeconds(), 0.0f);
-	const r32 t = std::clamp(clearTextElapsed_ / clearTextSlideDuration_, 0.0f, 1.0f);
-	const r32 eased = 1.0f - std::pow(1.0f - t, 3.0f);
-	Vector3 position = clearText_->transform_imm().get_translate();
-	position.x = clearTextStartX_ + (clearTextTargetX_ - clearTextStartX_) * eased;
-	clearText_->transform_mut().set_translate(position);
-}
-
 void GamePlayScript::set_gameplay_ui_visible(bool visible) {
 	for (Reference<szg::Rect3d> ui : gameplayUi_) {
 		if (ui) {
@@ -500,9 +476,7 @@ void GamePlayScript::reset_clear_sequence() {
 	clearSequenceStarted_ = false;
 	clearCameraEffectStarted_ = false;
 	goalClearEffectStarted_ = false;
-	clearPresentationStarted_ = false;
 	confettiEffectStarted_ = false;
-	clearTextElapsed_ = 0.0f;
 	set_gameplay_ui_visible(true);
 	if (followCamera_) {
 		followCamera_->stop_goal_effect();
@@ -511,13 +485,8 @@ void GamePlayScript::reset_clear_sequence() {
 		goalManager_->stop_clear_effect();
 	}
 	if (player_) {
+		player_->stop_clear_presentation();
 		player_->set_input_enabled(true);
-	}
-	if (clearText_) {
-		Vector3 position = clearText_->transform_imm().get_translate();
-		position.x = clearTextStartX_;
-		clearText_->transform_mut().set_translate(position);
-		clearText_->set_draw(false);
 	}
 	stop_confetti_effect();
 }

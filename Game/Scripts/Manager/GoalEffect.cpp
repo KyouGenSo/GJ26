@@ -21,6 +21,20 @@ constexpr std::array<const char*, 2> kParticleFiles{
 	"[[game]]/GoalEffect2.particle",
 };
 
+Vector3 PlayerLocalToWorldOffset(
+	const Vector3& localOffset,
+	const Vector3& playerDirection) noexcept {
+	const Vector3 forward = Vector3{
+		playerDirection.x,
+		0.0f,
+		playerDirection.z,
+	}.normalize_safe(Vector3{ 0.0f, 0.0f, 1.0f });
+	const Vector3 right{ forward.z, 0.0f, -forward.x };
+	return right * localOffset.x +
+		Vector3{ 0.0f, localOffset.y, 0.0f } +
+		forward * localOffset.z;
+}
+
 } // namespace
 
 void GoalEffect::setup(Reference<MapChipField> field_, Reference<szg::WorldRoot> worldRoot_) {
@@ -139,15 +153,17 @@ void GoalEffect::update() {
 	goalVisual->update_affine();
 }
 
-bool GoalEffect::start_clear_effect(const Vector3& playerWorldPosition) {
+bool GoalEffect::start_clear_effect(
+	const Vector3& playerWorldPosition,
+	const Vector3& playerDirection) {
 	if (!goalVisual || clearMotion) {
 		return false;
 	}
 
 	const Vector3 start = goalVisual->transform_imm().get_translate();
 	const Vector3 destination = to_goal_parent_local(
-		playerWorldPosition + clearFinalPlayerOffset);
-	// まずGoalが現在位置から垂直に浮上し、その後頭上へ降ろす。
+		playerWorldPosition + PlayerLocalToWorldOffset(clearFinalPlayerOffset, playerDirection));
+	// まずGoalが現在位置から垂直に浮上し、その後プレイヤーの前へ移動する。
 	Vector3 peak = start;
 	peak.y = std::max(start.y, destination.y) + clearRiseHeight;
 	clearMotion = ClearMotion{
