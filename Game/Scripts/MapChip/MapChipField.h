@@ -2,10 +2,13 @@
 
 #include <array>
 #include <deque>
+#include <memory>
 #include <format>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <Engine/Module/World/Mesh/StaticMeshInstance.h>
@@ -14,6 +17,8 @@
 #include <Library/Math/ColorRGB.h>
 #include <Library/Math/Vector3.h>
 #include <Library/Utility/Template/Reference.h>
+
+class ClayStretchAnimator;
 
 /// <summary>
 /// マップチップの種類(CSVのセル値)
@@ -204,6 +209,9 @@ std::optional<i32> SnapToFloorY(i32 x, i32 y, i32 z, i32 height, GetChip get) {
 /// </summary>
 class MapChipField {
 public:
+	MapChipField();
+	~MapChipField();
+
 	/// <summary>
 	/// directory/layer01.csv, layer02.csv, ... を連番が途切れるまで読み込む
 	/// </summary>
@@ -230,6 +238,14 @@ public:
 	/// 表示に使用する Cube / Clay / GoalPiece / Goal のメッシュをロードキューへ登録する
 	/// </summary>
 	static void RegisterVisualAssets();
+
+	/// <summary>
+	/// 全ステージの粘土ブロック OBJ をロードキューへ登録する。
+	/// <para>Blender で生成された __clay_block_{stage}_{origin}.obj を
+	/// blocks ディレクトリから走査して登録する。</para>
+	/// <para>ステージセレクトのプレビュー表示のため、ゲーム開始時にまとめて読み込む。</para>
+	/// </summary>
+	static void RegisterClayBlockAssets();
 
 	/// <summary>
 	/// ステージ中央に root を作り、Empty 以外のチップに種類別の表示モデルをその子として生成する
@@ -346,16 +362,17 @@ public:
 
 	/// <summary>
 	/// <para>parent(粘土の元セルの立方体)の塞がれた各面に cross.obj を子として付ける。親の destroy_self で一緒に消える</para>
-	/// <para>halfSize は親ローカルでの面の半幅、bottomY は親ローカルでの底面の高さ</para>
+	/// <para>halfSize は親ローカルでの面の半幅、bottomY は親ローカルでの底面の高さ、offset は親ローカルでのセルの位置(複数セルのブロック表示でセルごとに付けるとき)</para>
 	/// </summary>
 	/// <returns>付けた cross(ClayFace::Table と同じ並び、付けなかった面は null)</returns>
-	static std::array<Reference<szg::StaticMeshInstance>, 4> AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY);
+	static std::array<Reference<szg::StaticMeshInstance>, 4> AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY, const Vector3& offset = CVector3::ZERO);
 
 	/// <summary>
 	/// <para>つながった粘土・ゴール条件オブジェクトを光らせる複製(visual と同じメッシュ・マテリアル)を visual の子として付ける。親の destroy_self で一緒に消える</para>
-	/// <para>描画レイヤー 1 (RenderPath.json でぼかしてブルーム合成される) にライティング無しで描き、深度テストに勝つよう少し大きくする</para>
+	/// <para>描画レイヤー 2 (RenderPath.json でぼかしてブルーム合成される) にライティング無しで描き、深度テストに勝つよう scaleCenter(visual ローカル)を中心に少し大きくする</para>
 	/// </summary>
-	static void AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual);
+	/// <returns>付けた複製。visual が無いかマテリアルが空なら null</returns>
+	static Reference<szg::StaticMeshInstance> AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const Vector3& scaleCenter = CVector3::ZERO);
 
 	/// <summary>
 	/// <para>掴める対象の輪郭として、面の向きを反転した少し大きいメッシュ(X_outline.obj)を visual の子に付ける。親の destroy_self で一緒に消える</para>
@@ -393,6 +410,11 @@ public:
 	void update_visual_interpolation(r32 deltaSeconds);
 
 	/// <summary>
+	/// 粘土伸長アニメーションを更新する
+	/// </summary>
+	void update_stretch_animation(r32 deltaSeconds);
+
+	/// <summary>
 	/// 表示モデルの移動補間が再生中か
 	/// </summary>
 	bool is_visual_interpolating() const { return !visualInterpolationSteps.empty(); }
@@ -408,6 +430,12 @@ public:
 	Reference<szg::StaticMeshInstance> visual_mut(const MapChipIndex& index);
 
 	/// <summary>
+	/// <para>伸長アニメーションが終わった cap を flat の表示として引き取る(以後は refresh_visual / 補間 / 光 / Undo の対象になる)</para>
+	/// <para>flat が伸ばした粘土でなければ(未 build / 範囲外 / 粘土以外 / ブロック表示のセル)visual は捨てる。つながっていれば光らせる</para>
+	/// </summary>
+	void adopt_visual(i32 flat, Reference<szg::StaticMeshInstance> visual);
+
+	/// <summary>
 	/// セルデータの複製(表示・root は含まない)。restore で戻す
 	/// </summary>
 	struct Cells {
@@ -416,9 +444,10 @@ public:
 		std::vector<i32> clayPiece;
 		std::vector<u8> clayBlockedFaces;
 		std::vector<u8> clayColor;
+		std::vector<i32> clayBlock;
 	};
 
-	Cells cells() const { return Cells{ chips, clayOrigin, clayPiece, clayBlockedFaces, clayColor }; }
+	Cells cells() const { return Cells{ chips, clayOrigin, clayPiece, clayBlockedFaces, clayColor, clayBlock }; }
 
 	/// <summary>
 	/// cells() の内容に戻し、変わったセルだけ表示を作り直す。サイズが違えば警告して無視。version は進む
@@ -454,10 +483,11 @@ public:
 	/// </summary>
 	void destroy_root();
 
+	MapChipIndex unflatten(i32 flat) const;
+
 private:
 	bool is_inside(i32 x, i32 y, i32 z) const;
 	i32 flat_index(i32 x, i32 y, i32 z) const;
-	MapChipIndex unflatten(i32 flat) const;
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	u8 clay_stretch_face(i32 flat) const; // 伸ばして出た粘土がコアから伸びた方向(ClayFace のビット。コア・粘土以外は None)
 	bool has_connected_clay(i32 piece) const; // piece(ゴール条件オブジェクトの下段)につながった粘土が 1 つでもあるか
@@ -478,17 +508,22 @@ private:
 	void begin_warning(i32 flat, Reference<szg::StaticMeshInstance> visual, const Vector3& shakeAxis, r32 shakeAmplitude, bool blink); // 同じ visual の演出があれば戻してから始める
 	void end_warning(WarningEffect& warning); // 色と位置を戻す
 	void end_warnings(); // 全演出を戻して消す
-	void refresh_visual(i32 flat);
+	void refresh_visual(i32 flat); // セル単位の表示を作り直す(ブロック表示のセルは捨てるだけ。呼び出し側が refresh_clay_block を続ける)
+	void refresh_clay_block(i32 block); // ブロック表示を捨てて、今そのブロックに属するセルから作り直す(セルが無ければ消えるだけ)
+	void refresh_clay_blocks(std::vector<i32> blocks); // 重複と -1 を除いて refresh_clay_block
+	Reference<szg::StaticMeshInstance> cell_visual(i32 flat); // セルを描いている表示(セル単位の表示、無ければブロック表示、無ければ null)
 
 private:
 	i32 sizeX{ 0 };
 	i32 sizeY{ 0 };
 	i32 sizeZ{ 0 };
+	i32 stageNumber{ 0 }; // 現在ロード中のステージ番号。clay block メッシュ名・OBJ ファイル検索に使用
 	std::vector<MapChipType> chips;
 	std::vector<i32> clayOrigin; // chips と同じ添字。粘土なら元セルの flat_index、他は -1
 	std::vector<i32> clayPiece; // chips と同じ添字。粘土ならつながったゴール条件オブジェクトの flat_index、無ければ -1
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<u8> clayColor; // chips と同じ添字。粘土の色番号(ClayColor の添字)、他は 0
+	std::vector<i32> clayBlock; // chips と同じ添字。CSV の粘土が属するブロック表示の ID(load 時の 6 方向連結成分の最小 flat。Blender の OBJ 名と同じ規則)、伸ばした粘土・他は -1。移動しても変えない
 	u32 goalVisualLayer{ 0 };
 	std::optional<i32> highlightFlat; // 輪郭を付けるセル。表示が作り直されても refresh_visual が付け直す
 	Reference<szg::StaticMeshInstance> highlight; // highlightFlat の表示の子。親が消えるときは refresh_visual / destroy_root で捨てる
@@ -520,5 +555,7 @@ private:
 	std::vector<WarningEffect> warnings; // 再生中の演出
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
+	std::unordered_map<i32, Reference<szg::StaticMeshInstance>> clayBlockVisuals; // clayBlock の ID → ブロック表示(__clay_block_SS_ID.obj。位置はブロックの最小 flat のセル)
+	std::unique_ptr<ClayStretchAnimator> stretchAnimator;
 	u32 revision{ 0 };
 };

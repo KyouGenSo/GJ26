@@ -1,5 +1,8 @@
 #include "MapChipField.h"
 
+#include "ClayMeshGenerator.h"
+#include "ClayStretchAnimator.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -65,6 +68,9 @@ constexpr i32 WARN_SHAKE_HOLD_FRAMES = 2; // 同じ側に留まるフレーム�
 constexpr r32 CROSS_SHAKE_AMPLITUDE = 0.035f; // 親 clay.obj のローカル単位(親 scale 0.5 なのでワールドでは半分)
 constexpr r32 BLOCK_SHAKE_AMPLITUDE = 0.02f; // root ローカル単位(通常はワールドと同じ)
 constexpr u32 GLOW_VISUAL_LAYER = 2; // 光る複製の描画レイヤー(GamePlay/RenderPath.json でぼかしてブルーム合成するレイヤー。1 はゴールの Grayscale 用)
+constexpr std::array<MapChipIndex, 6> CLAY_NEIGHBORS{ {
+	{ 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 },
+} }; // 粘土づたいに辿る、面で接する 6 方向
 
 /// <summary>
 /// チップ種類に対応する表示モデル設定を返す。
@@ -129,7 +135,11 @@ std::optional<MapChipIndex> ReadPosition(const nlohmann::json& entry) {
 
 } // namespace
 
-bool MapChipField::load_stage(i32 stageNumber) {
+MapChipField::MapChipField() = default;
+MapChipField::~MapChipField() = default;
+
+bool MapChipField::load_stage(i32 stageNumber_) {
+	stageNumber = stageNumber_;
 	return load(StageDirectory(stageNumber));
 }
 
@@ -165,6 +175,35 @@ void MapChipField::RegisterVisualAssets() {
 			szg::TextureLibrary::RegisterLoadQue(std::format("./Game/Assets/Models/clay/{}", ClayColor::ArrowTexture(i, face.bit)));
 		}
 	}
+	// 全ステージの粘土ブロック OBJ をまとめてロードキューへ登録
+	RegisterClayBlockAssets();
+}
+
+void MapChipField::RegisterClayBlockAssets() {
+	// Blender で生成された粘土ブロック OBJ は以下に格納される:
+	//   Game/Assets/Models/clay/blocks/__clay_block_{stageId:02}_{originFlat}.obj
+	// ステージセレクトでもこれらのメッシュを使うため、ゲーム開始時にまとめてロードする。
+	namespace fs = std::filesystem;
+	const fs::path blocksDir = fs::path("Game/Assets/Models/clay/blocks");
+	if (!fs::exists(blocksDir)) {
+		return;
+	}
+
+	i32 registeredCount = 0;
+	for (const fs::directory_entry& entry : fs::directory_iterator(blocksDir)) {
+		if (!entry.is_regular_file()) {
+			continue;
+		}
+		const std::string fileName = entry.path().filename().string();
+		// 命名規則に一致するファイルのみ登録
+		if (fileName.starts_with("__clay_block_") && fileName.ends_with(".obj")) {
+			szg::PolygonMeshLibrary::RegisterLoadQue(entry.path());
+			++registeredCount;
+		}
+	}
+	if (registeredCount > 0) {
+		szgInformation("MapChipField: Registered {} clay block mesh assets", registeredCount);
+	}
 }
 
 bool MapChipField::load(const std::string& directory) {
@@ -193,6 +232,7 @@ bool MapChipField::load(const std::string& directory) {
 		clayPiece.clear();
 		clayBlockedFaces.clear();
 		clayColor.clear();
+		clayBlock.clear();
 		return false;
 	}
 
@@ -264,6 +304,34 @@ bool MapChipField::load(const std::string& directory) {
 	}
 	szgWarningIf(ignored > 0, "MapChipField: {} Clay entries in \'{}/stage.json\' are not on a clay cell (ignored)", ignored, directory);
 
+	// 面で接している CSV の粘土は Blender が 1 メッシュにまとめる(generate_clay_mesh.py と同じ 6 方向連結、ID は成分の最小 flat)。ゲーム上は別ブロックのまま
+	clayBlock.assign(chips.size(), -1);
+	for (i32 start = 0; start < static_cast<i32>(chips.size()); ++start) {
+		if (chips[start] != MapChipType::Clay || clayBlock[start] != -1) {
+			continue;
+		}
+		// 昇順に走査するので start が成分の最小 flat
+		std::vector<i32> open{ start };
+		clayBlock[start] = start;
+		bool mixedColor = false;
+		while (!open.empty()) {
+			const i32 cell = open.back();
+			open.pop_back();
+			mixedColor |= clayColor[cell] != clayColor[start];
+			for (const MapChipIndex& direction : CLAY_NEIGHBORS) {
+				const std::optional<i32> next = shifted(cell, direction);
+				if (next && chips[*next] == MapChipType::Clay && clayBlock[*next] == -1) {
+					clayBlock[*next] = start;
+					open.push_back(*next);
+				}
+			}
+		}
+		if (mixedColor) {
+			const MapChipIndex p = unflatten(start);
+			szgWarning("MapChipField: clay block at ({}, {}, {}) in \'{}\' mixes colors (Blender exports one mesh per block with a single color)", p.x, p.y, p.z, directory);
+		}
+	}
+
 	// stage.json のプレイヤー初期位置。Y はその列の床に合わせる
 	playerSpawn = LoadStageJsonPlayerSpawn(directory);
 	if (playerSpawn) {
@@ -297,9 +365,128 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		refresh_visual(i);
 	}
+	refresh_clay_blocks(clayBlock);
+}
+
+void MapChipField::refresh_clay_blocks(std::vector<i32> blocks) {
+	std::sort(blocks.begin(), blocks.end());
+	blocks.erase(std::unique(blocks.begin(), blocks.end()), blocks.end());
+	for (const i32 block : blocks) {
+		if (block != -1) {
+			refresh_clay_block(block);
+		}
+	}
+}
+
+void MapChipField::refresh_clay_block(i32 block) {
+	if (visuals.empty()) {
+		return;
+	}
+	if (const auto it = clayBlockVisuals.find(block); it != clayBlockVisuals.end()) {
+		// 演出は破棄した表示(と子の cross)に書き込み続けるので先に消す
+		Reference<szg::StaticMeshInstance> old = it->second;
+		std::erase_if(warnings, [&](const WarningEffect& warning) { return warning.visual == old || clayBlock[warning.flat] == block; });
+		old->reparent(nullptr, true);
+		old->destroy_self();
+		clayBlockVisuals.erase(it);
+	}
+
+	std::vector<i32> cells;
+	bool connected = false;
+	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
+		if (chips[i] == MapChipType::Clay && clayBlock[i] == block) {
+			faceCrosses[i] = {};
+			cells.push_back(i);
+			connected |= clayPiece[i] != -1;
+		}
+	}
+	if (cells.empty() || !root) {
+		return;
+	}
+
+	// ブロック個別 OBJ(Blender で生成)だけを使い、フォールバックはしない。RegisterClayBlockAssets で起動時に登録済みのはず
+	const std::string meshName = ClayMeshGenerator::MeshName(stageNumber, block);
+	if (!szg::PolygonMeshLibrary::IsRegistered(meshName)) {
+		const std::string objPath = std::format("Game/Assets/Models/clay/blocks/{}", meshName);
+		if (!std::filesystem::exists(objPath)) {
+			szgWarning("MapChipField: Clay block OBJ not found: {} (no fallback). Skipping block.", objPath);
+			return;
+		}
+		szg::PolygonMeshLibrary::RegisterLoadQue(objPath);
+	}
+
+	// メッシュのローカル原点は成分の最小 flat のセル。平行移動は flat の順序を保つので、動いた後も最小がその位置
+	const i32 anchor = cells.front();
+	const MapChipIndex anchorIndex = unflatten(anchor);
+	const Vector3 anchorPosition = to_world(anchorIndex.x, anchorIndex.y, anchorIndex.z);
+	Reference<szg::StaticMeshInstance> visual = worldRoot->instantiate<szg::StaticMeshInstance>(root, meshName);
+	visual->transform_mut().set_translate(anchorPosition - center());
+	if (!visual->get_materials().empty()) {
+		visual->get_materials()[0].color = CColorRGB::WHITE;
+	}
+	// 塞がれた面のバツ印はセルごと(ブロック OBJ はセル中心原点・半幅 0.5)。光る複製はセル全体の中心を基準に拡大する
+	Vector3 minOffset = CVector3::ZERO;
+	Vector3 maxOffset = CVector3::ZERO;
+	for (const i32 cell : cells) {
+		const MapChipIndex index = unflatten(cell);
+		const Vector3 offset = to_world(index.x, index.y, index.z) - anchorPosition;
+		minOffset = Vector3{ std::min(minOffset.x, offset.x), std::min(minOffset.y, offset.y), std::min(minOffset.z, offset.z) };
+		maxOffset = Vector3{ std::max(maxOffset.x, offset.x), std::max(maxOffset.y, offset.y), std::max(maxOffset.z, offset.z) };
+		faceCrosses[cell] = AttachFaceCrosses(*worldRoot, visual, clayBlockedFaces[cell], 0.5f, -0.5f, offset);
+	}
+	if (connected) {
+		AttachGlow(*worldRoot, visual, (minOffset + maxOffset) * 0.5f);
+	}
+	clayBlockVisuals[block] = visual;
+}
+
+Reference<szg::StaticMeshInstance> MapChipField::cell_visual(i32 flat) {
+	if (visuals.empty() || flat < 0 || flat >= static_cast<i32>(visuals.size())) {
+		return nullptr;
+	}
+	if (visuals[flat]) {
+		return visuals[flat];
+	}
+	if (clayBlock[flat] != -1) {
+		if (const auto it = clayBlockVisuals.find(clayBlock[flat]); it != clayBlockVisuals.end()) {
+			return it->second;
+		}
+	}
+	return nullptr;
+}
+
+void MapChipField::adopt_visual(i32 flat, Reference<szg::StaticMeshInstance> visual) {
+	if (!visual) {
+		return;
+	}
+	const bool stretched = !visuals.empty() && flat >= 0 && flat < static_cast<i32>(visuals.size()) &&
+		chips[flat] == MapChipType::Clay && clayBlock[flat] == -1;
+	if (!stretched) {
+		visual->reparent(nullptr, true);
+		visual->destroy_self();
+		return;
+	}
+	if (visuals[flat]) {
+		visuals[flat]->reparent(nullptr, true);
+		visuals[flat]->destroy_self();
+		if (highlightFlat == flat) {
+			highlight.reset();
+		}
+	}
+	std::erase_if(warnings, [flat](const WarningEffect& warning) { return warning.flat == flat; });
+	visuals[flat] = visual;
+	if (clayPiece[flat] != -1) {
+		AttachGlow(*worldRoot, visual);
+	}
 }
 
 void MapChipField::destroy_root() {
+	if (stretchAnimator) {
+		stretchAnimator.reset();
+	}
+	// clay メッシュはゲーム開始時にまとめてロードされ、全ステージで共有されるため
+	// ここではアンロードしない（RegisterClayBlockAssets で永続化）
+	clayBlockVisuals.clear();
 	cancel_visual_interpolation();
 	if (root) {
 		root->destroy_self();
@@ -351,8 +538,8 @@ void MapChipField::warn_block_stuck(const MapChipIndex& index, const MapChipInde
 
 	const Vector3 shakeAxis{ static_cast<r32>(direction.x), 0.0f, static_cast<r32>(direction.z) };
 	for (const i32 cell : cells) {
-		if (visuals[cell]) {
-			begin_warning(cell, visuals[cell], shakeAxis, BLOCK_SHAKE_AMPLITUDE, false);
+		if (const Reference<szg::StaticMeshInstance> visual = cell_visual(cell)) {
+			begin_warning(cell, visual, shakeAxis, BLOCK_SHAKE_AMPLITUDE, false);
 		}
 	}
 }
@@ -460,6 +647,12 @@ void MapChipField::update_visual_interpolation(r32 deltaSeconds) {
 	}
 }
 
+void MapChipField::update_stretch_animation(r32 deltaSeconds) {
+	if (stretchAnimator) {
+		stretchAnimator->update(deltaSeconds, *this);
+	}
+}
+
 void MapChipField::begin_visual_interpolation(
 	const std::vector<i32>& targetCells,
 	const std::vector<VisualMove>& moves) {
@@ -477,19 +670,24 @@ void MapChipField::begin_visual_interpolation(
 		return;
 	}
 
+	// ブロック表示は複数セルから参照されるので 1 回だけ動かす
+	std::vector<Reference<szg::StaticMeshInstance>> targets;
 	for (const i32 target : targetCells) {
-		if (target < 0 || target >= static_cast<i32>(visuals.size()) || !visuals[target]) {
-			continue;
+		const Reference<szg::StaticMeshInstance> visual = cell_visual(target);
+		if (visual && std::find(targets.begin(), targets.end(), visual) == targets.end()) {
+			targets.push_back(visual);
 		}
-		Vector3 position = visuals[target]->transform_imm().get_translate() - totalOffset;
-		visuals[target]->transform_mut().set_translate(position);
+	}
+	for (Reference<szg::StaticMeshInstance>& visual : targets) {
+		Vector3 position = visual->transform_imm().get_translate() - totalOffset;
+		visual->transform_mut().set_translate(position);
 		size_t stepIndex = 0;
 		for (const VisualMove& move : moves) {
 			if (move.duration <= 0.0f) {
 				continue;
 			}
 			visualInterpolationSteps[stepIndex++].entries.push_back(VisualInterpolation{
-				.visual = visuals[target],
+				.visual = visual,
 				.startPosition = position,
 				.targetPosition = position + move.offset,
 			});
@@ -499,6 +697,10 @@ void MapChipField::begin_visual_interpolation(
 }
 
 void MapChipField::cancel_visual_interpolation() {
+	// 伸長アニメ中なら最終形にして表示を引き取る(以降の変異操作が cap を見られるように)
+	if (stretchAnimator) {
+		stretchAnimator->finish(*this);
+	}
 	// 後の段階ほど最終位置に近いので、順に置けば最後の段階の target で終わる
 	for (VisualInterpolationStep& step : visualInterpolationSteps) {
 		for (VisualInterpolation& interpolation : step.entries) {
@@ -521,13 +723,17 @@ void MapChipField::set(i32 x, i32 y, i32 z, MapChipType type, u8 color) {
 	}
 	cancel_visual_interpolation();
 	const i32 i = flat_index(x, y, z);
+	const i32 block = clayBlock[i];
 	chips[i] = type;
 	clayOrigin[i] = type == MapChipType::Clay ? i : -1;
 	clayPiece[i] = -1;
 	clayBlockedFaces[i] = ClayFace::None;
 	clayColor[i] = static_cast<u8>(type == MapChipType::Clay ? std::min<i32>(color, ClayColor::Count - 1) : 0);
+	clayBlock[i] = -1;
 	++revision;
 	refresh_visual(i);
+	// ブロック表示は 1 メッシュなので外したセルの形は残る(set はエディタ用で、ゲーム中は使わない)
+	refresh_clay_blocks({ block });
 }
 
 void MapChipField::restore(const Cells& source) {
@@ -537,17 +743,21 @@ void MapChipField::restore(const Cells& source) {
 	}
 	cancel_visual_interpolation();
 	std::vector<i32> changed;
+	std::vector<i32> blocks;
 	for (i32 i = 0; i < static_cast<i32>(chips.size()); ++i) {
 		if (chips[i] == source.chips[i] && clayOrigin[i] == source.clayOrigin[i] &&
 			clayPiece[i] == source.clayPiece[i] && clayBlockedFaces[i] == source.clayBlockedFaces[i] &&
-			clayColor[i] == source.clayColor[i]) {
+			clayColor[i] == source.clayColor[i] && clayBlock[i] == source.clayBlock[i]) {
 			continue;
 		}
+		blocks.push_back(clayBlock[i]);
 		chips[i] = source.chips[i];
 		clayOrigin[i] = source.clayOrigin[i];
 		clayPiece[i] = source.clayPiece[i];
 		clayBlockedFaces[i] = source.clayBlockedFaces[i];
 		clayColor[i] = source.clayColor[i];
+		clayBlock[i] = source.clayBlock[i];
+		blocks.push_back(clayBlock[i]);
 		changed.push_back(i);
 	}
 	// 表示は全セルを戻し終えてから作り直す(ピースの光は粘土の接続を逆引きする)
@@ -562,6 +772,8 @@ void MapChipField::restore(const Cells& source) {
 			}
 		}
 	}
+	// 移動を戻したブロックは元の位置に、接続を戻したブロックは光無しになる
+	refresh_clay_blocks(blocks);
 	++revision;
 }
 
@@ -625,19 +837,18 @@ bool MapChipField::stretch_clay(
 		const bool pieceWasConnected = has_connected_clay(piece);
 		cancel_visual_interpolation();
 		// 伸ばしたブロックと、同じ色の粘土づたいに面で接している未接続の粘土を全部このピースにつなぐ(上下も含む 6 方向)
-		constexpr std::array<MapChipIndex, 6> kNeighbors{ {
-			{ 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 },
-		} };
 		std::vector<i32> open{ source };
+		std::vector<i32> blocks;
 		clayPiece[source] = piece;
 		while (!open.empty()) {
 			const i32 cell = open.back();
 			open.pop_back();
-			// 表示は作り直さず、つながったセルに光る複製だけ足す(新規接続なので二重には付かない)
+			// 伸ばした粘土は表示を作り直さず光る複製だけ足す(新規接続なので二重には付かない)。ブロック表示は後でまとめて作り直す
 			if (!visuals.empty()) {
 				AttachGlow(*worldRoot, visuals[cell]);
 			}
-			for (const MapChipIndex& direction : kNeighbors) {
+			blocks.push_back(clayBlock[cell]);
+			for (const MapChipIndex& direction : CLAY_NEIGHBORS) {
 				const std::optional<i32> next = shifted(cell, direction);
 				if (next && chips[*next] == MapChipType::Clay && clayPiece[*next] == -1 && clayColor[*next] == clayColor[cell]) {
 					clayPiece[*next] = piece;
@@ -645,6 +856,7 @@ bool MapChipField::stretch_clay(
 				}
 			}
 		}
+		refresh_clay_blocks(blocks);
 		// ピース側は最初のブロックがつながった時だけ光らせる(表示は GoalManager のエミッタが子に付いているので作り直さない)
 		if (!pieceWasConnected && !visuals.empty()) {
 			AttachGlow(*worldRoot, visuals[piece]);
@@ -661,6 +873,7 @@ bool MapChipField::stretch_clay(
 	clayOrigin[target] = root;
 	clayPiece[target] = clayPiece[source];
 	clayColor[target] = clayColor[source];
+	clayBlock[target] = -1;
 	++revision;
 	refresh_visual(target);
 	begin_visual_interpolation(
@@ -680,6 +893,12 @@ std::optional<MapChipIndex> MapChipField::move_goal_piece(
 	const std::vector<i32> cells = moving_cells(from, to);
 	if (cells.empty()) {
 		return std::nullopt;
+	}
+	cancel_visual_interpolation();
+	// ブロック表示は落下まで終わった位置で 1 回だけ作り直す(ID は動かしても変わらない)
+	std::vector<i32> blocks;
+	for (const i32 cell : cells) {
+		blocks.push_back(clayBlock[cell]);
 	}
 	const MapChipIndex delta{ to.x - from.x, 0, to.z - from.z };
 	std::vector<i32> targetCells = relocate_cells(cells, delta);
@@ -706,6 +925,7 @@ std::optional<MapChipIndex> MapChipField::move_goal_piece(
 		targetCells = relocate_cells(targetCells, MapChipIndex{ 0, -fallCount, 0 });
 	}
 	++revision;
+	refresh_clay_blocks(blocks);
 
 	std::vector<VisualMove> moves{ VisualMove{ to_world(delta.x, delta.y, delta.z), visualMoveDuration } };
 	if (fallCount > 0) {
@@ -723,10 +943,11 @@ std::vector<i32> MapChipField::relocate_cells(const std::vector<i32>& cells, con
 		i32 piece;
 		u8 faces;
 		u8 color;
+		i32 block;
 	};
 	std::vector<Moved> moved;
 	for (const i32 cell : cells) {
-		moved.push_back(Moved{ *shifted(cell, delta), chips[cell], clayOrigin[cell], clayPiece[cell], clayBlockedFaces[cell], clayColor[cell] });
+		moved.push_back(Moved{ *shifted(cell, delta), chips[cell], clayOrigin[cell], clayPiece[cell], clayBlockedFaces[cell], clayColor[cell], clayBlock[cell] });
 	}
 
 	// 全部空けてからずらして置き直す(元セルと移動先の重なりを気にしなくてよい)
@@ -736,6 +957,7 @@ std::vector<i32> MapChipField::relocate_cells(const std::vector<i32>& cells, con
 		clayPiece[cell] = -1;
 		clayBlockedFaces[cell] = ClayFace::None;
 		clayColor[cell] = 0;
+		clayBlock[cell] = -1;
 		refresh_visual(cell);
 	}
 	for (const Moved& m : moved) {
@@ -744,6 +966,7 @@ std::vector<i32> MapChipField::relocate_cells(const std::vector<i32>& cells, con
 		clayPiece[m.target] = m.piece == -1 ? -1 : *shifted(m.piece, delta);
 		clayBlockedFaces[m.target] = m.faces;
 		clayColor[m.target] = m.color;
+		clayBlock[m.target] = m.block;
 	}
 	// ピースの表示は粘土の接続を逆引きするので、全セルを置き終えてから作り直す
 	for (const Moved& m : moved) {
@@ -915,7 +1138,7 @@ bool MapChipField::SaveStageJsonPlayerSpawn(const std::string& directory, const 
 	return WriteStageJsonRoot(file, root);
 }
 
-std::array<Reference<szg::StaticMeshInstance>, 4> MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY) {
+std::array<Reference<szg::StaticMeshInstance>, 4> MapChipField::AttachFaceCrosses(szg::WorldRoot& worldRoot_, Reference<szg::WorldInstance> parent, u8 blockedFaces, r32 halfSize, r32 bottomY, const Vector3& offset) {
 	std::array<Reference<szg::StaticMeshInstance>, 4> crosses{};
 	// cross.obj は底面原点・幅 2・高さ 2 で +Z を向く。親の面と同じ枠なので halfSize で等倍し、面の外向きへ回す
 	for (size_t i = 0; i < ClayFace::Table.size(); ++i) {
@@ -926,25 +1149,28 @@ std::array<Reference<szg::StaticMeshInstance>, 4> MapChipField::AttachFaceCrosse
 		Reference<szg::StaticMeshInstance> cross = worldRoot_.instantiate<szg::StaticMeshInstance>(parent, "cross.obj");
 		const Vector3 direction = to_world(face.direction.x, face.direction.y, face.direction.z);
 		cross->transform_mut().set_scale(Vector3{ halfSize, halfSize, halfSize });
-		cross->transform_mut().set_translate(direction * halfSize + Vector3{ 0.0f, bottomY, 0.0f });
+		cross->transform_mut().set_translate(offset + direction * halfSize + Vector3{ 0.0f, bottomY, 0.0f });
 		cross->transform_mut().set_quaternion(Quaternion::LookForward(direction));
 		crosses[i] = cross;
 	}
 	return crosses;
 }
 
-void MapChipField::AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual) {
+Reference<szg::StaticMeshInstance> MapChipField::AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const Vector3& scaleCenter) {
 	if (!visual || visual->get_materials().empty()) {
-		return;
+		return nullptr;
 	}
 	Reference<szg::StaticMeshInstance> glow = worldRoot_.instantiate<szg::StaticMeshInstance>(visual, visual->key_id());
 	// レイヤーは初回描画登録時に固定されるので生成直後に設定する
 	glow->set_layer(GLOW_VISUAL_LAYER);
-	glow->transform_mut().set_scale(Vector3{ 1.03f, 1.03f, 1.03f });
+	constexpr r32 scale = 1.03f;
+	glow->transform_mut().set_scale(Vector3{ scale, scale, scale });
+	glow->transform_mut().set_translate(scaleCenter * (1.0f - scale));
 	glow->get_materials() = visual->get_materials();
 	for (auto& material : glow->get_materials()) {
 		material.lightingType = szg::LighingType::None;
 	}
+	return glow;
 }
 
 bool MapChipField::has_connected_clay(i32 piece) const {
@@ -1186,8 +1412,10 @@ void MapChipField::refresh_visual(i32 flat) {
 	faceCrosses[flat] = {};
 	std::erase_if(warnings, [flat](const WarningEffect& warning) { return warning.flat == flat; });
 
-	// 上段はピースのモデル(下段)に含まれるので表示を持たない
-	if (chips[flat] == MapChipType::Empty || chips[flat] == MapChipType::GoalPieceUpper || !root) {
+	// 上段はピースのモデル(下段)に含まれるので表示を持たない。CSV の粘土はブロック表示(refresh_clay_block)が描く
+	if (chips[flat] == MapChipType::Empty ||
+		chips[flat] == MapChipType::GoalPieceUpper ||
+		(chips[flat] == MapChipType::Clay && clayBlock[flat] != -1) || !root) {
 		return;
 	}
 

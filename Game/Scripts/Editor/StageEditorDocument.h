@@ -1,6 +1,9 @@
 #pragma once
 
 #include <deque>
+#include <filesystem>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include <Library/Utility/Template/SingletonInterface.h>
@@ -131,6 +134,38 @@ public:
 	bool can_redo() const;
 	void undo();
 	void redo();
+
+	/// <summary>
+	/// Blender の実行ファイルパスを取得する。
+	/// <para>useCache=true: キャッシュがあれば即座に返し、無ければ探索して保存する。</para>
+	/// <para>useCache=false: キャッシュを無視して環境変数・設定ファイル・PATH・一般場所から再探索する。</para>
+	/// <para>見つからなければ空のパスを返す。</para>
+	/// </summary>
+	std::filesystem::path GetBlenderPath(bool useCache = true);
+
+	/// <summary>
+	/// キャッシュを破棄して Blender パスを強制再検出する（"再探査" ボタン用）。
+	/// <para>結果が見つかればキャッシュを更新して返す。見つからなければ空のパスを返す。</para>
+	/// </summary>
+	std::filesystem::path RedetectBlenderPath();
+
+	/// <summary>
+	/// キャッシュ済みの Blender パスを取得（探索は行わない）。
+	/// <para>UI に現在のパスを表示する目的。キャッシュが無ければ空のパスを返す。</para>
+	/// </summary>
+	std::filesystem::path GetCachedBlenderPath() const;
+
+	/// <summary>
+	/// Blenderを呼び出して粘土メッシュを生成する
+	/// </summary>
+	void GenerateClayMeshWithBlender();
+
+	/// <summary>
+	/// 全ステージの粘土メッシュを Blender でまとめて生成する
+	/// <para>エクスポートの進捗を szgInformation ログに出力する。</para>
+	/// <para>生成に成功したステージ数を返す。</para>
+	/// </summary>
+	i32 GenerateAllClayMeshesWithBlender();
 
 public:
 	/// <summary>

@@ -6,6 +6,7 @@
 #include "Scripts/Editor/StageEditorDocument.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Scene/FactoryGJ26.h"
+#include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 
 ColorRGB StageEditorScript::ChipColor(MapChipType type, u8 clayColor) {
 	switch (type) {
@@ -43,6 +44,7 @@ void StageEditorScript::prev_update() {
 	}
 
 	if (keys.trigger(szg::KeyID::F5)) {
+		szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", i32{ doc.stage_number() });
 		szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
 	}
 }

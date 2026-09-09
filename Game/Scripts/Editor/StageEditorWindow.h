@@ -31,6 +31,8 @@ private:
 	void draw_grid();
 	void draw_preview_note();
 	void draw_undo_redo();
+	void draw_blender_path();
+	void draw_clay_export();
 
 private:
 	static int chip_to_int(MapChipType type);
@@ -55,6 +57,9 @@ private:
 	i32 loadStageNumber{ 1 };
 
 	bool isPainting{ false };
+	bool isExportingAll{ false };
+	i32 lastExportTotal{ 0 };
+	i32 lastExportDone{ 0 };
 };
 
 #endif // DEBUG_FEATURES_ENABLE
