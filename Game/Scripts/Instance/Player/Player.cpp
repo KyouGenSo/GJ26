@@ -365,6 +365,9 @@ void Player::setup_json_asset() {
 	pullAnimation_.fileName = readString("PullAnimationFile", pullAnimation_.fileName);
 	pushLeftAnimation_.fileName = readString("PushLeftAnimationFile", pushLeftAnimation_.fileName);
 	pushRightAnimation_.fileName = readString("PushRightAnimationFile", pushRightAnimation_.fileName);
+	set_move_speed(readFloat("MoveSpeed", context_.moveSpeed));
+	set_jump_power(readFloat("JumpPower", context_.jumpPower));
+	set_fall_speed(readFloat("FallSpeed", context_.fallSpeed));
 	set_grip_move_speed(readFloat("GripMoveSpeed", context_.gripMoveSpeed));
 }
 

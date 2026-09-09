@@ -35,6 +35,18 @@
 		"type": "String",
 		"value": "playerPush_right.gltf"
 	},
+	"MoveSpeed": {
+		"type": "R32",
+		"value": 5.0
+	},
+	"JumpPower": {
+		"type": "R32",
+		"value": 8.0
+	},
+	"FallSpeed": {
+		"type": "R32",
+		"value": 20.0
+	},
 	"GripMoveSpeed": {
 		"type": "R32",
 		"value": 2.5

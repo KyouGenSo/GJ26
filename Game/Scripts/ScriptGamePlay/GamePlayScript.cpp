@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <numbers>
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/Json/JsonAsset.h>
-#include <Engine/Loader/EmitterInstanceLoader.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
 #include <Engine/Module/World/Particle/EmitterInstance.h>
@@ -42,9 +42,9 @@ constexpr std::array<const char*, 5> kGameplayUiNames{
 	"ResetGaugeBack",
 	"ResetGaugeFill",
 };
-constexpr std::array<const char*, 2> kConfettiParticleFiles{
-	"[[game]]/confettiEffect_leftBottom.particle",
-	"[[game]]/confettiEffect_rightBottom.particle",
+constexpr std::array<const char*, 2> kConfettiEmitterNames{
+	"ConfettiLeftEmitter",
+	"ConfettiRightEmitter",
 };
 /// インゲームで使う音。BGM と移動音はループ、戻る音はシーン遷移をまたいで鳴らす
 constexpr std::array<string_literal, 15> kSounds{
@@ -68,7 +68,6 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
-	worldRoot_ = worldRoot;
 	setup_json_asset();
 	setup_clear_presentation();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
@@ -111,6 +110,11 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 			cameraInstance.value_or(nullptr),
 			cameraFollowTargetInstance.value_or(nullptr));
 		followCamera_ = followCamera;
+		constexpr r32 kDegreesToRadians = std::numbers::pi_v<r32> / 180.0f;
+		followCamera_->set_rotation(
+			cameraInitialYawDegrees_ * kDegreesToRadians,
+			cameraInitialPitchDegrees_ * kDegreesToRadians);
+		mapTest_->set_camera_framing_parameters(cameraInitialDistance_, cameraFitPadding_);
 		player_->set_follow_camera(followCamera_);
 		mapTest_->set_follow_camera(followCamera_);
 	}
@@ -193,7 +197,7 @@ void GamePlayScript::finalize() {
 		return;
 	}
 
-	destroy_confetti_emitters();
+	stop_confetti_effect();
 	inGameScriptManager_.finalize();
 	mapTest_.reset();
 	player_.reset();
@@ -202,8 +206,7 @@ void GamePlayScript::finalize() {
 	undoManager_.reset();
 	clearText_.reset();
 	gameplayUi_.fill(nullptr);
-	worldRoot_.reset();
-	confettiSettings_.fill(std::nullopt);
+	confettiEmitters_.fill(nullptr);
 	isSetup_ = false;
 	clayGlow_.reset();
 	resetGaugeFill_.reset();
@@ -362,6 +365,12 @@ void GamePlayScript::setup_json_asset() {
 		clearTextTargetX_ = readR32("ClearTextTargetX", clearTextTargetX_);
 		clearTextSlideDuration_ = std::max(
 			readR32("ClearTextSlideDuration", clearTextSlideDuration_), 0.001f);
+		cameraInitialDistance_ = std::max(
+			readR32("CameraInitialDistance", cameraInitialDistance_), 0.0f);
+		cameraFitPadding_ = std::max(
+			readR32("CameraFitPadding", cameraFitPadding_), 1.0f);
+		cameraInitialYawDegrees_ = readR32("CameraInitialYawDegrees", cameraInitialYawDegrees_);
+		cameraInitialPitchDegrees_ = readR32("CameraInitialPitchDegrees", cameraInitialPitchDegrees_);
 	}
 	else {
 		szgWarning("GamePlayScript: GamePlay.param could not be loaded. Default values are used.");
@@ -406,8 +415,6 @@ void GamePlayScript::setup_json_asset() {
 		readGoalR32("CameraZoomDuration", clearCameraDuration_), 0.001f);
 	clearCameraBounceStrength_ = std::max(
 		readGoalR32("CameraBounceStrength", clearCameraBounceStrength_), 0.0f);
-	confettiLocalOffset_ = readGoalVector3("ConfettiCameraLocalOffset", confettiLocalOffset_);
-	confettiLocalOffset_.x = std::abs(confettiLocalOffset_.x);
 }
 
 void GamePlayScript::setup_clear_presentation() {
@@ -423,94 +430,53 @@ void GamePlayScript::setup_clear_presentation() {
 		szgWarning("GamePlayScript: StageClearText runtime instance not found.");
 	}
 
-	for (size_t i = 0; i < kConfettiParticleFiles.size(); ++i) {
-		szg::JsonAsset particle{ kConfettiParticleFiles[i] };
-		confettiSettings_[i] = szg::EmitterInstanceLoader::Load(particle.cget());
-		if (!confettiSettings_[i]) {
-			szgWarning("GamePlayScript: {} could not be loaded.", kConfettiParticleFiles[i]);
-			continue;
-		}
-		// クリア時の一度だけの紙吹雪として使う。
-		confettiSettings_[i]->schedule.infinite = false;
-		confettiSettings_[i]->schedule.cycles = 1;
-	}
-
-	// 紙吹雪のエミッタを生成しておく。クリア時にカメラの子として再配置する。
-	create_confetti_emitters();
-}
-
-//============================================================================
-// 紙吹雪のエミッタを生成する。クリア時にカメラの子として再配置する。
-//
-void GamePlayScript::create_confetti_emitters() {
-	if (!worldRoot_) {
-		return;
-	}
-	for (size_t i = 0; i < confettiEmitters_.size(); ++i) {
-		if (!confettiSettings_[i]) {
-			continue;
-		}
+	for (size_t i = 0; i < kConfettiEmitterNames.size(); ++i) {
 		Reference<szg::EmitterInstance>& emitter = confettiEmitters_[i];
-		const szg::EmitterInstanceSettings& settings = *confettiSettings_[i];
-		emitter = worldRoot_->instantiate<szg::EmitterInstance>(nullptr);
-		emitter->setup_settings(settings);
-		Reference<szg::ParticlePool> pool = worldRoot_->create_particle_pool(
-			emitter,
-			settings.capacity == 0 ? 1 : settings.capacity,
-			settings.overflowPolicy);
-		emitter->setup_pool(pool);
-		if (pool) {
-			pool->setup_draw_spec(settings.drawSpec);
-			pool->setup_updaters(
-				szg::EmitterInstance::BuildUpdaterMask(settings),
-				settings.rotation.rotationKind);
-		}
-		emitter->set_active(false);
-	}
-}
-
-void GamePlayScript::destroy_confetti_emitters() {
-	for (Reference<szg::EmitterInstance>& emitter : confettiEmitters_) {
+		emitter = szg::RuntimeStorage::GetValue<Reference<szg::EmitterInstance>>(
+			"RuntimeInstance", kConfettiEmitterNames[i]).value_or(nullptr);
 		if (!emitter) {
+			szgWarning("GamePlayScript: {} runtime instance not found.", kConfettiEmitterNames[i]);
 			continue;
 		}
+
+		// シーン配置したEmitterをクリア時の一度だけの紙吹雪として使う。
+		szg::EmitterInstanceSettings settings = emitter->settings_imm();
+		settings.schedule.infinite = false;
+		settings.schedule.cycles = 1;
+		emitter->setup_settings(settings);
+		emitter->set_active(false);
 		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
 			pool->clear();
 		}
-		emitter->reparent(nullptr, true);
-		if (!emitter->is_marked_destroy()) {
-			emitter->destroy_self();
-		}
-		emitter.reset();
 	}
 }
 
+//============================================================================
+// ClearUICameraの座標系へシーン配置した紙吹雪を開始する。
+//
 void GamePlayScript::start_confetti_effect() {
-	if (!followCamera_) {
-		return;
-	}
-	const Reference<szg::CameraInstance> camera = followCamera_->get_camera_instance_mut();
-	if (!camera) {
-		return;
-	}
-
-	for (size_t i = 0; i < confettiEmitters_.size(); ++i) {
-		Reference<szg::EmitterInstance> emitter = confettiEmitters_[i];
+	for (Reference<szg::EmitterInstance> emitter : confettiEmitters_) {
 		if (!emitter) {
 			continue;
 		}
-		const r32 side = i == 0 ? -1.0f : 1.0f;
-		// 発射方向などは左右それぞれのparticleファイルで設定する。
-		emitter->setup_settings(*confettiSettings_[i]);
-		emitter->reparent(camera, false);
-		emitter->transform_mut().set_translate(Vector3{
-			confettiLocalOffset_.x * side,
-			confettiLocalOffset_.y,
-			confettiLocalOffset_.z,
-		});
+
+		// update_affine()は非Active時に更新されないため、先に有効化する。
+		emitter->set_active(true);
 		emitter->update_affine();
 		emitter->restart_schedule();
-		emitter->set_active(true);
+	}
+}
+
+void GamePlayScript::stop_confetti_effect() {
+	for (Reference<szg::EmitterInstance> emitter : confettiEmitters_) {
+		if (!emitter) {
+			continue;
+		}
+		emitter->set_active(false);
+		emitter->restart_schedule();
+		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
+			pool->clear();
+		}
 	}
 }
 
@@ -568,14 +534,5 @@ void GamePlayScript::reset_clear_sequence() {
 		clearText_->transform_mut().set_translate(position);
 		clearText_->set_draw(false);
 	}
-	for (Reference<szg::EmitterInstance> emitter : confettiEmitters_) {
-		if (!emitter) {
-			continue;
-		}
-		emitter->set_active(false);
-		emitter->restart_schedule();
-		if (Reference<szg::ParticlePool> pool = emitter->pool_mut()) {
-			pool->clear();
-		}
-	}
+	stop_confetti_effect();
 }
