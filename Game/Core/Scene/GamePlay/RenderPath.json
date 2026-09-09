@@ -354,7 +354,7 @@
 					"Y": 1080.0
 				},
 				"CameraId": 0,
-				"ClearDepthStencil": false,
+				"ClearDepthStencil": true,
 				"GBufferSize": {
 					"X": 1920.0,
 					"Y": 1080.0
@@ -378,8 +378,8 @@
 			},
 			"Debug": {
 				"Position": {
-					"X": 3400.0,
-					"Y": 220.0
+					"X": 3410.0,
+					"Y": 180.0
 				}
 			},
 			"Links": {
@@ -389,11 +389,11 @@
 		}
 	],
 	"ResultNode": {
-		"Connect": 12,
+		"Connect": 13,
 		"Debug": {
 			"Position": {
-				"X": 3420.0,
-				"Y": 340.0
+				"X": 3760.0,
+				"Y": 200.0
 			}
 		}
 	}
