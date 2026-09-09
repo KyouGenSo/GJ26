@@ -1,3 +1,32 @@
 {
-	"Clay": []
+	"Clay": [
+		{
+			"BlockedFaces": [
+				"+X",
+				"-X",
+				"+Z",
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				0,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"-X",
+				"+Z",
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				1,
+				0,
+				6
+			]
+		}
+	]
 }
