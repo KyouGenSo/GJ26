@@ -48,6 +48,7 @@
     <ClCompile Include="Scripts\Scene\GamePlayScene.cpp" />
     <ClCompile Include="Scripts\Scene\SelectScene.cpp" />
     <ClCompile Include="Scripts\ScriptStageSelect\StageSelectScript.cpp" />
+    <ClCompile Include="Scripts\ScriptStageSelect\StageSelectBackgroundEffect.cpp" />
     <ClCompile Include="Scripts\Scene\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +88,7 @@
     <ClInclude Include="Scripts\Scene\GamePlayScene.h" />
     <ClInclude Include="Scripts\Scene\SelectScene.h" />
     <ClInclude Include="Scripts\ScriptStageSelect\StageSelectScript.h" />
+    <ClInclude Include="Scripts\ScriptStageSelect\StageSelectBackgroundEffect.h" />
     <ClInclude Include="Scripts\Scene\TitleScene.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
