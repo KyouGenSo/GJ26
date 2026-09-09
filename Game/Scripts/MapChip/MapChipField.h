@@ -371,7 +371,8 @@ public:
 	/// <para>つながった粘土・ゴール条件オブジェクトを光らせる複製(visual と同じメッシュ・マテリアル)を visual の子として付ける。親の destroy_self で一緒に消える</para>
 	/// <para>描画レイヤー 2 (RenderPath.json でぼかしてブルーム合成される) にライティング無しで描き、深度テストに勝つよう scaleCenter(visual ローカル)を中心に少し大きくする</para>
 	/// </summary>
-	static void AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const Vector3& scaleCenter = CVector3::ZERO);
+	/// <returns>付けた複製。visual が無いかマテリアルが空なら null</returns>
+	static Reference<szg::StaticMeshInstance> AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const Vector3& scaleCenter = CVector3::ZERO);
 
 	/// <summary>
 	/// <para>掴める対象の輪郭として、面の向きを反転した少し大きいメッシュ(X_outline.obj)を visual の子に付ける。親の destroy_self で一緒に消える</para>

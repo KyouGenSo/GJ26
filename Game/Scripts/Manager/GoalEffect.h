@@ -60,6 +60,7 @@ private:
 	void load_particle_settings();
 	void create_emitters();
 	void destroy_emitters();
+	void destroy_glow();
 	void sync_emitter_transforms();
 	void apply_active_state(bool active);
 	void restore_visual_transform();
@@ -78,6 +79,8 @@ private:
 	Reference<MapChipField> field;
 	Reference<szg::WorldRoot> worldRoot;
 	Reference<szg::StaticMeshInstance> goalVisual;
+	/// 解放中だけ goalVisual の子として持つブルーム用の複製(MapChipField::AttachGlow)
+	Reference<szg::StaticMeshInstance> glowVisual;
 	std::array<Reference<szg::EmitterInstance>, 2> emitters;
 	Reference<szg::GrayscalePipeline::Data> grayscaleData;
 	std::array<std::optional<szg::EmitterInstanceSettings>, 2> emitterSettings;
