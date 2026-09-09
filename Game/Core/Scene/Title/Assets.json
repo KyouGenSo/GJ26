@@ -14,7 +14,6 @@
 		".\\Game\\Assets\\Models\\drawingPaper2\\drawingPaper2.obj",
 		".\\Game\\Assets\\Models\\drawingPaper\\drawingPaper.obj",
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf",
-		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj",
 		".\\Game\\Assets\\Models\\drawingPaper3\\drawingPaper3.obj"
 	],
 	"Param": [],
@@ -24,7 +23,6 @@
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
 	],
 	"Texture": [
-		".\\Game\\Assets\\textures\\z.png",
 		".\\Game\\Assets\\textures\\ui\\titleA.png"
 	]
 }
