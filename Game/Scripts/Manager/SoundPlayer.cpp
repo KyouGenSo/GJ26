@@ -20,7 +20,7 @@ const std::unordered_map<std::string_view, SoundSetting> kSettings{
 	{ "selectBgm.wav", { 0.4f, true } },
 	{ "gameBgm.wav", { 0.4f, true } },
 	{ "clearBgm.wav", { 0.2f, true } },
-	{ "sleepingBreath.wav", { 0.2f, true } },
+	{ "sleepingBreath.wav", { 0.1f, false } },
 	{ "move.wav", { 0.5f, true } },
 	{ "decision.wav", { 0.7f, false } },
 	{ "choice.wav", { 0.7f, false } },

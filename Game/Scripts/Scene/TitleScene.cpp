@@ -28,7 +28,9 @@ namespace {
 constexpr r32 kStartButtonFloatPeriodSeconds = 2.0f;
 /// A ボタン UI が基準位置から上下に動く最大距離
 constexpr r32 kStartButtonFloatAmplitude = 0.1f;
-/// タイトルで使う音。BGM と寝息はループ、決定音はシーン遷移をまたいで鳴らす
+/// 寝息を鳴らし直す間隔(秒)。
+constexpr r32 kSleepingBreathIntervalSeconds = 1.5f;
+/// タイトルで使う音。BGM はループ、寝息はタイマーで鳴らし直し、決定音はシーン遷移をまたいで鳴らす
 constexpr std::array<string_literal, 3> kSounds{ "titleBgm.wav", "sleepingBreath.wav", "decision.wav" };
 
 /// <summary>
@@ -58,6 +60,7 @@ public:
 
 	void prev_update() override {
 		update_start_button_float();
+		update_sleeping_breath();
 
 		pad_.update();
 		mouse_.update();
@@ -83,6 +86,16 @@ private:
 		startButton_->transform_mut().set_translate(position);
 	}
 
+	/// 一定間隔ごとに寝息を頭から鳴らし直す
+	void update_sleeping_breath() {
+		breathTime_ += szg::WorldClock::DeltaSeconds();
+		if (breathTime_ < kSleepingBreathIntervalSeconds) {
+			return;
+		}
+		breathTime_ -= kSleepingBreathIntervalSeconds;
+		sound_.restart("sleepingBreath.wav");
+	}
+
 	szg::InputHandler<szg::PadID> pad_;
 	szg::InputHandler<szg::MouseID> mouse_;
 	bool transitionRequested_{ false };
@@ -91,6 +104,7 @@ private:
 	Reference<szg::Rect3d> startButton_;
 	Vector3 startButtonBasePosition_{ CVector3::ZERO };
 	r32 floatTime_{ 0.0f };
+	r32 breathTime_{ 0.0f };
 };
 
 } // namespace
