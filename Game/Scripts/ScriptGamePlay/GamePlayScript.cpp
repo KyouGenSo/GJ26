@@ -19,6 +19,7 @@
 #include "Scripts/Manager/UndoManager.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
+#include "Scripts/ScriptStageSelect/StageSelectScript.h"
 
 namespace {
 
@@ -238,6 +239,9 @@ void GamePlayScript::post_update() {
 		const bool cleared = goalManager_->is_cleared();
 		if (cleared && !wasCleared_) {
 			sound_.restart("goal.wav");
+			// セレクト画面のクリア済み表示用(起動中のみ保持)
+			const i32 stageNumber = szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1);
+			szg::RuntimeStorage::OverwirteValue("Temp", StageSelectScript::ClearedKey(stageNumber), true);
 		}
 		wasCleared_ = cleared;
 	}
