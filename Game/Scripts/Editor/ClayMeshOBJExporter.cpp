@@ -171,3 +171,36 @@ bool ClayMeshOBJExporter::Export(i32 stageNumber) {
 	szgInformation("ClayMeshOBJExporter: Clay mesh generation completed successfully");
 	return true;
 }
+
+i32 ClayMeshOBJExporter::ExportAll() {
+	const i32 stageCount = MapChipField::CountStages();
+	if (stageCount <= 0) {
+		szgWarning("ClayMeshOBJExporter::ExportAll: no stages found");
+		return 0;
+	}
+
+	// Blender パスを 1 回だけ検証
+	const std::filesystem::path blenderExe = BlenderPathResolver::Get(true);
+	if (blenderExe.empty()) {
+		szgWarning("ClayMeshOBJExporter::ExportAll: Blender not found, aborting all stages");
+		return 0;
+	}
+
+	szgInformation("ClayMeshOBJExporter::ExportAll: exporting {} stages", stageCount);
+
+	i32 successCount = 0;
+	for (i32 stage = 1; stage <= stageCount; ++stage) {
+		const bool ok = Export(stage);
+		if (ok) {
+			++successCount;
+		}
+		szgInformation(
+			"ClayMeshOBJExporter::ExportAll: stage {}/{} (Stage{:02}) {}",
+			stage, stageCount, stage, ok ? "succeeded" : "failed");
+	}
+
+	szgInformation(
+		"ClayMeshOBJExporter::ExportAll: {}/{} stages succeeded",
+		successCount, stageCount);
+	return successCount;
+}

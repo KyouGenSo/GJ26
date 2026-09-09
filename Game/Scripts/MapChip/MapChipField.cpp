@@ -172,6 +172,35 @@ void MapChipField::RegisterVisualAssets() {
 			szg::TextureLibrary::RegisterLoadQue(std::format("./Game/Assets/Models/clay/{}", ClayColor::ArrowTexture(i, face.bit)));
 		}
 	}
+	// 全ステージの粘土ブロック OBJ をまとめてロードキューへ登録
+	RegisterClayBlockAssets();
+}
+
+void MapChipField::RegisterClayBlockAssets() {
+	// Blender で生成された粘土ブロック OBJ は以下に格納される:
+	//   Game/Assets/Models/clay/blocks/__clay_block_{stageId:02}_{originFlat}.obj
+	// ステージセレクトでもこれらのメッシュを使うため、ゲーム開始時にまとめてロードする。
+	namespace fs = std::filesystem;
+	const fs::path blocksDir = fs::path("Game/Assets/Models/clay/blocks");
+	if (!fs::exists(blocksDir)) {
+		return;
+	}
+
+	i32 registeredCount = 0;
+	for (const fs::directory_entry& entry : fs::directory_iterator(blocksDir)) {
+		if (!entry.is_regular_file()) {
+			continue;
+		}
+		const std::string fileName = entry.path().filename().string();
+		// 命名規則に一致するファイルのみ登録
+		if (fileName.starts_with("__clay_block_") && fileName.ends_with(".obj")) {
+			szg::PolygonMeshLibrary::RegisterLoadQue(entry.path());
+			++registeredCount;
+		}
+	}
+	if (registeredCount > 0) {
+		szgInformation("MapChipField: Registered {} clay block mesh assets", registeredCount);
+	}
 }
 
 bool MapChipField::load(const std::string& directory) {
@@ -318,18 +347,27 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 	}
 	for (const i32 originFlat : uniqueOrigins) {
 		const u8 originClayColor = clayColor[originFlat];
-		const std::string meshName = ClayMeshGenerator::MeshName(stageNumber, originFlat);
+		const std::string uniqueMeshName = ClayMeshGenerator::MeshName(stageNumber, originFlat);
 
-		// OBJファイルが存在すればそれをロード、なければプロシージャル生成
-		const std::string objPath = std::format("Game/Assets/Models/clay/blocks/__clay_block_{:02}_{}.obj", stageNumber, originFlat);
-		if (std::filesystem::exists(objPath)) {
-			// OBJファイルを直接ロード
-			szgInformation("MapChipField: Loading clay mesh from OBJ: {}", objPath);
-			szg::PolygonMeshLibrary::RegisterLoadQue(objPath);
-		} else {
-			// プロシージャル生成（従来通り）
-			ClayMeshGenerator::Generate(stageNumber, originFlat, *this, originClayColor);
+		// ブロック個別 OBJ（Blender で生成）のみを使用する。フォールバックは使用しない方針。
+		// 未登録（まだロード中）の場合はログを出してスキップする。
+		// RegisterClayBlockAssets でゲーム開始時に該当 OBJ を事前ロードしているため、
+		// 通常はここで IsRegistered が true になる。
+		if (!szg::PolygonMeshLibrary::IsRegistered(uniqueMeshName)) {
+			// 念のためディスクからのロードを試みる
+			const std::string specificObjPath = std::format(
+				"Game/Assets/Models/clay/blocks/__clay_block_{:02}_{}.obj", stageNumber, originFlat);
+			if (std::filesystem::exists(specificObjPath)) {
+				szg::PolygonMeshLibrary::RegisterLoadQue(specificObjPath);
+			}
+			else {
+				szgWarning(
+					"MapChipField: Clay block OBJ not found: {} (no fallback). Skipping block.",
+					specificObjPath);
+				continue;
+			}
 		}
+		const std::string meshName = uniqueMeshName;
 
 		const MapChipIndex origin{
 			originFlat % sizeX,
@@ -340,6 +378,7 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 			worldRoot->instantiate<szg::StaticMeshInstance>(root, meshName);
 		Vector3 localPosition = to_world(origin.x, origin.y, origin.z) - center();
 		blockVisual->transform_mut().set_translate(localPosition);
+		blockVisual->transform_mut().set_translate(localPosition);
 		const bool connected = clayPiece[originFlat] >= 0;
 		if (!blockVisual->get_materials().empty()) {
 			blockVisual->get_materials()[0].color = connected
@@ -347,7 +386,6 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 				: ColorRGB{ 0.55f, 0.35f, 0.20f };
 		}
 		AttachFaceCrosses(*worldRoot, blockVisual, clayBlockedFaces[originFlat], 1.0f, 0.0f);
-		generatedClayMeshes.insert(originFlat);
 		clayBlockVisuals[originFlat] = blockVisual;
 	}
 }
@@ -356,10 +394,8 @@ void MapChipField::destroy_root() {
 	if (stretchAnimator) {
 		stretchAnimator.reset();
 	}
-	for (const i32 originFlat : generatedClayMeshes) {
-		ClayMeshGenerator::Remove(stageNumber, originFlat);
-	}
-	generatedClayMeshes.clear();
+	// clay メッシュはゲーム開始時にまとめてロードされ、全ステージで共有されるため
+	// ここではアンロードしない（RegisterClayBlockAssets で永続化）
 	clayBlockVisuals.clear();
 	cancel_visual_interpolation();
 	if (root) {

@@ -12,6 +12,8 @@
 
 #include "StageEditorDocument.h"
 
+#include "ClayMeshOBJExporter.h"
+
 namespace {
 
 /// <summary>
@@ -112,6 +114,8 @@ void StageEditorWindow::draw() {
 	ImGui::Separator();
 	draw_blender_path();
 	ImGui::Separator();
+	draw_clay_export();
+	ImGui::Separator();
 	draw_new_stage();
 	ImGui::Separator();
 	draw_resize();
@@ -166,6 +170,41 @@ void StageEditorWindow::draw_blender_path() {
 		if (!current.empty()) {
 			ImGui::SetClipboardText(current.string().c_str());
 		}
+	}
+}
+
+void StageEditorWindow::draw_clay_export() {
+	StageEditorDocument& doc = StageEditorDocument::GetInstance();
+
+	ImGui::Text("粘土メッシュ");
+
+	// 現在のステージ OBJ を再生成
+	if (ImGui::Button("現在のステージをエクスポート")) {
+		doc.GenerateClayMeshWithBlender();
+	}
+
+	// 全ステージ一括エクスポート（Blender プロセスは同期実行されるため UI はブロックされる）
+	const i32 stageCount = MapChipField::CountStages();
+	ImGui::SameLine();
+	ImGui::BeginDisabled(isExportingAll || stageCount == 0);
+	if (ImGui::Button("全ステージを一括エクスポート")) {
+		isExportingAll = true;
+		lastExportTotal = stageCount;
+		lastExportDone = 0;
+		const i32 done = doc.GenerateAllClayMeshesWithBlender();
+		lastExportDone = done;
+		isExportingAll = false;
+	}
+	ImGui::EndDisabled();
+
+	if (stageCount == 0) {
+		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "ステージがありません");
+	}
+	else if (isExportingAll) {
+		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f), "処理中... 0 / %d", stageCount);
+	}
+	else if (lastExportTotal > 0) {
+		ImGui::TextColored(ImVec4(0.6f, 0.9f, 0.6f, 1.0f), "前回: %d / %d ステージ完了", lastExportDone, lastExportTotal);
 	}
 }
 

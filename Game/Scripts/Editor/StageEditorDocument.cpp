@@ -392,3 +392,7 @@ std::filesystem::path StageEditorDocument::GetCachedBlenderPath() const {
 void StageEditorDocument::GenerateClayMeshWithBlender() {
 	ClayMeshOBJExporter::Export(currentStageNumber);
 }
+
+i32 StageEditorDocument::GenerateAllClayMeshesWithBlender() {
+	return ClayMeshOBJExporter::ExportAll();
+}

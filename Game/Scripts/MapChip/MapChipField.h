@@ -240,6 +240,14 @@ public:
 	static void RegisterVisualAssets();
 
 	/// <summary>
+	/// 全ステージの粘土ブロック OBJ をロードキューへ登録する。
+	/// <para>Blender で生成された __clay_block_{stage}_{origin}.obj を
+	/// blocks ディレクトリから走査して登録する。</para>
+	/// <para>ステージセレクトのプレビュー表示のため、ゲーム開始時にまとめて読み込む。</para>
+	/// </summary>
+	static void RegisterClayBlockAssets();
+
+	/// <summary>
 	/// ステージ中央に root を作り、Empty 以外のチップに種類別の表示モデルをその子として生成する
 	/// </summary>
 	void build(szg::WorldRoot& worldRoot_);
@@ -528,7 +536,6 @@ private:
 	std::vector<WarningEffect> warnings; // 再生中の演出
 	Reference<szg::WorldRoot> worldRoot; // build 後のみ有効
 	Reference<szg::WorldInstance> root; // build 後のみ有効。破棄すると子の表示モデルも消える
-	std::unordered_set<i32> generatedClayMeshes;
 	std::unordered_map<i32, Reference<szg::StaticMeshInstance>> clayBlockVisuals;
 	std::unique_ptr<ClayStretchAnimator> stretchAnimator;
 	u32 revision{ 0 };

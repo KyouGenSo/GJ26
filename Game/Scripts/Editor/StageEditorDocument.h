@@ -155,6 +155,18 @@ public:
 	/// </summary>
 	std::filesystem::path GetCachedBlenderPath() const;
 
+	/// <summary>
+	/// Blenderを呼び出して粘土メッシュを生成する
+	/// </summary>
+	void GenerateClayMeshWithBlender();
+
+	/// <summary>
+	/// 全ステージの粘土メッシュを Blender でまとめて生成する
+	/// <para>エクスポートの進捗を szgInformation ログに出力する。</para>
+	/// <para>生成に成功したステージ数を返す。</para>
+	/// </summary>
+	i32 GenerateAllClayMeshesWithBlender();
+
 public:
 	/// <summary>
 	/// サイズ上限
@@ -170,11 +182,6 @@ private:
 	void rebuild_chips(i32 newX, i32 newY, i32 newZ);
 	i32 flat_index(i32 x, i32 y, i32 z) const;
 	bool is_inside(i32 x, i32 y, i32 z) const;
-
-	/// <summary>
-	/// Blenderを呼び出して粘土メッシュを生成する
-	/// </summary>
-	void GenerateClayMeshWithBlender();
 
 private:
 	i32 sizeX{ 0 };
