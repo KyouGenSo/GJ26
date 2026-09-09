@@ -1,0 +1,10 @@
+{
+	"Segment": {
+		"type": "I32",
+		"value": 3
+	},
+	"BevelRadius": {
+		"type": "R32",
+		"value": 0.15000000596046448
+	}
+}
