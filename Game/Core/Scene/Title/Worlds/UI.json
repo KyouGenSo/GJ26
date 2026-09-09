@@ -1,7 +1,7 @@
 {
 	"Instances": [
 		{
-			"BlendMode": 1,
+			"BlendMode": 0,
 			"Children": [],
 			"IsDraw": true,
 			"IsFlipY": false,
@@ -23,7 +23,7 @@
 				"Translate": {
 					"X": 0.0,
 					"Y": -3.200000047683716,
-					"Z": 1.0
+					"Z": 4.0
 				}
 			},
 			"Material": {
@@ -95,7 +95,7 @@
 			"Type": 3000,
 			"Use runtime": false
 		}
-	],
+],
 	"Name": "UI",
-	"NumLayer": 1
+	"NumLayer": 2
 }
