@@ -1,6 +1,7 @@
 #include "GamePlayScript.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 #include <Engine/Application/Logger.h>
@@ -45,8 +46,18 @@ constexpr std::array<const char*, 2> kConfettiParticleFiles{
 	"[[game]]/confettiEffect_leftBottom.particle",
 	"[[game]]/confettiEffect_rightBottom.particle",
 };
+/// インゲームで使う音。BGM と移動音はループ、戻る音はシーン遷移をまたいで鳴らす
+constexpr std::array<string_literal, 14> kSounds{
+	"gameBgm.wav", "clearBgm.wav", "back.wav", "reset.wav", "undo.wav",
+	"move.wav", "jump.wav", "grab.wav", "cantGrab.wav",
+	"stretch.wav", "clayConnect.wav", "cantMove.wav", "goalConnect.wav", "goal.wav",
+};
 
 } // namespace
+
+void GamePlayScript::RegisterAudioAssets() {
+	SoundPlayer::RegisterLoadQue(kSounds);
+}
 
 void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	if (isSetup_) {
@@ -62,6 +73,8 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	setup_clear_presentation();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
 	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
+	sound_.initialize(kSounds);
+	sound_.play("gameBgm.wav");
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	mapTest_ = mapTest;
@@ -90,6 +103,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgWarning("GamePlayScript: Player runtime instance not found.");
 	}
 	player_->set_block_movement_judge(mapTest_->movement_judge_mut());
+	player_->set_sound(sound_);
 
 	std::unique_ptr<FollowCamera> followCamera;
 	if (cameraInstance && cameraFollowTargetInstance) {
@@ -112,6 +126,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	std::unique_ptr<UndoManager> undoManager = eps::CreateUnique<UndoManager>();
 	undoManager_ = undoManager;
 	undoManager_->setup(mapTest_->field_mut(), player_);
+	undoManager_->set_sound(sound_);
 	mapTest_->set_undo_manager(undoManager_);
 
 	std::unique_ptr<GoalManager> goalManager = eps::CreateUnique<GoalManager>();
@@ -206,21 +221,23 @@ void GamePlayScript::prev_update() {
 	keyInput_.update();
 	padInput_.update();
 
-	// EscapeキーまたはStartボタンが一定時間押され続けた場合、ステージ選択画面へ遷移する
-	const r32 backHoldSeconds = std::max(
-		keyInput_.press_timer(szg::KeyID::Escape),
-		padInput_.press_timer(szg::PadID::Start));
-	if (!sceneTransitionRequested_ && backHoldSeconds >= kBackHoldDurationSeconds) {
+	// Startボタンが押され続けたらステージ選択画面へ遷移する
+	if (!sceneTransitionRequested_ && padInput_.trigger(szg::PadID::Start)) {
 		sceneTransitionRequested_ = true;
+		SoundPlayer::PlayAcrossScene("back.wav");
 
 		// ステージ選択画面へ遷移する
 		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
 		return;
 	}
 
-	// Yボタンが一定時間押され続けた場合、ステージを初期状態に戻す
+	// Yボタンが一定時間押され続けた場合、ステージを初期状態に戻す(押している間はリセット音が鳴る)
+	if (padInput_.trigger(szg::PadID::Y)) {
+		sound_.restart("reset.wav");
+	}
 	if (padInput_.release(szg::PadID::Y)) {
 		resetHoldConsumed_ = false;
+		sound_.stop("reset.wav");
 	}
 	if (!resetHoldConsumed_ && padInput_.press_timer(szg::PadID::Y) >= kResetHoldDurationSeconds) {
 		resetHoldConsumed_ = true;
@@ -263,6 +280,25 @@ void GamePlayScript::post_update() {
 	}
 
 	inGameScriptManager_.post_update();
+
+	// ゴール出現の立ち上がりで接続音とクリア可能 BGM、消えたら BGM だけ止める。クリアの立ち上がりでゴール音
+	if (goalManager_) {
+		const bool goalOpen = goalManager_->is_goal_open();
+		if (goalOpen && !wasGoalOpen_) {
+			sound_.restart("goalConnect.wav");
+			sound_.play("clearBgm.wav");
+		}
+		else if (!goalOpen && wasGoalOpen_) {
+			sound_.stop("clearBgm.wav");
+		}
+		wasGoalOpen_ = goalOpen;
+
+		const bool cleared = goalManager_->is_cleared();
+		if (cleared && !wasCleared_) {
+			sound_.restart("goal.wav");
+		}
+		wasCleared_ = cleared;
+	}
 
 	// 目の前の掴める対象(Grip 中は掴んでいるブロック)に輪郭を出す
 	if (player_) {
@@ -307,7 +343,15 @@ bool GamePlayScript::is_clear_camera_effect_finished() const noexcept {
 	return clearCameraEffectStarted_ && followCamera_ && followCamera_->is_goal_effect_finished();
 }
 
+//============================================================================
+// GamePlay.param と GoalParameter.param を読み込む。
+//=============================================================================
 void GamePlayScript::setup_json_asset() {
+
+	//------------------------------------------------------------
+	// GamePlay.param
+	// クリア時のテキストのスライドイン位置と時間
+	//------------------------------------------------------------
 	szg::JsonAsset parameter{ "[[game]]/GamePlay.param" };
 	const nlohmann::json& json = parameter.cget();
 	if (json.is_object()) {
@@ -323,10 +367,15 @@ void GamePlayScript::setup_json_asset() {
 		szgWarning("GamePlayScript: GamePlay.param could not be loaded. Default values are used.");
 	}
 
-	szg::JsonAsset goalParameter{ "[[game]]/GoalParameter.json" };
+
+	//------------------------------------------------------------
+	// GoalParameter.param
+	// ゴールのクリア演出のパラメータ
+	//------------------------------------------------------------
+	szg::JsonAsset goalParameter{ "[[game]]/GoalParameter.param" };
 	const nlohmann::json& goalJson = goalParameter.cget();
 	if (!goalJson.is_object()) {
-		szgWarning("GamePlayScript: GoalParameter.json could not be loaded. Default values are used.");
+		szgWarning("GamePlayScript: GoalParameter.param could not be loaded. Default values are used.");
 		return;
 	}
 	const auto readGoalR32 = [&goalJson](const char* name, r32 fallback) {

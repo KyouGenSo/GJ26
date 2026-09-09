@@ -4,7 +4,7 @@
 		"Capacity": 256,
 		"DrawType": 0,
 		"FollowParent": true,
-		"Layer": 0,
+		"Layer": 3,
 		"Mesh": "ErrorObject.obj",
 		"OverflowPolicy": 0,
 		"Pivot": {
@@ -146,7 +146,7 @@
 			"Y": 0.0,
 			"Z": 0.0
 		},
-		"LookAtCameraId": 0,
+		"LookAtCameraId": 1,
 		"LookTarget": {
 			"X": 0.0,
 			"Y": 0.0,

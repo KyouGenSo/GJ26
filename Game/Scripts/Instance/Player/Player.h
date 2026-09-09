@@ -11,6 +11,7 @@
 #include "PlayerStateManager.h"
 
 class FollowCamera;
+class SoundPlayer;
 
 namespace szg {
 class SkinningMeshInstance;
@@ -101,6 +102,8 @@ public:
 	void set_follow_camera(Reference<FollowCamera> followCamera) noexcept;
 	/// direction追従とアニメーション再生に使うスキニングメッシュを設定
 	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
+	/// 操作に合わせて鳴らす SE(無ければ無音)
+	void set_sound(Reference<SoundPlayer> sound) noexcept;
 	/// 移動・ジャンプ・Grip・カメラ回転入力の有効/無効を切り替える
 	void set_input_enabled(bool enabled) noexcept;
 
@@ -127,12 +130,14 @@ private:
 		BlockMoveDirection moveDirection);
 	void update_grip_move_interpolation() noexcept;
 	void update_mesh_direction(bool snap = false) noexcept;
+	void update_state_sound();
 
 private:
 
 	Reference<szg::SkinningMeshInstance> meshInstance_;
 	Reference<FollowCamera> followCamera_;
 	Reference<BlockMovementJudge> blockMovementJudge_;
+	Reference<SoundPlayer> sound_;
 	std::string activeAnimationKey_;
 	std::optional<GripMoveInterpolation> gripMoveInterpolation_;
 	std::optional<BlockMoveDirection> gripMoveAnimationDirection_;
@@ -148,6 +153,8 @@ private:
 	bool gripInputReady_{ true };
 	bool gripWarnReady_{ true }; // 塞がれた面への Grip 拒否演出を押しっぱなしで繰り返さないためのゲート
 	bool gripMoveInputReady_{ true };
+	PlayerState previousState_{ PlayerState::Idle }; // state の切り替わりで SE を鳴らすための前フレームの state
+	bool moveSoundPlaying_{ false };
 	bool inputEnabled_{ true };
 	float meshTurnSpeed_{ 12.0f };
 

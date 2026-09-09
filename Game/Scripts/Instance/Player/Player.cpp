@@ -12,6 +12,7 @@
 
 #include "PlayerMovement.h"
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
+#include "Scripts/Manager/SoundPlayer.h"
 
 namespace {
 
@@ -76,12 +77,15 @@ void Player::finalize() {
 	meshInstance_.reset();
 	followCamera_.reset();
 	blockMovementJudge_.reset();
+	sound_.reset();
 	activeAnimationKey_.clear();
 	gripMoveInterpolation_.reset();
 	gripMoveAnimationDirection_.reset();
 	gripInputReady_ = true;
 	gripWarnReady_ = true;
 	gripMoveInputReady_ = true;
+	previousState_ = PlayerState::Idle;
+	moveSoundPlaying_ = false;
 	inputEnabled_ = true;
 }
 
@@ -113,10 +117,16 @@ void Player::prev_update() {
 	if (!gripMoveInterpolation_ && blockMovementJudge_ && context_.worldInstance && !context_.grippedBlockIndex) {
 		context_.gripTargetIndex = blockMovementJudge_->find_grip_target(
 			context_.worldInstance->world_position(), context_.direction);
-		// 塞がれた面に向かって Grip を押したら、その面の cross で拒否を知らせる(押しっぱなしでは 1 回だけ)
-		if (gripWarnReady_ && context_.input.gripPressed && !context_.gripTargetIndex &&
-			blockMovementJudge_->warn_blocked_grip(context_.worldInstance->world_position(), context_.direction)) {
+		// 掴めない(前に無い / 落下中 / 塞がれた面)のに Grip を押したら音で知らせ、塞がれた面ならその面の cross も出す(押しっぱなしでは 1 回だけ)
+		if (gripWarnReady_ && context_.input.gripPressed &&
+			(!context_.gripTargetIndex || !context_.isGrounded)) {
 			gripWarnReady_ = false;
+			if (!context_.gripTargetIndex) {
+				blockMovementJudge_->warn_blocked_grip(context_.worldInstance->world_position(), context_.direction);
+			}
+			if (sound_) {
+				sound_->restart("cantGrab.wav");
+			}
 		}
 	}
 	if (gripMoveInterpolation_) {
@@ -126,6 +136,7 @@ void Player::prev_update() {
 		stateManager_.update(context_);
 		update_gripped_block_movement();
 	}
+	update_state_sound();
 	update_animation();
 	// Gripのグリッド移動中は、補間位置が重力やブロック衝突で上書きされないようにする。
 	if (!gripMoveInterpolation_) {
@@ -253,6 +264,10 @@ void Player::set_block_movement_judge(Reference<BlockMovementJudge> judge) noexc
 
 void Player::set_follow_camera(Reference<FollowCamera> followCamera) noexcept {
 	followCamera_ = followCamera;
+}
+
+void Player::set_sound(Reference<SoundPlayer> sound) noexcept {
+	sound_ = sound;
 }
 
 void Player::set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance) {
@@ -472,9 +487,15 @@ void Player::update_gripped_block_movement() {
 			gripInputReady_ = false;
 			context_.input.gripPressed = false;
 			stateManager_.release_grip(context_);
+			if (sound_) {
+				sound_->restart("clayConnect.wav");
+			}
 		}
 		else {
 			context_.grippedBlockIndex = deformation->clayIndex;
+			if (sound_) {
+				sound_->restart("stretch.wav");
+			}
 		}
 
 		// 粘土の伸縮操作をログに出力する
@@ -503,6 +524,9 @@ void Player::update_gripped_block_movement() {
 	// 移動できない場合はブロックを振動させて知らせる
 	if (!move) {
 		blockMovementJudge_->warn_block_stuck(*context_.grippedBlockIndex, context_.direction, *moveDirection);
+		if (sound_) {
+			sound_->restart("cantMove.wav");
+		}
 		return;
 	}
 
@@ -618,4 +642,41 @@ void Player::update_mesh_direction(bool snap) noexcept {
 		transform.get_quaternion(),
 		targetRotation,
 		interpolation).normalize());
+}
+
+//================================
+// state の切り替わりと接地中の移動に合わせて SE を鳴らす
+//================================
+void Player::update_state_sound() {
+	const PlayerState state = stateManager_.get_current_state();
+	if (state != previousState_) {
+		// Jump は接地中にトリガーした時だけ入るので、空中で押しても鳴らない
+		if (state == PlayerState::Jump && sound_) {
+			sound_->restart("jump.wav");
+		}
+		if (state == PlayerState::Grip) {
+			// 掴んだまま Undo で外れた直後に cantGrab が鳴らないよう、この押下は警告済み扱いにする
+			gripWarnReady_ = false;
+			if (sound_) {
+				sound_->restart("grab.wav");
+			}
+		}
+		previousState_ = state;
+	}
+
+	// 移動音は接地中の Move 状態だけループさせる(空中の横移動では鳴らさない)
+	const bool moving = state == PlayerState::Move && context_.isGrounded;
+	if (moving == moveSoundPlaying_) {
+		return;
+	}
+	moveSoundPlaying_ = moving;
+	if (!sound_) {
+		return;
+	}
+	if (moving) {
+		sound_->play("move.wav");
+	}
+	else {
+		sound_->stop("move.wav");
+	}
 }

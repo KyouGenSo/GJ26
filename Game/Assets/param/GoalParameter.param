@@ -46,8 +46,8 @@
 	"ConfettiCameraLocalOffset": {
 		"type": "Vector3",
 		"value": {
-			"X": 2.5,
-			"Y": -1.5,
+			"X": 0.8,
+			"Y": -0.4,
 			"Z": 2.0
 		}
 	}

@@ -2,61 +2,7 @@
 	"Clay": [
 		{
 			"BlockedFaces": [],
-			"Color": 1,
-			"Position": [
-				0,
-				0,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 1,
-			"Position": [
-				1,
-				0,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 1,
-			"Position": [
-				2,
-				0,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				4,
-				0,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				5,
-				0,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				6,
-				0,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 1,
+			"Color": 3,
 			"Position": [
 				0,
 				0,
@@ -65,61 +11,37 @@
 		},
 		{
 			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				0,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"-Z"
+			],
 			"Color": 1,
-			"Position": [
-				1,
-				0,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 1,
-			"Position": [
-				2,
-				0,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				4,
-				0,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				5,
-				0,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				6,
-				0,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 1,
-			"Position": [
-				2,
-				0,
-				5
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
 			"Position": [
 				3,
 				0,
@@ -127,7 +49,9 @@
 			]
 		},
 		{
-			"BlockedFaces": [],
+			"BlockedFaces": [
+				"-Z"
+			],
 			"Color": 1,
 			"Position": [
 				4,
@@ -136,16 +60,20 @@
 			]
 		},
 		{
-			"BlockedFaces": [],
-			"Color": 2,
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 1,
 			"Position": [
-				2,
+				5,
 				0,
-				6
+				5
 			]
 		},
 		{
-			"BlockedFaces": [],
+			"BlockedFaces": [
+				"-X"
+			],
 			"Color": 1,
 			"Position": [
 				3,
@@ -155,7 +83,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 2,
+			"Color": 1,
 			"Position": [
 				4,
 				0,
@@ -166,115 +94,124 @@
 			"BlockedFaces": [],
 			"Color": 1,
 			"Position": [
+				5,
 				0,
-				1,
-				0
+				6
 			]
 		},
 		{
 			"BlockedFaces": [],
 			"Color": 1,
 			"Position": [
+				3,
 				1,
-				1,
-				0
+				5
 			]
 		},
 		{
 			"BlockedFaces": [],
 			"Color": 1,
-			"Position": [
-				2,
-				1,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
 			"Position": [
 				4,
 				1,
-				0
+				5
 			]
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 2,
+			"Color": 1,
 			"Position": [
 				5,
 				1,
-				0
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
-			"Position": [
-				6,
-				1,
-				0
+				5
 			]
 		},
 		{
 			"BlockedFaces": [],
 			"Color": 1,
 			"Position": [
-				0,
+				3,
 				1,
-				1
+				6
 			]
 		},
 		{
 			"BlockedFaces": [],
 			"Color": 1,
-			"Position": [
-				1,
-				1,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 1,
-			"Position": [
-				2,
-				1,
-				1
-			]
-		},
-		{
-			"BlockedFaces": [],
-			"Color": 2,
 			"Position": [
 				4,
 				1,
-				1
+				6
 			]
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 2,
+			"Color": 1,
 			"Position": [
 				5,
 				1,
-				1
+				6
 			]
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 2,
+			"Color": 1,
 			"Position": [
-				6,
-				1,
-				1
+				3,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				3,
+				2,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				4,
+				2,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				5,
+				2,
+				6
 			]
 		}
 	],
 	"PlayerSpawn": {
 		"Direction": "+Z",
 		"Position": [
-			3,
+			5,
 			0,
 			0
 		]
