@@ -136,6 +136,13 @@ void Player::prev_update() {
 		stateManager_.update(context_);
 		update_gripped_block_movement();
 	}
+	// 落下中のゴール条件オブジェクトの補間が終わった(着地した)フレームで 1 回だけ鳴らす
+	if (fallSoundPending_ && blockMovementJudge_ && !blockMovementJudge_->is_visual_interpolating()) {
+		fallSoundPending_ = false;
+		if (sound_) {
+			sound_->restart("objectFall.wav");
+		}
+	}
 	update_state_sound();
 	update_animation();
 	// Gripのグリッド移動中は、補間位置が重力やブロック衝突で上書きされないようにする。
@@ -340,6 +347,7 @@ bool Player::is_input_enabled() const noexcept {
 void Player::cancel_grip_move_interpolation() noexcept {
 	gripMoveInterpolation_.reset();
 	gripMoveAnimationDirection_.reset();
+	fallSoundPending_ = false;
 }
 
 //================================
@@ -544,6 +552,7 @@ void Player::update_gripped_block_movement() {
 		gripInputReady_ = false;
 		context_.input.gripPressed = false;
 		stateManager_.release_grip(context_);
+		fallSoundPending_ = true;
 	}
 	else {
 		context_.grippedBlockIndex = move->blockIndex;

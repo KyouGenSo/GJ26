@@ -43,10 +43,10 @@ constexpr std::array<const char*, 2> kConfettiParticleFiles{
 	"[[game]]/confettiEffect_rightBottom.particle",
 };
 /// インゲームで使う音。BGM と移動音はループ、戻る音はシーン遷移をまたいで鳴らす
-constexpr std::array<string_literal, 15> kSounds{
+constexpr std::array<string_literal, 16> kSounds{
 	"gameBgm.wav", "clearBgm.wav", "back.wav", "reset.wav", "undo.wav",
 	"move.wav", "jump.wav", "grab.wav", "cantGrab.wav",
-	"stretch.wav", "clayConnect.wav", "cantMove.wav", "objectMove.wav", "goalConnect.wav", "goal.wav",
+	"stretch.wav", "clayConnect.wav", "cantMove.wav", "objectMove.wav", "objectFall.wav", "goalConnect.wav", "goal.wav",
 };
 
 } // namespace
