@@ -33,6 +33,7 @@ const std::unordered_map<std::string_view, SoundSetting> kSettings{
 	{ "stretch.wav", { 0.7f, false } },
 	{ "clayConnect.wav", { 0.7f, false } },
 	{ "cantMove.wav", { 0.7f, false } },
+	{ "objectMove.wav", { 0.7f, false } },
 	{ "goalConnect.wav", { 0.7f, false } },
 	{ "goal.wav", { 0.7f, false } },
 };
