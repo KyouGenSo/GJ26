@@ -242,6 +242,24 @@ public:
 	void set_goal_visual_layer(u32 layer) noexcept { goalVisualLayer = layer; }
 
 	/// <summary>
+	/// 掴める対象の輪郭(反転ハル)の見た目。thickness は拡大率の増分(0.06 で 6% 大きい)
+	/// </summary>
+	struct HighlightStyle {
+		ColorRGB color{ 1.0f, 0.9f, 0.2f };
+		r32 thickness{ 0.075f };
+	};
+
+	/// <summary>
+	/// 指定セルの表示に輪郭を付ける(同時に 1 つ)。nullopt / 範囲外 / 空セルで消す。同じセルなら何もしない
+	/// </summary>
+	void set_highlight(const std::optional<MapChipIndex>& index);
+
+	/// <summary>
+	/// 輪郭の見た目を変える。表示中の輪郭にも即反映する
+	/// </summary>
+	void set_highlight_style(const HighlightStyle& style);
+
+	/// <summary>
 	/// 全表示モデルの親(ステージ中央に置いた空の WorldInstance)。build 前は null。子のローカル座標は中央基準
 	/// </summary>
 	Reference<szg::WorldInstance> root_mut() { return root; }
@@ -340,6 +358,13 @@ public:
 	static void AttachGlow(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual);
 
 	/// <summary>
+	/// <para>掴める対象の輪郭として、面の向きを反転した少し大きいメッシュ(X_outline.obj)を visual の子に付ける。親の destroy_self で一緒に消える</para>
+	/// <para>バックフェースカリングで奥側の面だけが描かれ、手前の本体に隠されて縁だけが残る</para>
+	/// </summary>
+	/// <returns>付けた輪郭。visual のメッシュに対応する輪郭メッシュが無ければ null</returns>
+	static Reference<szg::StaticMeshInstance> AttachOutline(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const HighlightStyle& style);
+
+	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
 	/// <para>つながった粘土も一緒に動くので、粘土の移動先が塞がっていれば false</para>
 	/// </summary>
@@ -418,6 +443,11 @@ public:
 	i32 height() const { return sizeY; }
 	i32 depth() const { return sizeZ; }
 
+	/// <summary>
+	/// root と子の表示モデルをまとめて破棄する(chips は残るので load し直せる)
+	/// </summary>
+	void destroy_root();
+
 private:
 	bool is_inside(i32 x, i32 y, i32 z) const;
 	i32 flat_index(i32 x, i32 y, i32 z) const;
@@ -425,6 +455,7 @@ private:
 	std::optional<i32> shifted(i32 flat, const MapChipIndex& delta) const; // flat を delta だけずらしたセル(範囲外は nullopt)
 	u8 clay_stretch_face(i32 flat) const; // 伸ばして出た粘土がコアから伸びた方向(ClayFace のビット。コア・粘土以外は None)
 	bool has_connected_clay(i32 piece) const; // piece(ゴール条件オブジェクトの下段)につながった粘土が 1 つでもあるか
+	void set_highlight_flat(std::optional<i32> flat); // set_highlight の本体(flat_index 版)
 	std::vector<i32> moving_cells(const MapChipIndex& from, const MapChipIndex& to) const; // ピースと、つながった粘土の全セル(動かせない時は空)
 	std::vector<i32> relocate_cells(const std::vector<i32>& cells, const MapChipIndex& delta); // cells を delta だけずらして置き直し、移動後の flat 一覧を返す(表示も更新)
 	struct VisualMove {
@@ -441,7 +472,6 @@ private:
 	void end_warning(WarningEffect& warning); // 色と位置を戻す
 	void end_warnings(); // 全演出を戻して消す
 	void refresh_visual(i32 flat);
-	void destroy_root(); // root と子の表示モデルをまとめて破棄
 
 private:
 	i32 sizeX{ 0 };
@@ -453,6 +483,9 @@ private:
 	std::vector<u8> clayBlockedFaces; // chips と同じ添字。粘土の元セルにだけ意味がある ClayFace のビット(腕・他は None)
 	std::vector<u8> clayColor; // chips と同じ添字。粘土の色番号(ClayColor の添字)、他は 0
 	u32 goalVisualLayer{ 0 };
+	std::optional<i32> highlightFlat; // 輪郭を付けるセル。表示が作り直されても refresh_visual が付け直す
+	Reference<szg::StaticMeshInstance> highlight; // highlightFlat の表示の子。親が消えるときは refresh_visual / destroy_root で捨てる
+	HighlightStyle highlightStyle;
 	std::optional<PlayerSpawnRecord> playerSpawn;
 	std::vector<Reference<szg::StaticMeshInstance>> visuals; // chips と同じ添字、Empty は null
 	struct VisualInterpolation {

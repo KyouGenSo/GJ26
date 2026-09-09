@@ -340,13 +340,53 @@
 				"CombinedTexture": 10
 			},
 			"Type": 1
+		},
+		{
+			"Data": {
+				"BottomRight": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"CameraId": 0,
+				"ClearDepthStencil": true,
+				"GBufferSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Height": 1080.0,
+				"LayerIndex": 0,
+				"Left": 0.0,
+				"MaxDepth": 1.0,
+				"MinDepth": 0.0,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Top": 0.0,
+				"TopLeft": {
+					"X": 0.0,
+					"Y": 0.0
+				},
+				"Width": 1920.0,
+				"WorldIndex": 1
+			},
+			"Debug": {
+				"Position": {
+					"X": 2600.0,
+					"Y": 350.0
+				}
+			},
+			"Links": {
+				"Base": 9
+			},
+			"Type": 0
 		}
 	],
 	"ResultNode": {
-		"Connect": 12,
+		"Connect": 11,
 		"Debug": {
 			"Position": {
-				"X": 2600.0,
+				"X": 2900.0,
 				"Y": 350.0
 			}
 		}

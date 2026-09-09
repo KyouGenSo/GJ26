@@ -13,6 +13,9 @@
     <Filter Include="Scripts\Instance\FollowCamera">
       <UniqueIdentifier>{84ECBE47-1754-4D45-AC2C-63BD666CFE9F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\Instance\Skydome">
+      <UniqueIdentifier>{32076932-F5C1-4E61-8772-399BF9A69671}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Scripts\Instance\Player">
       <UniqueIdentifier>{7D0AC4BF-9440-4EC9-AFD6-9F403FF5BF14}</UniqueIdentifier>
     </Filter>
@@ -44,6 +47,9 @@
   <ItemGroup>
     <ClCompile Include="Scripts\Instance\FollowCamera\FollowCamera.cpp">
       <Filter>Scripts\Instance\FollowCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Scripts\Instance\Skydome\Skydome.cpp">
+      <Filter>Scripts\Instance\Skydome</Filter>
     </ClCompile>
     <ClCompile Include="Scripts\Instance\Player\Player.cpp">
       <Filter>Scripts\Instance\Player</Filter>
@@ -138,6 +144,9 @@
   <ItemGroup>
     <ClInclude Include="Scripts\Instance\FollowCamera\FollowCamera.h">
       <Filter>Scripts\Instance\FollowCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripts\Instance\Skydome\Skydome.h">
+      <Filter>Scripts\Instance\Skydome</Filter>
     </ClInclude>
     <ClInclude Include="Scripts\InputMapper.h">
       <Filter>Scripts</Filter>

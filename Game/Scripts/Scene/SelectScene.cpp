@@ -9,6 +9,7 @@
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
+#include "Scripts/Instance/Skydome/Skydome.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/ScriptStageSelect/StageSelectScript.h"
 
@@ -28,6 +29,7 @@ void SelectScene::custom_setup() {
 	}
 
 	szg::WorldRoot& worldRoot = world->world_root_mut();
+	worldRoot.instantiate<Skydome>(nullptr);
 	Reference<szg::DirectionalLightInstance> light =
 		worldRoot.instantiate<szg::DirectionalLightInstance>(nullptr);
 	light->light_data_mut().direction = Vector3{ 0.32f, -0.80f, 0.48f };

@@ -1,0 +1,17 @@
+{
+	"Animation": [],
+	"Audio": [],
+	"Font": [],
+	"Json": [],
+	"Mesh": [
+		".\\Game\\Assets\\Models\\skydome\\skydome.obj",
+		".\\Game\\Assets\\Models\\title\\title.obj"
+	],
+	"Param": [],
+	"Particle": [],
+	"Shader": [],
+	"Skeleton": [],
+	"Texture": [
+		".\\Game\\Assets\\textures\\ui\\titleA.png"
+	]
+}

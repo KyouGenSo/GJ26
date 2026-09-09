@@ -9,6 +9,7 @@
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
 #include <Engine/Module/World/Particle/EmitterInstance.h>
+#include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/SkinningMeshInstance.h>
 #include <Engine/Runtime/Clock/WorldClock.h>
 #include <Engine/Runtime/Particle/ParticlePool.h>
@@ -126,6 +127,28 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgWarning("GamePlayScript: ClayGlow bloom not found.");
 	}
 
+	resetGaugeFill_ = szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>("RuntimeInstance", "ResetGaugeFill").value_or(nullptr);
+	if (resetGaugeFill_) {
+		resetGaugeFullWidth_ = resetGaugeFill_->data_imm().size.x;
+	}
+	else {
+		szgWarning("GamePlayScript: ResetGaugeFill runtime instance not found.");
+	}
+
+	// 掴める対象の輪郭の色と太さ
+	{
+		szg::JsonAsset parameter{ "[[game]]/GripHighlight.param" };
+		const nlohmann::json& json = parameter.cget();
+		const auto readR32 = [&json](const char* name, r32 fallback) {
+			return json.value(name, nlohmann::json::object()).value("value", fallback);
+		};
+		gripHighlight_.color.red = readR32("ColorR", gripHighlight_.color.red);
+		gripHighlight_.color.green = readR32("ColorG", gripHighlight_.color.green);
+		gripHighlight_.color.blue = readR32("ColorB", gripHighlight_.color.blue);
+		gripHighlight_.thickness = readR32("Thickness", gripHighlight_.thickness);
+		mapTest_->field_mut().set_highlight_style(gripHighlight_);
+	}
+
 	isSetup_ = true;
 }
 
@@ -146,6 +169,7 @@ void GamePlayScript::finalize() {
 	confettiSettings_.reset();
 	isSetup_ = false;
 	clayGlow_.reset();
+	resetGaugeFill_.reset();
 }
 
 void GamePlayScript::prev_update() {
@@ -177,12 +201,28 @@ void GamePlayScript::prev_update() {
 		mapTest_->reload();
 	}
 
+	// Y 長押し中はリセットゲージを左から伸ばす(離すと 0 に戻る)
+	if (resetGaugeFill_) {
+		const r32 ratio = std::clamp(padInput_.press_timer(szg::PadID::Y) / kResetHoldDurationSeconds, 0.0f, 1.0f);
+		resetGaugeFill_->data_mut().size.x = resetGaugeFullWidth_ * ratio;
+		resetGaugeFill_->material_mut().uvTransform.set_scale(Vector2{ ratio, 1.0f });
+	}
+
 	inGameScriptManager_.prev_update();
 
 #ifdef DEBUG_FEATURES_ENABLE
 	if (clayGlow_) {
 		ImGui::Begin("ClayGlow");
 		ImGui::DragFloat("Weight", &clayGlow_->weight, 0.01f, 0.0f, 2.0f);
+		ImGui::End();
+	}
+	{
+		ImGui::Begin("GripHighlight");
+		bool changed = ImGui::ColorEdit3("Color", &gripHighlight_.color.red);
+		changed |= ImGui::DragFloat("Thickness", &gripHighlight_.thickness, 0.005f, 0.0f, 0.5f);
+		if (changed) {
+			mapTest_->field_mut().set_highlight_style(gripHighlight_);
+		}
 		ImGui::End();
 	}
 #endif // DEBUG_FEATURES_ENABLE
@@ -197,6 +237,14 @@ void GamePlayScript::post_update() {
 
 	inGameScriptManager_.post_update();
 
+	// 目の前の掴める対象(Grip 中は掴んでいるブロック)に輪郭を出す
+	if (player_) {
+		const std::optional<MapChipIndex>& gripped = player_->get_gripped_block_index();
+		mapTest_->field_mut().set_highlight(gripped ? gripped : player_->get_grip_target_index());
+	}
+
+	if (!clearCameraEffectStarted_ && goalManager_ && goalManager_->is_cleared() &&
+		followCamera_ && player_) {
 	if (!clearSequenceStarted_ && goalManager_ && goalManager_->is_cleared() && player_) {
 		clearSequenceStarted_ = true;
 		player_->set_input_enabled(false);

@@ -10,9 +10,12 @@
 #include <Engine/Runtime/SceneScript/SceneScriptManager.h>
 #include <Library/Utility/Template/Reference.h>
 
+#include "Scripts/MapChip/MapChipField.h"
+
 namespace szg {
 class EmitterInstance;
 class StringRectInstance;
+class Rect3d;
 class WorldRoot;
 }
 
@@ -70,6 +73,10 @@ private:
 	std::optional<szg::EmitterInstanceSettings> confettiSettings_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
 	Reference<szg::BloomPipeline::Data> clayGlow_;
+	/// リセットゲージの塗り(UI.json "ResetGaugeFill")。Y 長押し時間に応じて左から伸ばす
+	Reference<szg::Rect3d> resetGaugeFill_;
+	/// 掴める対象の輪郭の見た目(GripHighlight.param)
+	MapChipField::HighlightStyle gripHighlight_;
 	szg::InputHandler<szg::KeyID> keyInput_;
 	szg::InputHandler<szg::PadID> padInput_;
 
@@ -87,6 +94,8 @@ private:
 	r32 clearCameraElevationDegrees_{ 38.0f };
 	r32 clearCameraTargetHeight_{ 0.8f };
 	r32 clearCameraBounceStrength_{ 1.1f };
+	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
+	r32 resetGaugeFullWidth_{ 0.0f };
 	r32 confettiHorizontalOffset_{ 2.5f };
 	r32 confettiVerticalOffset_{ 0.8f };
 	r32 clearTextStartX_{ -14.0f };

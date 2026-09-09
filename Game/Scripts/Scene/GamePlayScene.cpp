@@ -5,6 +5,7 @@
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
 
+#include "Scripts/Instance/Skydome/Skydome.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/ScriptGamePlay/GamePlayScript.h"
 
@@ -29,6 +30,8 @@ void GamePlayScene::custom_setup() {
 		szgError("GamePlay: world 0 not found.");
 		return;
 	}
+
+	world->world_root_mut().instantiate<Skydome>(nullptr);
 
 	std::unique_ptr<GamePlayScript> gamePlayScript = eps::CreateUnique<GamePlayScript>();
 	gamePlayScript->setup(world->world_root_mut());

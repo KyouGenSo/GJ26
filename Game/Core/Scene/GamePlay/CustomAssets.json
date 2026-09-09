@@ -1,0 +1,20 @@
+{
+	"Animation": [],
+	"Audio": [],
+	"Font": [],
+	"Json": [],
+	"Mesh": [
+		".\\Game\\Assets\\Models\\skydome\\skydome.obj"
+	],
+	"Param": [],
+	"Particle": [],
+	"Shader": [],
+	"Skeleton": [],
+	"Texture": [
+		".\\Game\\Assets\\textures\\ui\\toSelect.png",
+		".\\Game\\Assets\\textures\\ui\\ui.png",
+		".\\Game\\Assets\\textures\\ui\\ui2.png",
+		".\\Game\\Assets\\textures\\ui\\gageWhite.png",
+		".\\Game\\Assets\\textures\\ui\\gageBrown.png"
+	]
+}
