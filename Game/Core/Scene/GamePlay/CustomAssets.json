@@ -1,5 +1,14 @@
 {
-	"Animation": [],
+	"Animation": [
+		".\\Game\\Assets\\Models\\player\\playerStand.gltf",
+		".\\Game\\Assets\\Models\\player\\playerWalk.gltf",
+		".\\Game\\Assets\\Models\\player\\playerJump.gltf",
+		".\\Game\\Assets\\Models\\player\\playerGrab.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPush.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPull.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPush_left.gltf",
+		".\\Game\\Assets\\Models\\player\\playerPush_right.gltf"
+	],
 	"Audio": [],
 	"Font": [],
 	"Json": [],
@@ -11,6 +20,8 @@
 	"Shader": [],
 	"Skeleton": [],
 	"Texture": [
+		".\\Game\\Assets\\textures\\Cross.png",
+		".\\Game\\Assets\\textures\\texture_Star_512px (1).png",
 		".\\Game\\Assets\\textures\\ui\\toSelect.png",
 		".\\Game\\Assets\\textures\\ui\\ui.png",
 		".\\Game\\Assets\\textures\\ui\\ui2.png",

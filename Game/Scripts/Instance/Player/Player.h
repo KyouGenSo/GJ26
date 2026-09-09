@@ -75,6 +75,8 @@ public:
 	bool can_move_gripped_block(BlockMoveDirection direction) const noexcept;
 	/// Grip中の1マス移動補間を破棄する（Undo・ステージ再読込用）
 	void cancel_grip_move_interpolation() noexcept;
+	/// ゲームプレイ入力が有効か
+	bool is_input_enabled() const noexcept;
 
 public:
 
@@ -102,6 +104,8 @@ public:
 	void set_mesh_instance(Reference<szg::SkinningMeshInstance> meshInstance);
 	/// 操作に合わせて鳴らす SE(無ければ無音)
 	void set_sound(Reference<SoundPlayer> sound) noexcept;
+	/// 移動・ジャンプ・Grip・カメラ回転入力の有効/無効を切り替える
+	void set_input_enabled(bool enabled) noexcept;
 
 private:
 	struct AnimationSetting {
@@ -151,6 +155,7 @@ private:
 	bool gripMoveInputReady_{ true };
 	PlayerState previousState_{ PlayerState::Idle }; // state の切り替わりで SE を鳴らすための前フレームの state
 	bool moveSoundPlaying_{ false };
+	bool inputEnabled_{ true };
 	float meshTurnSpeed_{ 12.0f };
 
 	PlayerInput playerInput_;

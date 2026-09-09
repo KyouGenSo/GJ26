@@ -332,8 +332,85 @@
 			"Name": "Ground",
 			"Type": 2000,
 			"Use runtime": true
+		},
+		{
+			"Children": [],
+			"Local transform": {
+				"Rotation": {
+					"W": 1.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 0.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": 0.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "ClearUICamera",
+			"Projection": {
+				"Bottom": -5.400000095367432,
+				"FarClip": 10.0,
+				"Left": -9.600000381469727,
+				"NearClip": 0.0,
+				"Right": 9.600000381469727,
+				"Top": 5.400000095367432,
+				"Type": 1
+			},
+			"Type": 3000,
+			"Use runtime": false
+		},
+		{
+			"BlendMode": 1,
+			"Children": [],
+			"Color": {
+				"A": 1.0,
+				"B": 0.25,
+				"G": 0.8999999761581421,
+				"R": 1.0
+			},
+			"Font": "UDEVGothic35HS-Regular.mtsdf",
+			"IsDraw": false,
+			"Layer": 3,
+			"Local transform": {
+				"Rotation": {
+					"W": 0.0,
+					"XYZ": {
+						"X": 0.0,
+						"Y": 1.0,
+						"Z": 0.0
+					}
+				},
+				"Scale": {
+					"X": 1.0,
+					"Y": 1.0,
+					"Z": 1.0
+				},
+				"Translate": {
+					"X": -14.0,
+					"Y": 0.0,
+					"Z": 0.0
+				}
+			},
+			"Name": "StageClearText",
+			"Pivot": {
+				"X": 0.5,
+				"Y": 0.5
+			},
+			"Size": 1.5,
+			"Text": "STAGE CLEAR",
+			"Type": 2003,
+			"Use runtime": true
 		}
 	],
 	"Name": "PlayerDevWorld",
-	"NumLayer": 3
+	"NumLayer": 4
 }

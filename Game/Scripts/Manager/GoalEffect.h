@@ -39,6 +39,19 @@ public:
 	/// </summary>
 	void update();
 
+	/// クリア時にGoal本体を上空へ上げ、その後プレイヤーの頭上へ降ろす
+	bool start_clear_effect(const Vector3& playerWorldPosition);
+	/// クリア時のGoal移動パラメータを設定する
+	void set_clear_effect_parameters(
+		const Vector3& finalPlayerOffset,
+		r32 riseHeight,
+		r32 riseDuration,
+		r32 fallDuration) noexcept;
+	/// クリア移動を解除し、Goalをステージ上の基準位置へ戻す
+	void stop_clear_effect();
+	/// Goalがプレイヤーの頭上へ到着済みか
+	bool is_clear_effect_finished() const noexcept;
+
 private:
 	void setup_json_asset();
 	void load_particle_settings();
@@ -47,6 +60,15 @@ private:
 	void sync_emitter_transforms();
 	void apply_active_state(bool active);
 	void restore_visual_transform();
+	Vector3 to_goal_parent_local(const Vector3& worldPosition) const;
+
+	struct ClearMotion {
+		Vector3 startPosition{ CVector3::ZERO };
+		Vector3 peakPosition{ CVector3::ZERO };
+		Vector3 destinationPosition{ CVector3::ZERO };
+		r32 elapsed{ 0.0f };
+		bool finished{ false };
+	};
 
 private:
 	Reference<MapChipField> field;
@@ -65,5 +87,10 @@ private:
 	r32 floatPeriod{ 1.5f };
 	r32 rotationSpeedDegrees{ 45.0f };
 	r32 stateTransitionDuration{ 0.4f };
+	r32 clearRiseHeight{ 3.0f };
+	r32 clearRiseDuration{ 0.55f };
+	r32 clearFallDuration{ 0.75f };
+	Vector3 clearFinalPlayerOffset{ 0.0f, 1.8f, 0.0f };
+	std::optional<ClearMotion> clearMotion;
 	bool isActive{ false };
 };

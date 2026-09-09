@@ -22,6 +22,7 @@ void GamePlayScene::custom_load_asset() {
 	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/GaussianBlur.PS.hlsl");
 	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/MargeTexture4.PS.hlsl");
 	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/Bloom.PS.hlsl");
+	szg::TextureLibrary::RegisterLoadQue("./Game/Assets/Models/floor/floor.png");
 }
 
 void GamePlayScene::custom_setup() {

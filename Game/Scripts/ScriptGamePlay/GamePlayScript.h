@@ -1,15 +1,22 @@
 #pragma once
 
+#include <array>
+#include <optional>
+
+#include <Engine/Runtime/Particle/EmitterSettings.h>
 #include <Engine/Module/Render/RenderPipeline/Posteffect/Bloom/BloomPipeline.h>
 #include <Engine/Runtime/Input/InputHandler.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Engine/Runtime/SceneScript/SceneScriptManager.h>
+#include <Library/Math/Vector3.h>
 #include <Library/Utility/Template/Reference.h>
 
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Manager/SoundPlayer.h"
 
 namespace szg {
+class EmitterInstance;
+class StringRectInstance;
 class Rect3d;
 class WorldRoot;
 }
@@ -50,6 +57,14 @@ public:
 
 private:
 	void setup_json_asset();
+	void setup_clear_presentation();
+	void create_confetti_emitters();
+	void destroy_confetti_emitters();
+	void start_confetti_effect();
+	void start_clear_ui();
+	void update_clear_ui();
+	void set_gameplay_ui_visible(bool visible);
+	void reset_clear_sequence();
 
 	/// BGM / SE。Player と UndoManager が参照するので inGameScriptManager_ より先に宣言して後に破棄する
 	SoundPlayer sound_;
@@ -63,6 +78,11 @@ private:
 	Reference<FollowCamera> followCamera_;
 	Reference<GoalManager> goalManager_;
 	Reference<UndoManager> undoManager_;
+	Reference<szg::WorldRoot> worldRoot_;
+	Reference<szg::StringRectInstance> clearText_;
+	std::array<Reference<szg::Rect3d>, 5> gameplayUi_;
+	std::array<Reference<szg::EmitterInstance>, 2> confettiEmitters_;
+	std::array<std::optional<szg::EmitterInstanceSettings>, 2> confettiSettings_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
 	Reference<szg::BloomPipeline::Data> clayGlow_;
 	/// リセットゲージの塗り(UI.json "ResetGaugeFill")。Y 長押し時間に応じて左から伸ばす
@@ -74,18 +94,30 @@ private:
 
 	bool isSetup_{ false };
 	bool sceneTransitionRequested_{ false };
+	bool clearSequenceStarted_{ false };
 	bool clearCameraEffectStarted_{ false };
+	bool goalClearEffectStarted_{ false };
+	bool clearPresentationStarted_{ false };
+	bool confettiEffectStarted_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
 	/// ゴール出現 / クリアの立ち上がりで SE を鳴らすための前フレームの状態
 	bool wasGoalOpen_{ false };
 	bool wasCleared_{ false };
 
+	Vector3 goalFinalPlayerOffset_{ 0.0f, 1.8f, 0.0f };
+	r32 goalClearRiseHeight_{ 3.0f };
+	r32 goalClearRiseDuration_{ 0.55f };
+	r32 goalClearFallDuration_{ 0.75f };
+	Vector3 clearCameraFinalOffset_{ 0.0f, 3.57f, -3.55f };
+	Vector3 clearCameraTargetOffset_{ 0.0f, 0.8f, 0.0f };
 	r32 clearCameraDuration_{ 1.4f };
-	r32 clearCameraDistance_{ 4.5f };
-	r32 clearCameraElevationDegrees_{ 38.0f };
-	r32 clearCameraTargetHeight_{ 0.8f };
 	r32 clearCameraBounceStrength_{ 1.1f };
 	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
 	r32 resetGaugeFullWidth_{ 0.0f };
+	Vector3 confettiLocalOffset_{ 2.5f, -1.5f, 2.0f };
+	r32 clearTextStartX_{ -14.0f };
+	r32 clearTextTargetX_{ 0.0f };
+	r32 clearTextSlideDuration_{ 0.65f };
+	r32 clearTextElapsed_{ 0.0f };
 };
