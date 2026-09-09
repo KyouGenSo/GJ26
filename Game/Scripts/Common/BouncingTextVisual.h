@@ -34,5 +34,5 @@ private:
 	static constexpr r32 kBounceHeightRatio = 0.3f; // fontSizeに対する跳ねる高さの比率
 	static constexpr r32 kBounceIntervalSeconds = 0.6f; // 1回跳ねる（接地→頂点→接地）のにかかる時間[秒]
 	static constexpr r32 kCharDelaySeconds = 0.05f; // 後方の文字ほどこの秒数ずつ遅れて跳ねる（波打つように見せる）
-	static constexpr r32 kDepth = -0.05f; // 他UI要素より手前に描画するためのZオフセット
+	static constexpr r32 kDepth = 1.0f; // 他UI要素より手前に描画するためのZオフセット
 };

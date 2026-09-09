@@ -35,6 +35,14 @@ public:
 	///       ローディングテキストは表示しない。
 	void StartFadeIn(r32 duration);
 
+	/// @brief シーン開始時のローディング演出を開始する。
+	///        全画面フェードオーバーレイを暗転状態にし、ローディングテキストを表示して、
+	///        szg::BackgroundLoader がアイドルに戻るまで待機する。
+	///        ロード完了後、自動的にフェードイン(duration 秒)を開始する。
+	/// @note 本メソッド呼び出し前に szg::BackgroundLoader にロードを積んでおくこと。
+	///       Begin()（フェードアウト）との併用は想定していない。
+	void StartLoadingThenFadeIn(r32 fadeInDuration);
+
 	void Update(r32 deltaSeconds);
 
 	/// @brief フェードインが進行中であればtrue（StartFadeIn 呼び出し後、到達前）
@@ -59,6 +67,7 @@ private:
 	BouncingTextVisual loadingText_;
 
 	r32 fadeDuration_ = 0.5f;
-	bool hasStarted_ = false;  // Begin() 呼び済みフラグ（フェードアウト用）
-	bool isFadingIn_ = false;  // StartFadeIn() 呼び済みフラグ
+	bool hasStarted_ = false;     // Begin() 呼び済みフラグ（フェードアウト用）
+	bool isFadingIn_ = false;     // StartFadeIn() 呼び済みフラグ
+	bool isLoadingPhase_ = false; // StartLoadingThenFadeIn() 呼び済みフラグ
 };

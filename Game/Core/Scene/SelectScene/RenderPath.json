@@ -77,6 +77,46 @@
 				"Base": 0
 			},
 			"Type": 0
+		},
+		{
+			"Data": {
+				"BottomRight": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"CameraId": 0,
+				"ClearDepthStencil": false,
+				"GBufferSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Height": 1080.0,
+				"LayerIndex": 1,
+				"Left": 0.0,
+				"MaxDepth": 1.0,
+				"MinDepth": 0.0,
+				"OutputSize": {
+					"X": 1920.0,
+					"Y": 1080.0
+				},
+				"Top": 0.0,
+				"TopLeft": {
+					"X": 0.0,
+					"Y": 0.0
+				},
+				"Width": 1920.0,
+				"WorldIndex": 1
+			},
+			"Debug": {
+				"Position": {
+					"X": 580.0,
+					"Y": 250.0
+				}
+			},
+			"Links": {
+				"Base": 1
+			},
+			"Type": 0
 		}
 	],
 	"ResultNode": {

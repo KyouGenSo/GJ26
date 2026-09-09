@@ -95,7 +95,7 @@
 			"Type": 3000,
 			"Use runtime": false
 		}
-],
+	],
 	"Name": "UI",
 	"NumLayer": 2
 }

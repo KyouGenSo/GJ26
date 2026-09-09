@@ -20,6 +20,8 @@ void LoadingTransitionController::Begin() {
 	hasStarted_ = true;
 	// フェードイン途中で Begin() が呼ばれた場合に備え、フェードイン状態を解除する
 	isFadingIn_ = false;
+	// ローディング中の Begin は想定外だが、状態矛盾を残さないよう明示的に解除しておく
+	isLoadingPhase_ = false;
 
 	fadeOverlay_.FadeTo(1.0f, fadeDuration_);
 	loadingText_.SetVisible(true);
@@ -37,6 +39,19 @@ void LoadingTransitionController::StartFadeIn(r32 duration) {
 	fadeOverlay_.FadeTo(0.0f, duration);
 }
 
+void LoadingTransitionController::StartLoadingThenFadeIn(r32 fadeInDuration) {
+	if (isFadingIn_ || hasStarted_ || isLoadingPhase_) {
+		// 多重発行防止
+		return;
+	}
+	isLoadingPhase_ = true;
+	fadeDuration_ = fadeInDuration;
+
+	// 暗転状態 + ローディングテキストで開始。BG ロード完了は Update 内で検知する
+	fadeOverlay_.SetAlphaImmediate(1.0f);
+	loadingText_.SetVisible(true);
+}
+
 void LoadingTransitionController::Update(r32 deltaSeconds) {
 	fadeOverlay_.Update(deltaSeconds);
 	loadingText_.Update(deltaSeconds);
@@ -45,13 +60,29 @@ void LoadingTransitionController::Update(r32 deltaSeconds) {
 	if (isFadingIn_ && !fadeOverlay_.IsFading()) {
 		isFadingIn_ = false;
 	}
+
+	// ローディングフェーズ: BG ロードが完了したら自動的にフェードインへ移行する
+	if (isLoadingPhase_ && !szg::BackgroundLoader::IsLoading()) {
+		isLoadingPhase_ = false;
+		isFadingIn_ = true;
+		fadeOverlay_.FadeTo(0.0f, fadeDuration_);
+		loadingText_.SetVisible(false);
+	}
 }
 
 bool LoadingTransitionController::IsFadingIn() const {
+	// ローディング中も「フェードイン相当」として扱い、入力抑止(IsFadingIn && progress<threshold)に使う
+	if (isLoadingPhase_) {
+		return !hasStarted_;
+	}
 	return fadeOverlay_.IsFading() && !hasStarted_;
 }
 
 r32 LoadingTransitionController::FadeInProgress() const {
+	// ローディング中は進捗 0 として扱う(入力抑止の閾値未満になる)
+	if (isLoadingPhase_) {
+		return 0.0f;
+	}
 	// フェードイン中でないなら完了とみなす
 	if (!isFadingIn_) {
 		return 1.0f;

@@ -8,6 +8,7 @@
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Skydome/Skydome.h"
 #include "Scripts/Manager/SoundPlayer.h"
+#include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 #include <Engine/Application/Logger.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
@@ -87,8 +88,10 @@ public:
 			config.textLayer = 1;      // フェードと同じレイヤー。Z ソートでフェード(Z=2.0)の奥にテキスト(Z=2.95)が来るので、暗転中もテキストは見える
 
 			loadingTransition_.Create(uiWorld, config);
-			// シーン開始時は暗転状態からフェードイン。StartFadeIn 完了まで A 入力は無視される
-			loadingTransition_.StartFadeIn(kFadeInDurationSeconds);
+			// シーン全体で使い回す視覚アセット(Cube / Clay / Goal / 全ステージの粘土ブロック OBJ)を
+			// まとめて BG ロードへ登録。完了までは暗転 + ローディングテキストで待機する
+			MapChipField::RegisterVisualAssets();
+			loadingTransition_.StartLoadingThenFadeIn(kFadeInDurationSeconds);
 		}
 		else {
 			szgWarning("Title: UI world not provided. Loading transition is disabled.");

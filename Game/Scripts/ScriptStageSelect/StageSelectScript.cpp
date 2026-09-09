@@ -36,6 +36,23 @@ constexpr r32 kHiddenPreviewScale = 0.001f;
 /// セレクトで使う音。BGM はループ、決定音と戻る音はシーン遷移をまたいで鳴らす
 constexpr std::array<string_literal, 4> kSounds{ "selectBgm.wav", "decision.wav", "choice.wav", "back.wav" };
 
+/// シーン開始時のフェードインにかける時間[秒]
+constexpr r32 kFadeInDurationSeconds = 0.8f;
+/// 決定後のフェードアウトにかける時間[秒]
+constexpr r32 kFadeOutDurationSeconds = 0.5f;
+/// SceneChange の interval 引数に渡す、フェードアウト完了を待つためのマージン[秒]
+constexpr r32 kSceneChangeIntervalSeconds = 5.0f;
+/// フェードイン途中での決定受付を開始する閾値(進捗[0,1]). 2 割未満なら入力を無視してフェードインを継続させる
+constexpr r32 kFadeInSkipProgressThreshold = 0.2f;
+/// UI カメラ(直交投影)の表示範囲。フェード用 Rect3d のサイズをこれに合わせて画面外にはみ出させる
+constexpr Vector2 kFadeOverlaySize{ 19.2f, 10.8f };
+/// フェード用 Rect3d を置く Z 座標。UI カメラの可視範囲 [0, 10] 内で StageNumber(Z=1.399) より手前に置く
+constexpr r32 kFadeOverlayDepth = 2.0f;
+/// "NOW LOADING" テキストの接地点 Z 座標。フェード(Z=2.0)より手前かつ FarClip(Z=10)以内に置く
+constexpr r32 kLoadingTextDepth = 2.95f;
+/// UI カメラスケールに合わせたロード演出テキストの文字サイズ
+constexpr r32 kLoadingTextFontSize = 1.0f;
+
 r32 NearestEquivalentDegrees(r32 targetDegrees, r32 referenceDegrees) {
 	return targetDegrees +
 		std::round((referenceDegrees - targetDegrees) / 360.0f) * 360.0f;
@@ -66,7 +83,8 @@ void StageSelectScript::setup(
 	Reference<szg::StringRectInstance> stageNumberText_,
 	Reference<szg::Rect3d> leftArrow_,
 	Reference<szg::Rect3d> rightArrow_,
-	Reference<szg::StaticMeshInstance> clearBadge_) {
+	Reference<szg::StaticMeshInstance> clearBadge_,
+	Reference<szg::WorldCluster> uiWorld_) {
 
 	worldRoot = worldRoot_;
 	previewCamera = previewCamera_;
@@ -91,6 +109,28 @@ void StageSelectScript::setup(
 	mouse.initialize({ szg::MouseID::Left }, szg::InputInitializeMode::Current);
 	sound.initialize(kSounds);
 	sound.play("selectBgm.wav");
+
+	// シーン開始時の暗転と、決定時のフェードアウトを構築する
+	if (uiWorld_) {
+		LoadingTransitionController::Config config{};
+		config.fadeSize = kFadeOverlaySize;
+		config.fadeLayer = 1;     // UI 既存要素(レイヤー 0)より手前
+		config.fadeDepth = kFadeOverlayDepth;
+		config.fadeDuration = kFadeOutDurationSeconds;
+		config.fadeColor = ColorRGB(0.0f, 0.0f, 0.0f);
+
+		config.loadingText = "NOW LOADING";
+		config.textBasePosition = Vector3{ 0.0f, 0.0f, kLoadingTextDepth };
+		config.textFontSize = kLoadingTextFontSize;
+		config.textLayer = 1;     // フェードと同じレイヤー。Z ソートでフェード(Z=2.0)の奥にテキスト(Z=2.95)が来るので、暗転中もテキストは見える
+
+		loadingTransition_.Create(uiWorld_, config);
+		// シーン開始時は暗転状態からフェードイン。StartFadeIn 完了(または閾値到達)まで入力を無視する
+		loadingTransition_.StartFadeIn(kFadeInDurationSeconds);
+	}
+	else {
+		szgWarning("StageSelect: UI world not provided. Loading transition is disabled.");
+	}
 
 	// ステージの総数を取得
 	stageCount = MapChipField::CountStages();
@@ -144,12 +184,28 @@ void StageSelectScript::prev_update() {
 	pad.update();
 	mouse.update();
 	const r32 deltaSeconds = szg::WorldClock::DeltaSeconds();
+	// LoadingTransitionController を駆動する。フェードイン/アウト両方を Update 1 つで進行させる
+	loadingTransition_.Update(deltaSeconds);
 	update_arrow_animation(deltaSeconds);
+
+	// フェードアウトが完了し BG ロードも終わっていれば、強制的にシーン遷移を発火させる
+	if (sceneTransitionRequested && loadingTransition_.IsReadyToProceed()) {
+		szg::SceneManager2::EndSceneChangeIntervalForce();
+		sceneTransitionRequested = false;
+		return;
+	}
+
+	// フェードイン中は進捗が閾値未満なら決定入力を受け付けない(序盤で誤遷移するのを防止)。
+	// 閾値以上なら Begin() が現在のアルファ値から暗転復帰を開始する
+	if (loadingTransition_.IsFadingIn() && loadingTransition_.FadeInProgress() < kFadeInSkipProgressThreshold) {
+		return;
+	}
 
 	if (!sceneTransitionRequested && pad.trigger(szg::PadID::Start)) {
 		sceneTransitionRequested = true;
 		SoundPlayer::PlayAcrossScene("back.wav");
-		szg::SceneManager2::SceneChange(SceneListGJ26::Title, 0.0f);
+		loadingTransition_.Begin();
+		szg::SceneManager2::SceneChange(SceneListGJ26::Title, kSceneChangeIntervalSeconds, false, false);
 		return;
 	}
 
@@ -161,7 +217,8 @@ void StageSelectScript::prev_update() {
 		sceneTransitionRequested = true;
 		SoundPlayer::PlayAcrossScene("decision.wav");
 		szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", i32{ selectedStage });
-		szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
+		loadingTransition_.Begin();
+		szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, kSceneChangeIntervalSeconds, false, false);
 		return;
 	}
 

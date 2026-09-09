@@ -7,6 +7,7 @@
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
 #include <Library/Utility/Template/Reference.h>
 
+#include "Scripts/Common/LoadingTransitionController.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Manager/SoundPlayer.h"
 
@@ -15,6 +16,7 @@ class CameraInstance;
 class Rect3d;
 class StaticMeshInstance;
 class StringRectInstance;
+class WorldCluster;
 class WorldRoot;
 } // namespace szg
 
@@ -40,13 +42,15 @@ public:
 	static std::string ClearedKey(i32 stageNumber);
 
 	/// <param name="clearBadge_">クリア済みステージで "STAGE N" の右に出すゴールメダル(UI ワールドの goal.obj)</param>
+	/// <param name="uiWorld_">フェード演出を配置する UI World Cluster (world_mut(1))。null の場合はフェードを無効化する</param>
 	void setup(
 		Reference<szg::WorldRoot> worldRoot_,
 		Reference<szg::CameraInstance> previewCamera_,
 		Reference<szg::StringRectInstance> stageNumberText_,
 		Reference<szg::Rect3d> leftArrow_,
 		Reference<szg::Rect3d> rightArrow_,
-		Reference<szg::StaticMeshInstance> clearBadge_);
+		Reference<szg::StaticMeshInstance> clearBadge_,
+		Reference<szg::WorldCluster> uiWorld_);
 	void prev_update() override;
 
 private:
@@ -207,4 +211,7 @@ private:
 	r32 clearBadgeScale = 0.5f;
 	// ゴールメダルの正面をカメラに向けるための追加回転(度)
 	r32 clearBadgeYawDegrees = 0.0f;
+
+	/// シーン開始時のフェードインと決定時のフェードアウトを管理する
+	LoadingTransitionController loadingTransition_;
 };

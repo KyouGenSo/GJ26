@@ -53,9 +53,10 @@ void SelectScene::custom_setup() {
 	background->setup(worldRoot, previewCamera.value_or(nullptr));
 	sceneScriptManager.register_script(std::move(background));
 
-	// クリア済みステージの印。UI ワールド(正射影カメラ)に置く
+	// UI ワールドはフェード演出とクリア済みメダルの表示に使う
+	Reference<szg::WorldCluster> uiWorld = world_mut(1);
 	Reference<szg::StaticMeshInstance> clearBadge;
-	if (Reference<szg::WorldCluster> uiWorld = world_mut(1)) {
+	if (uiWorld) {
 		clearBadge = uiWorld->world_root_mut().instantiate<szg::StaticMeshInstance>(nullptr, "goal.obj");
 	}
 	else {
@@ -69,6 +70,7 @@ void SelectScene::custom_setup() {
 		stageNumberText.value_or(nullptr),
 		leftArrow.value_or(nullptr),
 		rightArrow.value_or(nullptr),
-		clearBadge);
+		clearBadge,
+		uiWorld);
 	sceneScriptManager.register_script(std::move(script));
 }

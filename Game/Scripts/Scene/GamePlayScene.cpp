@@ -35,6 +35,7 @@ void GamePlayScene::custom_setup() {
 	world->world_root_mut().instantiate<Skydome>(nullptr);
 
 	std::unique_ptr<GamePlayScript> gamePlayScript = eps::CreateUnique<GamePlayScript>();
-	gamePlayScript->setup(world->world_root_mut());
+	// 第 2 引数の UI World (world_mut(1)) はフェード演出用。見つからなければフェード無効でセットアップされる
+	gamePlayScript->setup(world->world_root_mut(), world_mut(1));
 	sceneScriptManager.register_script(std::move(gamePlayScript));
 }
