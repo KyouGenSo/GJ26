@@ -12,6 +12,8 @@
 
 #include "StageEditorDocument.h"
 
+#include "ClayMeshOBJExporter.h"
+
 namespace {
 
 /// <summary>
@@ -110,6 +112,10 @@ void StageEditorWindow::draw() {
 	ImGui::Separator();
 	draw_stage_operations();
 	ImGui::Separator();
+	draw_blender_path();
+	ImGui::Separator();
+	draw_clay_export();
+	ImGui::Separator();
 	draw_new_stage();
 	ImGui::Separator();
 	draw_resize();
@@ -132,6 +138,73 @@ void StageEditorWindow::draw_undo_redo() {
 	ImGui::SameLine();
 	if (ImGui::Button("やり直し")) {
 		doc.redo();
+	}
+}
+
+void StageEditorWindow::draw_blender_path() {
+	StageEditorDocument& doc = StageEditorDocument::GetInstance();
+
+	ImGui::Text("Blender パス");
+
+	// 現在のキャッシュパスを表示（高速・IO なし）
+	const std::filesystem::path cached = doc.GetCachedBlenderPath();
+	if (cached.empty()) {
+		ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "未設定（再検出してください）");
+	}
+	else {
+		ImGui::TextWrapped("現在: %s", cached.string().c_str());
+	}
+
+	if (ImGui::Button("Blender パスを再検出")) {
+		const std::filesystem::path detected = doc.RedetectBlenderPath();
+		if (detected.empty()) {
+			szgWarning("StageEditor: Blender path re-detection failed");
+		}
+		else {
+			szgInformation("StageEditor: Blender path set to {}", detected.string().c_str());
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("コピー")) {
+		const std::filesystem::path current = doc.GetCachedBlenderPath();
+		if (!current.empty()) {
+			ImGui::SetClipboardText(current.string().c_str());
+		}
+	}
+}
+
+void StageEditorWindow::draw_clay_export() {
+	StageEditorDocument& doc = StageEditorDocument::GetInstance();
+
+	ImGui::Text("粘土メッシュ");
+
+	// 現在のステージ OBJ を再生成
+	if (ImGui::Button("現在のステージをエクスポート")) {
+		doc.GenerateClayMeshWithBlender();
+	}
+
+	// 全ステージ一括エクスポート（Blender プロセスは同期実行されるため UI はブロックされる）
+	const i32 stageCount = MapChipField::CountStages();
+	ImGui::SameLine();
+	ImGui::BeginDisabled(isExportingAll || stageCount == 0);
+	if (ImGui::Button("全ステージを一括エクスポート")) {
+		isExportingAll = true;
+		lastExportTotal = stageCount;
+		lastExportDone = 0;
+		const i32 done = doc.GenerateAllClayMeshesWithBlender();
+		lastExportDone = done;
+		isExportingAll = false;
+	}
+	ImGui::EndDisabled();
+
+	if (stageCount == 0) {
+		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "ステージがありません");
+	}
+	else if (isExportingAll) {
+		ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f), "処理中... 0 / %d", stageCount);
+	}
+	else if (lastExportTotal > 0) {
+		ImGui::TextColored(ImVec4(0.6f, 0.9f, 0.6f, 1.0f), "前回: %d / %d ステージ完了", lastExportDone, lastExportTotal);
 	}
 }
 
@@ -160,6 +233,12 @@ void StageEditorWindow::draw_stage_operations() {
 		}
 		if (ImGui::ListBox("ステージ一覧", &selectedStageIndex, items.data(), static_cast<i32>(items.size()), 4)) {
 			loadStageNumber = selectedStageIndex + 1;
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+				doc.load(loadStageNumber);
+				resizeWidth = doc.width();
+				resizeHeight = doc.height();
+				resizeDepth = doc.depth();
+			}
 		}
 	}
 	else {

@@ -21,6 +21,7 @@
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
 #include "Scripts/Manager/UndoManager.h"
+#include "Scripts/MapChip/ClayStretchMeshGenerator.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 #include "Scripts/ScriptStageSelect/StageSelectScript.h"
@@ -77,6 +78,8 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
+
+	ClayStretchMeshGenerator::GenerateAll();
 
 	setup_json_asset();
 	setup_confetti_effect();

@@ -16,6 +16,7 @@
 #include "Scripts/Instance/Player/Player.h"
 #include "Scripts/Manager/GoalManager.h"
 #include "Scripts/Manager/UndoManager.h"
+#include "Scripts/MapChip/ClayStretchMeshGenerator.h"
 #include "Scripts/MapChip/MapChipField.h"
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Player/Player.h"
@@ -37,6 +38,8 @@ void MapTestScene::custom_setup() {
 		return;
 	}
 	szg::WorldRoot& worldRoot = world->world_root_mut();
+
+	ClayStretchMeshGenerator::GenerateAll();
 
 	std::unique_ptr<MapTestScript> mapTest = eps::CreateUnique<MapTestScript>();
 	Reference<MapTestScript> mapTestRef = mapTest;

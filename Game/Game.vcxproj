@@ -30,6 +30,9 @@
     <ClCompile Include="Scripts\Instance\Player\PlayerPadInput.cpp" />
     <ClCompile Include="Scripts\Instance\Player\PlayerStateManager.cpp" />
     <ClCompile Include="Scripts\MapChip\BlockMovementJudge.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayMeshGenerator.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayStretchAnimator.cpp" />
+    <ClCompile Include="Scripts\MapChip\ClayStretchMeshGenerator.cpp" />
     <ClCompile Include="Scripts\main.cpp" />
     <ClCompile Include="Scripts\Scene\FactoryGJ26.cpp" />
     <ClCompile Include="Scripts\GJ26.cpp" />
@@ -39,6 +42,8 @@
     <ClCompile Include="Scripts\Manager\GoalEffect.cpp" />
     <ClCompile Include="Scripts\Manager\GoalManager.cpp" />
     <ClCompile Include="Scripts\Manager\UndoManager.cpp" />
+    <ClCompile Include="Scripts\Editor\BlenderPathResolver.cpp" />
+    <ClCompile Include="Scripts\Editor\ClayMeshOBJExporter.cpp" />
     <ClCompile Include="Scripts\Manager\SoundPlayer.cpp" />
     <ClCompile Include="Scripts\Editor\StageEditorDocument.cpp" />
     <ClCompile Include="Scripts\Editor\StageEditorWindow.cpp" />
@@ -70,6 +75,9 @@
     <ClInclude Include="Scripts\Instance\Player\State\IPlayerState.h" />
     <ClInclude Include="Scripts\Instance\Player\PlayerStateManager.h" />
     <ClInclude Include="Scripts\MapChip\BlockMovementJudge.h" />
+    <ClInclude Include="Scripts\MapChip\ClayMeshGenerator.h" />
+    <ClInclude Include="Scripts\MapChip\ClayStretchAnimator.h" />
+    <ClInclude Include="Scripts\MapChip\ClayStretchMeshGenerator.h" />
     <ClInclude Include="Scripts\Scene\FactoryGJ26.h" />
     <ClInclude Include="Scripts\GJ26.h" />
     <ClInclude Include="Scripts\MapChip\MapChipField.h" />
@@ -78,6 +86,8 @@
     <ClInclude Include="Scripts\Manager\GoalEffect.h" />
     <ClInclude Include="Scripts\Manager\GoalManager.h" />
     <ClInclude Include="Scripts\Manager\UndoManager.h" />
+    <ClInclude Include="Scripts\Editor\BlenderPathResolver.h" />
+    <ClInclude Include="Scripts\Editor\ClayMeshOBJExporter.h" />
     <ClInclude Include="Scripts\Manager\SoundPlayer.h" />
     <ClInclude Include="Scripts\Editor\StageEditorDocument.h" />
     <ClInclude Include="Scripts\Editor\StageEditorWindow.h" />
