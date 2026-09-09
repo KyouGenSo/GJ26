@@ -381,9 +381,7 @@ void MapChipField::build(szg::WorldRoot& worldRoot_) {
 		blockVisual->transform_mut().set_translate(localPosition);
 		const bool connected = clayPiece[originFlat] >= 0;
 		if (!blockVisual->get_materials().empty()) {
-			blockVisual->get_materials()[0].color = connected
-				? ColorRGB{ 0.30f, 0.05f, 0.00f }
-				: ColorRGB{ 0.55f, 0.35f, 0.20f };
+			blockVisual->get_materials()[0].color = CColorRGB::WHITE;
 		}
 		AttachFaceCrosses(*worldRoot, blockVisual, clayBlockedFaces[originFlat], 1.0f, 0.0f);
 		clayBlockVisuals[originFlat] = blockVisual;
