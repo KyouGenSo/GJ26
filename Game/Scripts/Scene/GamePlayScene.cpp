@@ -17,6 +17,7 @@ GamePlayScene::~GamePlayScene() noexcept = default;
 
 void GamePlayScene::custom_load_asset() {
 	MapChipField::RegisterVisualAssets();
+	GamePlayScript::RegisterAudioAssets();
 	// RenderPath.json のブルーム(レイヤー 1 をぼかして加算)が使うポストエフェクトシェーダー
 	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/GaussianBlur.PS.hlsl");
 	szg::ShaderLibrary::RegisterLoadQue("[[szg]]/PostEffect/MargeTexture4.PS.hlsl");

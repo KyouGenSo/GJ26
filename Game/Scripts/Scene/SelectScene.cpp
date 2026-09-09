@@ -19,6 +19,7 @@ SelectScene::SelectScene() noexcept {
 
 void SelectScene::custom_load_asset() {
 	MapChipField::RegisterVisualAssets();
+	StageSelectScript::RegisterAudioAssets();
 }
 
 void SelectScene::custom_setup() {

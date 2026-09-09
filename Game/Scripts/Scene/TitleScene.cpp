@@ -1,4 +1,5 @@
 #include "TitleScene.h"
+#include <array>
 #include <cmath>
 #include <numbers>
 #include <optional>
@@ -18,6 +19,7 @@
 #include <Library/Utility/Tools/SmartPointer.h>
 #include "Scripts/Instance/FollowCamera/FollowCamera.h"
 #include "Scripts/Instance/Skydome/Skydome.h"
+#include "Scripts/Manager/SoundPlayer.h"
 #include "Scripts/Scene/FactoryGJ26.h"
 
 namespace {
@@ -26,6 +28,8 @@ namespace {
 constexpr r32 kStartButtonFloatPeriodSeconds = 2.0f;
 /// A ボタン UI が基準位置から上下に動く最大距離
 constexpr r32 kStartButtonFloatAmplitude = 0.1f;
+/// タイトルで使う音。BGM と寝息はループ、決定音はシーン遷移をまたいで鳴らす
+constexpr std::array<string_literal, 3> kSounds{ "titleBgm.wav", "sleepingBreath.wav", "decision.wav" };
 
 /// <summary>
 /// タイトルの開始入力と A ボタン UI の浮遊演出
@@ -35,6 +39,9 @@ public:
 	TitleScript() {
 		pad_.initialize({ szg::PadID::A }, szg::InputInitializeMode::Current);
 		mouse_.initialize({ szg::MouseID::Left }, szg::InputInitializeMode::Current);
+		sound_.initialize(kSounds);
+		sound_.play("titleBgm.wav");
+		sound_.play("sleepingBreath.wav");
 	}
 	~TitleScript() override = default;
 
@@ -61,6 +68,7 @@ public:
 		}
 
 		transitionRequested_ = true;
+		SoundPlayer::PlayAcrossScene("decision.wav");
 		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
 	}
 
@@ -80,6 +88,7 @@ private:
 	szg::InputHandler<szg::PadID> pad_;
 	szg::InputHandler<szg::MouseID> mouse_;
 	bool transitionRequested_{ false };
+	SoundPlayer sound_;
 
 	Reference<szg::Rect3d> startButton_;
 	Vector3 startButtonBasePosition_{ CVector3::ZERO };
@@ -93,6 +102,7 @@ TitleScene::TitleScene() noexcept {
 }
 
 void TitleScene::custom_load_asset() {
+	SoundPlayer::RegisterLoadQue(kSounds);
 }
 
 void TitleScene::custom_setup() {

@@ -4,6 +4,7 @@
 #include <Engine/Runtime/Input/Input.h>
 
 #include "Scripts/Instance/Player/Player.h"
+#include "Scripts/Manager/SoundPlayer.h"
 
 namespace {
 
@@ -18,6 +19,10 @@ void UndoManager::setup(Reference<MapChipField> field_, Reference<Player> player
 	keys.initialize({ szg::KeyID::Z }, szg::InputInitializeMode::Current);
 	pad.initialize({ szg::PadID::LShoulder }, szg::InputInitializeMode::Current);
 	clear();
+}
+
+void UndoManager::set_sound(Reference<SoundPlayer> sound_) {
+	sound = sound_;
 }
 
 void UndoManager::prev_update() {
@@ -61,6 +66,9 @@ void UndoManager::undo() {
 	// restore で version が進むので、post_update で積み直さないよう揃える
 	lastVersion = field->version();
 	szgInformation("UndoManager: undo (remaining {})", history.size());
+	if (sound) {
+		sound->restart("undo.wav");
+	}
 }
 
 UndoManager::Snapshot UndoManager::capture() const {
