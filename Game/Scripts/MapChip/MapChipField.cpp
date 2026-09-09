@@ -624,7 +624,7 @@ bool MapChipField::stretch_clay(
 		const i32 piece = chips[target] == MapChipType::GoalPiece ? target : *shifted(target, MapChipIndex{ 0, -1, 0 });
 		const bool pieceWasConnected = has_connected_clay(piece);
 		cancel_visual_interpolation();
-		// 伸ばしたブロックと、粘土づたいに面で接している未接続の粘土を全部このピースにつなぐ(上下も含む 6 方向)
+		// 伸ばしたブロックと、同じ色の粘土づたいに面で接している未接続の粘土を全部このピースにつなぐ(上下も含む 6 方向)
 		constexpr std::array<MapChipIndex, 6> kNeighbors{ {
 			{ 1, 0, 0 }, { -1, 0, 0 }, { 0, 1, 0 }, { 0, -1, 0 }, { 0, 0, 1 }, { 0, 0, -1 },
 		} };
@@ -639,7 +639,7 @@ bool MapChipField::stretch_clay(
 			}
 			for (const MapChipIndex& direction : kNeighbors) {
 				const std::optional<i32> next = shifted(cell, direction);
-				if (next && chips[*next] == MapChipType::Clay && clayPiece[*next] == -1) {
+				if (next && chips[*next] == MapChipType::Clay && clayPiece[*next] == -1 && clayColor[*next] == clayColor[cell]) {
 					clayPiece[*next] = piece;
 					open.push_back(*next);
 				}
@@ -954,6 +954,24 @@ bool MapChipField::has_connected_clay(i32 piece) const {
 		}
 	}
 	return false;
+}
+
+bool MapChipField::moves_with_goal_piece(const MapChipIndex& piece, const MapChipIndex& cell) const {
+	if (!is_inside(piece.x, piece.y, piece.z) || !is_inside(cell.x, cell.y, cell.z)) {
+		return false;
+	}
+	const i32 pieceFlat = flat_index(piece.x, piece.y, piece.z);
+	const i32 cellFlat = flat_index(cell.x, cell.y, cell.z);
+	switch (chips[cellFlat]) {
+	case MapChipType::GoalPiece:
+		return cellFlat == pieceFlat;
+	case MapChipType::GoalPieceUpper:
+		return cell == MapChipIndex{ piece.x, piece.y + 1, piece.z };
+	case MapChipType::Clay:
+		return clayPiece[cellFlat] == pieceFlat;
+	default:
+		return false;
+	}
 }
 
 Reference<szg::StaticMeshInstance> MapChipField::AttachOutline(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const HighlightStyle& style) {

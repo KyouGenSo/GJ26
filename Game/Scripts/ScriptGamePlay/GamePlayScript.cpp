@@ -7,6 +7,7 @@
 
 #include <Engine/Application/Logger.h>
 #include <Engine/Assets/Json/JsonAsset.h>
+#include <Engine/Loader/EmitterInstanceLoader.h>
 #include <Engine/Module/World/Camera/CameraInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
 #include <Engine/Module/World/Particle/EmitterInstance.h>
@@ -26,10 +27,6 @@
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 
-#ifdef DEBUG_FEATURES_ENABLE
-#include <imgui.h>
-#endif // DEBUG_FEATURES_ENABLE
-
 namespace {
 
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
@@ -47,10 +44,10 @@ constexpr std::array<const char*, 2> kConfettiEmitterNames{
 	"ConfettiRightEmitter",
 };
 /// インゲームで使う音。BGM と移動音はループ、戻る音はシーン遷移をまたいで鳴らす
-constexpr std::array<string_literal, 15> kSounds{
+constexpr std::array<string_literal, 16> kSounds{
 	"gameBgm.wav", "clearBgm.wav", "back.wav", "reset.wav", "undo.wav",
 	"move.wav", "jump.wav", "grab.wav", "cantGrab.wav",
-	"stretch.wav", "clayConnect.wav", "cantMove.wav", "objectMove.wav", "goalConnect.wav", "goal.wav",
+	"stretch.wav", "clayConnect.wav", "cantMove.wav", "objectMove.wav", "objectFall.wav", "goalConnect.wav", "goal.wav",
 };
 
 } // namespace
@@ -68,6 +65,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 		szgError("GamePlayScript: WorldRoot not found.");
 		return;
 	}
+	worldRoot_ = worldRoot;
 	setup_json_asset();
 	setup_clear_presentation();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
@@ -256,23 +254,6 @@ void GamePlayScript::prev_update() {
 	}
 
 	inGameScriptManager_.prev_update();
-
-#ifdef DEBUG_FEATURES_ENABLE
-	if (clayGlow_) {
-		ImGui::Begin("ClayGlow");
-		ImGui::DragFloat("Weight", &clayGlow_->weight, 0.01f, 0.0f, 2.0f);
-		ImGui::End();
-	}
-	{
-		ImGui::Begin("GripHighlight");
-		bool changed = ImGui::ColorEdit3("Color", &gripHighlight_.color.red);
-		changed |= ImGui::DragFloat("Thickness", &gripHighlight_.thickness, 0.005f, 0.0f, 0.5f);
-		if (changed) {
-			mapTest_->field_mut().set_highlight_style(gripHighlight_);
-		}
-		ImGui::End();
-	}
-#endif // DEBUG_FEATURES_ENABLE
 
 	// ポーズなど、各要素の更新後に行うインゲーム全体処理をここへ追加する。
 }

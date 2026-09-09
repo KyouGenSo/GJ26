@@ -101,6 +101,9 @@ public:
 	/// 指定セルがゴール条件オブジェクトか
 	bool is_goal_piece(const MapChipIndex& index) const noexcept;
 
+	/// MapChipField の表示移動補間(押し・落下)が再生中か
+	bool is_visual_interpolating() const noexcept;
+
 	/// <summary>
 	/// <para>ワールド座標のAABB [min, max] と重なるセルに固体(粘土・ゴール条件オブジェクトの下段と上段)があるか</para>
 	/// <para>ステージのXZ範囲外は固体(見えない壁)。Yの範囲外はEmpty(上へは飛べる。下は地面が受ける)</para>

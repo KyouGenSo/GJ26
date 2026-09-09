@@ -4,14 +4,19 @@
 	"Font": [
 		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
 	],
-	"Json": [],
+	"Json": [
+		".\\Game\\Assets\\json\\GoalParameter.json"
+	],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\player\\playerClear.gltf",
 		".\\SyzygyEngine\\Assets\\Models\\ErrorObject\\ErrorObject.obj",
 		".\\Game\\Assets\\Models\\Cube.obj"
 	],
 	"Param": [],
-	"Particle": [],
+	"Particle": [
+		".\\Game\\Assets\\particle\\confettiEffect_leftBottom.particle",
+		".\\Game\\Assets\\particle\\confettiEffect_rightBottom.particle"
+	],
 	"Shader": [
 		"[[szg]]/PostEffect/Grayscale.PS.hlsl",
 		"[[szg]]/PostEffect/GaussianBlur.PS.hlsl",
