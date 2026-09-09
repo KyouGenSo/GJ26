@@ -160,11 +160,11 @@
 			"Children": [],
 			"Color": {
 				"A": 1.0,
-				"B": 1.0,
-				"G": 1.0,
-				"R": 1.0
+				"B": 0.047289494425058365,
+				"G": 0.06537077575922012,
+				"R": 0.20098036527633667
 			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
+			"Font": "oyatsupokke.mtsdf",
 			"IsDraw": true,
 			"Layer": 0,
 			"Local transform": {
@@ -192,52 +192,10 @@
 				"X": 0.5,
 				"Y": 0.5
 			},
-			"Size": 1.0,
+			"Size": 1.399999976158142,
 			"Text": "Stage1",
 			"Type": 2003,
 			"Use runtime": true
-		},
-		{
-			"BlendMode": 0,
-			"Children": [],
-			"Color": {
-				"A": 1.0,
-				"B": 1.0,
-				"G": 1.0,
-				"R": 1.0
-			},
-			"Font": "UDEVGothic35HS-Regular.mtsdf",
-			"IsDraw": true,
-			"Layer": 0,
-			"Local transform": {
-				"Rotation": {
-					"W": 0.00872658658772707,
-					"XYZ": {
-						"X": 0.0,
-						"Y": 0.9999619722366333,
-						"Z": 0.0
-					}
-				},
-				"Scale": {
-					"X": 1.0,
-					"Y": 1.0000189542770386,
-					"Z": 1.0
-				},
-				"Translate": {
-					"X": 0.0,
-					"Y": -2.9640142917633057,
-					"Z": 0.0
-				}
-			},
-			"Name": "StageSelectTitle",
-			"Pivot": {
-				"X": 0.5,
-				"Y": 0.5
-			},
-			"Size": 1.0,
-			"Text": "Stage Select",
-			"Type": 2003,
-			"Use runtime": false
 		}
 	],
 	"Name": "UI",

@@ -3,29 +3,26 @@
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
 	],
 	"Audio": [],
-	"Font": [
-		".\\Game\\Assets\\Font\\UDEVGothic35HS-Regular.mtsdf"
-	],
+	"Font": [],
 	"Json": [],
 	"Mesh": [
 		".\\Game\\Assets\\Models\\clay\\clay.obj",
 		".\\Game\\Assets\\Models\\desk\\desk.obj",
 		".\\Game\\Assets\\Models\\floor\\floor.obj",
 		".\\Game\\Assets\\Models\\scissors\\scissors.obj",
+		".\\Game\\Assets\\Models\\title\\title.obj",
 		".\\Game\\Assets\\Models\\drawingPaper2\\drawingPaper2.obj",
 		".\\Game\\Assets\\Models\\drawingPaper\\drawingPaper.obj",
-		".\\Game\\Assets\\Models\\drawingPaper3\\drawingPaper3.obj",
-		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
+		".\\Game\\Assets\\Models\\player\\playerTitle.gltf",
+		".\\Game\\Assets\\Models\\drawingPaper3\\drawingPaper3.obj"
 	],
 	"Param": [],
-	"Particle": [
-		".\\Game\\Assets\\particle\\zzz.particle"
-	],
+	"Particle": [],
 	"Shader": [],
 	"Skeleton": [
 		".\\Game\\Assets\\Models\\player\\playerTitle.gltf"
 	],
 	"Texture": [
-		".\\Game\\Assets\\textures\\z.png"
+		".\\Game\\Assets\\textures\\ui\\titleA.png"
 	]
 }
