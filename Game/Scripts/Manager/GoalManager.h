@@ -66,6 +66,7 @@ public:
 		const Vector3& playerDirection);
 	void set_clear_effect_parameters(
 		const Vector3& finalPlayerOffset,
+		const Vector3& finalScale,
 		r32 riseHeight,
 		r32 riseDuration,
 		r32 fallDuration) noexcept;

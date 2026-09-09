@@ -59,6 +59,7 @@ private:
 	void stop_confetti_effect();
 	void set_gameplay_ui_visible(bool visible);
 	void reset_clear_sequence();
+	void advance_to_next_stage();
 
 	/// BGM / SE。Player と UndoManager が参照するので inGameScriptManager_ より先に宣言して後に破棄する
 	SoundPlayer sound_;
@@ -89,6 +90,8 @@ private:
 	bool clearCameraEffectStarted_{ false };
 	bool goalClearEffectStarted_{ false };
 	bool confettiEffectStarted_{ false };
+	/// ズーム完了後にAを一度離してから決定できる状態
+	bool nextStageInputReady_{ false };
 	/// Y を押しっぱなしで繰り返しリセットしないための発火済みフラグ
 	bool resetHoldConsumed_{ false };
 	/// ゴール出現 / クリアの立ち上がりで SE を鳴らすための前フレームの状態
@@ -97,6 +100,8 @@ private:
 
 	/// プレイヤー基準のローカル座標(X=右、Y=上、Z=前)
 	Vector3 goalFinalPlayerOffset_{ 0.0f, 0.0f, 1.5f };
+	/// ゴール降下完了時のモデルのローカルスケール
+	Vector3 goalFinalScale_{ 0.5f, 0.5f, 0.5f };
 	r32 goalClearRiseHeight_{ 3.0f };
 	r32 goalClearRiseDuration_{ 0.55f };
 	r32 goalClearFallDuration_{ 0.75f };

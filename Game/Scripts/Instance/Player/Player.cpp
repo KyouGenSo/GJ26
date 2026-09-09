@@ -54,6 +54,16 @@ std::optional<BlockMoveDirection> ResolveBlockMoveDirection(const PlayerContext&
 		: BlockMoveDirection::Left;
 }
 
+bool IsGripMoveDirectionHeld(
+	const PlayerContext& context,
+	BlockMoveDirection direction) noexcept {
+	if (context.input.move.length() < kGripMoveTriggerThreshold) {
+		return false;
+	}
+	const std::optional<BlockMoveDirection> heldDirection = ResolveBlockMoveDirection(context);
+	return heldDirection && *heldDirection == direction;
+}
+
 } // namespace
 
 Player::Player() {
@@ -132,10 +142,19 @@ void Player::prev_update() {
 			}
 		}
 	}
-	if (gripMoveInterpolation_) {
+	bool gravityApplied = false;
+	const bool wasGripInterpolating = gripMoveInterpolation_.has_value();
+	if (wasGripInterpolating) {
 		update_grip_move_interpolation();
 	}
-	else {
+	if (!gripMoveInterpolation_) {
+		// 次のブロック操作より先に移動先の接地を更新する。
+		// 足場がなければGripStateが掴みを解除し、連続伸長せず落下する。
+		if (gravityEnabled_ &&
+			(wasGripInterpolating || stateManager_.get_current_state() == PlayerState::Grip)) {
+			PlayerMovement::apply_gravity(context_);
+			gravityApplied = true;
+		}
 		stateManager_.update(context_);
 		update_gripped_block_movement();
 	}
@@ -150,7 +169,7 @@ void Player::prev_update() {
 	update_animation();
 	update_clear_animation_sequence();
 	// Gripのグリッド移動中は、補間位置が重力やブロック衝突で上書きされないようにする。
-	if (gravityEnabled_ && !gripMoveInterpolation_) {
+	if (gravityEnabled_ && !gripMoveInterpolation_ && !gravityApplied) {
 		PlayerMovement::apply_gravity(context_);
 	}
 	update_mesh_direction();
@@ -514,7 +533,7 @@ void Player::update_gripped_block_movement() {
 
 	// Grip中でない、またはブロック移動判定が設定されていない場合は何もしない
 	if (stateManager_.get_current_state() != PlayerState::Grip ||
-		!blockMovementJudge_ || !context_.worldInstance || !context_.grippedBlockIndex) {
+		!context_.isGrounded || !blockMovementJudge_ || !context_.worldInstance || !context_.grippedBlockIndex) {
 		gripMoveInputReady_ = true;
 		return;
 	}
@@ -535,6 +554,9 @@ void Player::update_gripped_block_movement() {
 	if (!moveDirection) {
 		return;
 	}
+
+	// 補間完了・接地更新後の座標で次のマスを判定する。
+	context_.worldInstance->update_affine();
 
 	// 粘土の伸縮判定を行う
 	const float moveDuration = context_.gripMoveSpeed > 0.0f
@@ -645,6 +667,7 @@ void Player::begin_grip_move_interpolation(
 		context_.worldInstance->transform_mut().set_translate(targetPosition);
 		gripMoveInterpolation_.reset();
 		gripMoveAnimationDirection_.reset();
+		gripMoveInputReady_ = IsGripMoveDirectionHeld(context_, moveDirection);
 		return;
 	}
 
@@ -678,8 +701,11 @@ void Player::update_grip_move_interpolation() noexcept {
 		eased));
 
 	if (t >= 1.0f) {
+		const std::optional<BlockMoveDirection> completedDirection = gripMoveAnimationDirection_;
 		gripMoveInterpolation_.reset();
 		gripMoveAnimationDirection_.reset();
+		gripMoveInputReady_ = completedDirection &&
+			IsGripMoveDirectionHeld(context_, *completedDirection);
 	}
 }
 

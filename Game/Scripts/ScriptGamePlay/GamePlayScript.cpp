@@ -81,7 +81,9 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	setup_json_asset();
 	setup_confetti_effect();
 	keyInput_.initialize({ szg::KeyID::Escape }, szg::InputInitializeMode::Current);
-	padInput_.initialize({ szg::PadID::Start, szg::PadID::Y }, szg::InputInitializeMode::Current);
+	padInput_.initialize(
+		{ szg::PadID::A, szg::PadID::Start, szg::PadID::Y },
+		szg::InputInitializeMode::Current);
 	sound_.initialize(kSounds);
 	sound_.play("gameBgm.wav");
 
@@ -148,6 +150,7 @@ void GamePlayScript::setup(Reference<szg::WorldRoot> worldRoot) {
 	goalManager_->setup(mapTest_->field_mut(), worldRoot);
 	goalManager_->set_clear_effect_parameters(
 		goalFinalPlayerOffset_,
+		goalFinalScale_,
 		goalClearRiseHeight_,
 		goalClearRiseDuration_,
 		goalClearFallDuration_);
@@ -223,6 +226,7 @@ void GamePlayScript::finalize() {
 	clearCameraEffectStarted_ = false;
 	goalClearEffectStarted_ = false;
 	confettiEffectStarted_ = false;
+	nextStageInputReady_ = false;
 }
 
 void GamePlayScript::prev_update() {
@@ -334,6 +338,16 @@ void GamePlayScript::post_update() {
 		confettiEffectStarted_ = true;
 		start_confetti_effect();
 	}
+
+	// ズーム中から押しっぱなしのAでは遷移せず、完了後に一度離して押した入力だけを受け付ける。
+	if (clearSequenceStarted_ && cameraFinished) {
+		if (!nextStageInputReady_ && padInput_.idle(szg::PadID::A)) {
+			nextStageInputReady_ = true;
+		}
+		if (nextStageInputReady_ && padInput_.trigger(szg::PadID::A)) {
+			advance_to_next_stage();
+		}
+	}
 }
 
 bool GamePlayScript::is_clear_camera_effect_finished() const noexcept {
@@ -347,7 +361,7 @@ void GamePlayScript::setup_json_asset() {
 
 	//------------------------------------------------------------
 	// GamePlay.param
-	// クリア時のテキストのスライドイン位置と時間
+	// ステージ開始時のカメラ位置と向き
 	//------------------------------------------------------------
 	szg::JsonAsset parameter{ "[[game]]/GamePlay.param" };
 	const nlohmann::json& json = parameter.cget();
@@ -397,6 +411,7 @@ void GamePlayScript::setup_json_asset() {
 	};
 
 	goalFinalPlayerOffset_ = readGoalVector3("GoalFinalPlayerOffset", goalFinalPlayerOffset_);
+	goalFinalScale_ = readGoalVector3("GoalFinalScale", goalFinalScale_);
 	goalClearRiseHeight_ = std::max(
 		readGoalR32("GoalClearRiseHeight", goalClearRiseHeight_), 0.0f);
 	goalClearRiseDuration_ = std::max(
@@ -477,6 +492,7 @@ void GamePlayScript::reset_clear_sequence() {
 	clearCameraEffectStarted_ = false;
 	goalClearEffectStarted_ = false;
 	confettiEffectStarted_ = false;
+	nextStageInputReady_ = false;
 	set_gameplay_ui_visible(true);
 	if (followCamera_) {
 		followCamera_->stop_goal_effect();
@@ -489,4 +505,29 @@ void GamePlayScript::reset_clear_sequence() {
 		player_->set_input_enabled(true);
 	}
 	stop_confetti_effect();
+}
+
+void GamePlayScript::advance_to_next_stage() {
+	if (sceneTransitionRequested_) {
+		return;
+	}
+
+	sceneTransitionRequested_ = true;
+	const i32 stageCount = MapChipField::CountStages();
+	if (stageCount <= 0) {
+		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
+		return;
+	}
+
+	const i32 currentStage = std::clamp(
+		szg::RuntimeStorage::GetValue<i32>("Temp", "StageNumber").value_or(1),
+		1,
+		stageCount);
+	if (currentStage >= stageCount) {
+		szg::SceneManager2::SceneChange(SceneListGJ26::Select, 0.0f);
+		return;
+	}
+
+	szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", currentStage + 1);
+	szg::SceneManager2::SceneChange(SceneListGJ26::GamePlay, 0.0f);
 }
