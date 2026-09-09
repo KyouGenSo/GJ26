@@ -61,9 +61,7 @@ public:
 
 		pad_.update();
 		mouse_.update();
-		const bool startTriggered =
-			pad_.trigger(szg::PadID::A) || mouse_.trigger(szg::MouseID::Left);
-		if (transitionRequested_ || !startTriggered) {
+		if (transitionRequested_ || !pad_.trigger(szg::PadID::A)) {
 			return;
 		}
 
