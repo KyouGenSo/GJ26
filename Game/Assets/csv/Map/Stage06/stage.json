@@ -1,3 +1,718 @@
 {
-	"Clay": []
+	"Clay": [
+		{
+			"BlockedFaces": [
+				"-X",
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				3,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				5,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				5,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				0,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				5,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				0,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				5,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				0,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				3,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				5,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				0,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				4,
+				1,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				5,
+				1,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"-Z"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				1,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				1,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				5,
+				1,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				1,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				1,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				5,
+				1,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				1,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				4,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				5,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				1,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				2,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				3,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				4,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				5,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"+Z"
+			],
+			"Color": 3,
+			"Position": [
+				6,
+				1,
+				6
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				3,
+				2,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				5,
+				2,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 0,
+			"Position": [
+				3,
+				2,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 0,
+			"Position": [
+				5,
+				2,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"+Z"
+			],
+			"Color": 0,
+			"Position": [
+				3,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 0,
+			"Position": [
+				4,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"+Z"
+			],
+			"Color": 0,
+			"Position": [
+				5,
+				2,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				3,
+				3,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				4,
+				3,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"-Z"
+			],
+			"Color": 0,
+			"Position": [
+				5,
+				3,
+				3
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X"
+			],
+			"Color": 0,
+			"Position": [
+				3,
+				3,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X"
+			],
+			"Color": 0,
+			"Position": [
+				5,
+				3,
+				4
+			]
+		},
+		{
+			"BlockedFaces": [
+				"-X",
+				"+Z"
+			],
+			"Color": 0,
+			"Position": [
+				3,
+				3,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+Z"
+			],
+			"Color": 0,
+			"Position": [
+				4,
+				3,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"+Z"
+			],
+			"Color": 0,
+			"Position": [
+				5,
+				3,
+				5
+			]
+		},
+		{
+			"BlockedFaces": [
+				"+X",
+				"-X",
+				"+Z"
+			],
+			"Color": 1,
+			"Position": [
+				4,
+				4,
+				4
+			]
+		}
+	],
+	"PlayerSpawn": {
+		"Direction": "+Z",
+		"Position": [
+			4,
+			0,
+			0
+		]
+	}
 }
