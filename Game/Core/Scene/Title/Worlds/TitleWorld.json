@@ -499,6 +499,35 @@
 		},
 		{
 			"Animation": "playerTitle.gltf-アーマチュアアクション",
+			"Children": [
+				{
+					"Children": [],
+					"Local transform": {
+						"Rotation": {
+							"W": 1.0,
+							"XYZ": {
+								"X": 0.0,
+								"Y": 0.0,
+								"Z": 0.0
+							}
+						},
+						"Scale": {
+							"X": 1.0,
+							"Y": 1.0,
+							"Z": 1.0
+						},
+						"Translate": {
+							"X": 0.45,
+							"Y": 3.0,
+							"Z": 0.9
+						}
+					},
+					"Name": "SleepZzz",
+					"ParticleFile": "zzz.particle",
+					"Type": 6000,
+					"Use runtime": false
+				}
+			],
 			"IsDraw": true,
 			"IsLoop": true,
 			"Layer": 0,
