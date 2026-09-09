@@ -26,10 +26,6 @@
 #include "Scripts/Scene/FactoryGJ26.h"
 #include "Scripts/ScriptMapTest/MapTestScript.h"
 
-#ifdef DEBUG_FEATURES_ENABLE
-#include <imgui.h>
-#endif // DEBUG_FEATURES_ENABLE
-
 namespace {
 
 constexpr r32 kBackHoldDurationSeconds = 1.0f;
@@ -253,23 +249,6 @@ void GamePlayScript::prev_update() {
 	}
 
 	inGameScriptManager_.prev_update();
-
-#ifdef DEBUG_FEATURES_ENABLE
-	if (clayGlow_) {
-		ImGui::Begin("ClayGlow");
-		ImGui::DragFloat("Weight", &clayGlow_->weight, 0.01f, 0.0f, 2.0f);
-		ImGui::End();
-	}
-	{
-		ImGui::Begin("GripHighlight");
-		bool changed = ImGui::ColorEdit3("Color", &gripHighlight_.color.red);
-		changed |= ImGui::DragFloat("Thickness", &gripHighlight_.thickness, 0.005f, 0.0f, 0.5f);
-		if (changed) {
-			mapTest_->field_mut().set_highlight_style(gripHighlight_);
-		}
-		ImGui::End();
-	}
-#endif // DEBUG_FEATURES_ENABLE
 
 	// ポーズなど、各要素の更新後に行うインゲーム全体処理をここへ追加する。
 }

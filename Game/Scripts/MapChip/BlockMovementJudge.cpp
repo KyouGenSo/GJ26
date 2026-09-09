@@ -342,16 +342,16 @@ std::optional<BlockMoveDestination> BlockMovementJudge::find_goal_piece_destinat
 	const MapChipIndex& playerIndex,
 	const MapChipIndex& source,
 	const MapChipIndex& offset) const noexcept {
+
 	const BlockMoveDestination destination{
 		.playerIndex = Add(playerIndex, offset),
 		.blockIndex = Add(source, offset),
 	};
 
-	// 前進時はPlayerがGoalPieceの元セル(下段または上段)へ入るため、同時移動によって空くセルとして扱う
+	// 移動先がピースと一緒に動くセル(下段・上段・つながった粘土)なら、同時移動で空くので入れる
 	const MapChipIndex& playerTo = destination.playerIndex;
 	const MapChipType playerToType = field_->get(playerTo.x, playerTo.y, playerTo.z);
-	const bool vacated = playerTo == source ||
-		(playerTo == Add(source, kUp) && playerToType == MapChipType::GoalPieceUpper);
+	const bool vacated = field_->moves_with_goal_piece(source, playerTo);
 	const bool canMovePlayer =
 		field_->contains(playerTo) && (vacated || playerToType == MapChipType::Empty);
 	if (!canMovePlayer || !field_->can_move_goal_piece(source, destination.blockIndex)) {
