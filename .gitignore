@@ -332,3 +332,4 @@ imgui.ini
 /Game/DebugData/*
 
 *.blend1
+/Game/Assets/DebugData/blender_path.json
