@@ -1,0 +1,177 @@
+{
+	"Draw": {
+		"Blend": 1,
+		"Capacity": 256,
+		"DrawType": 0,
+		"FollowParent": true,
+		"Layer": 0,
+		"Mesh": "ErrorObject.obj",
+		"OverflowPolicy": 0,
+		"Pivot": {
+			"X": 0.5,
+			"Y": 0.5
+		},
+		"Texture": "z.png"
+	},
+	"EmissionDirection": {
+		"AngleBaseDirection": {
+			"X": 0.0,
+			"Y": 1.0,
+			"Z": 0.0
+		},
+		"AngleRange": 0.5,
+		"ConstantDirection": {
+			"X": 0.0,
+			"Y": 1.0,
+			"Z": 0.0
+		},
+		"DirectionMode": 1
+	},
+	"EmissionShape": {
+		"BoxOffset": {
+			"X": 0.0,
+			"Y": 0.0,
+			"Z": 0.0
+		},
+		"BoxSize": {
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
+		},
+		"ConeAngle": 0.5,
+		"ConeDirection": {
+			"X": 0.0,
+			"Y": 1.0,
+			"Z": 0.0
+		},
+		"ConeRadius": 1.0,
+		"Shape": 1,
+		"SphereRadius": 0.10000000149011612
+	},
+	"Fade": {
+		"FadeIn": 0.10000000149011612,
+		"FadeOut": 0.0,
+		"UseAlphaFade": true
+	},
+	"Flipbook": {
+		"FlipColumns": 1,
+		"FlipFrameTime": 0.10000000149011612,
+		"FlipLoop": true,
+		"FlipRows": 1,
+		"UseFlipbook": false
+	},
+	"Initial": {
+		"AccelerationMax": {
+			"X": -2.0,
+			"Y": 2.0,
+			"Z": 0.0
+		},
+		"AccelerationMin": {
+			"X": -1.0,
+			"Y": 0.6000000238418579,
+			"Z": 0.0
+		},
+		"ColorEndMax": {
+			"A": 0.0,
+			"B": 0.0,
+			"G": 1.0,
+			"R": 1.0
+		},
+		"ColorEndMin": {
+			"A": 0.0,
+			"B": 1.0,
+			"G": 1.0,
+			"R": 1.0
+		},
+		"ColorMax": {
+			"A": 1.0,
+			"B": 1.0,
+			"G": 1.0,
+			"R": 1.0
+		},
+		"ColorMin": {
+			"A": 1.0,
+			"B": 1.0,
+			"G": 1.0,
+			"R": 1.0
+		},
+		"Easing": 0,
+		"LifetimeMax": 1.0,
+		"LifetimeMin": 1.0,
+		"ScaleEndMax": {
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
+		},
+		"ScaleEndMin": {
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
+		},
+		"SizeMax": {
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
+		},
+		"SizeMin": {
+			"X": 1.0,
+			"Y": 1.0,
+			"Z": 1.0
+		},
+		"SpeedMax": 0.0,
+		"SpeedMin": 0.0
+	},
+	"Motion": {
+		"Drag": 0.0,
+		"Gravity": {
+			"X": 0.0,
+			"Y": 0.0,
+			"Z": 0.0
+		},
+		"UseDragGravity": false
+	},
+	"Rotation": {
+		"AngleMax": 0.0,
+		"AngleMin": 0.0,
+		"AngularVelocityMax": 0.0,
+		"AngularVelocityMin": 0.0,
+		"AxisBillboardAngle": 0.0,
+		"AxisBillboardAxis": {
+			"X": 0.0,
+			"Y": 1.0,
+			"Z": 0.0
+		},
+		"ConstantRotation": {
+			"X": 0.0,
+			"Y": 0.0,
+			"Z": 0.0
+		},
+		"LookAtCameraId": 0,
+		"LookTarget": {
+			"X": 0.0,
+			"Y": 0.0,
+			"Z": 0.0
+		},
+		"RandomAngularVelocityMax": 0.0,
+		"RandomAngularVelocityMin": 0.0,
+		"RotationKind": 0
+	},
+	"Schedule": {
+		"Count": 1,
+		"Cycles": 0,
+		"Delay": 0.0,
+		"Infinite": true,
+		"Interval": 0.5
+	},
+	"UV": {
+		"UVSpeedMax": {
+			"X": 0.0,
+			"Y": 0.0
+		},
+		"UVSpeedMin": {
+			"X": 0.0,
+			"Y": 0.0
+		},
+		"UseUVScroll": false
+	}
+}
