@@ -358,7 +358,12 @@ std::optional<BlockMoveDestination> BlockMovementJudge::find_goal_piece_destinat
 	const bool vacated = field_->moves_with_goal_piece(source, playerTo);
 	const bool canMovePlayer =
 		field_->contains(playerTo) && (vacated || playerToType == MapChipType::Empty);
-	if (!canMovePlayer || !field_->can_move_goal_piece(source, destination.blockIndex)) {
+	// 同じ量だけ動く荷物がプレイヤーの移動先へ入らないことも確認する。
+	const MapChipIndex incomingCell{
+		playerTo.x - offset.x, playerTo.y - offset.y, playerTo.z - offset.z,
+	};
+	const bool hitsPlayer = field_->moves_with_goal_piece(source, incomingCell);
+	if (!canMovePlayer || hitsPlayer || !field_->can_move_goal_piece(source, destination.blockIndex)) {
 		return std::nullopt;
 	}
 	return destination;
