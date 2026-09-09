@@ -5,6 +5,7 @@
 #include <Engine/Module/World/Light/DirectionalLight/DirectionalLightInstance.h>
 #include <Engine/Module/World/Mesh/Primitive/Rect3d.h>
 #include <Engine/Module/World/Mesh/Primitive/StringRectInstance.h>
+#include <Engine/Module/World/Mesh/StaticMeshInstance.h>
 #include <Engine/Runtime/RuntimeStorage/RuntimeStorage.h>
 #include <Engine/Runtime/Scene/World/WorldCluster.h>
 #include <Library/Utility/Tools/SmartPointer.h>
@@ -46,12 +47,22 @@ void SelectScene::custom_setup() {
 	const auto rightArrow =
 		szg::RuntimeStorage::GetValue<Reference<szg::Rect3d>>("RuntimeInstance", "SelectAllowSprite_Right");
 
+	// クリア済みステージの印。UI ワールド(正射影カメラ)に置く
+	Reference<szg::StaticMeshInstance> clearBadge;
+	if (Reference<szg::WorldCluster> uiWorld = world_mut(1)) {
+		clearBadge = uiWorld->world_root_mut().instantiate<szg::StaticMeshInstance>(nullptr, "goal.obj");
+	}
+	else {
+		szgWarning("SelectScene: world 1 (UI) not found. Clear badge is disabled.");
+	}
+
 	std::unique_ptr<StageSelectScript> script = eps::CreateUnique<StageSelectScript>();
 	script->setup(
 		worldRoot,
 		previewCamera.value_or(nullptr),
 		stageNumberText.value_or(nullptr),
 		leftArrow.value_or(nullptr),
-		rightArrow.value_or(nullptr));
+		rightArrow.value_or(nullptr),
+		clearBadge);
 	sceneScriptManager.register_script(std::move(script));
 }

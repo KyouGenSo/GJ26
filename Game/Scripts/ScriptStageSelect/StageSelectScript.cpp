@@ -56,18 +56,24 @@ void StageSelectScript::RegisterAudioAssets() {
 	SoundPlayer::RegisterLoadQue(kSounds);
 }
 
+std::string StageSelectScript::ClearedKey(i32 stageNumber) {
+	return std::format("StageCleared{:02}", stageNumber);
+}
+
 void StageSelectScript::setup(
 	Reference<szg::WorldRoot> worldRoot_,
 	Reference<szg::CameraInstance> previewCamera_,
 	Reference<szg::StringRectInstance> stageNumberText_,
 	Reference<szg::Rect3d> leftArrow_,
-	Reference<szg::Rect3d> rightArrow_) {
+	Reference<szg::Rect3d> rightArrow_,
+	Reference<szg::StaticMeshInstance> clearBadge_) {
 
 	worldRoot = worldRoot_;
 	previewCamera = previewCamera_;
 	stageNumberText = stageNumberText_;
 	leftArrow = leftArrow_;
 	rightArrow = rightArrow_;
+	clearBadge = clearBadge_;
 	if (leftArrow) {
 		leftArrowBasePosition = leftArrow->transform_imm().get_translate();
 		leftArrowBaseScale = leftArrow->transform_imm().get_scale();
@@ -94,6 +100,9 @@ void StageSelectScript::setup(
 		if (stageNumberText) {
 			stageNumberText->reset_string("NO STAGE");
 		}
+		if (clearBadge) {
+			clearBadge->set_active(false);
+		}
 		return;
 	}
 
@@ -106,8 +115,28 @@ void StageSelectScript::setup(
 
 	// jsonAssetのセットアップ
 	setup_json_asset();
+	setup_clear_badge();
 	initialize_previews();
 	update_selection_display();
+}
+
+//============================================================================
+// ゴールメダルを "STAGE N" の右に置く。UI ワールドにライトは無いのでライティングを切る
+//============================================================================
+void StageSelectScript::setup_clear_badge() {
+	if (!clearBadge) {
+		return;
+	}
+	for (auto& material : clearBadge->get_materials()) {
+		material.lightingType = szg::LighingType::None;
+	}
+	const Vector3 textPosition =
+		stageNumberText ? stageNumberText->transform_imm().get_translate() : Vector3{ 0.0f, 3.956f, 0.0f };
+	clearBadge->transform_mut().set_translate(textPosition + Vector3{ clearBadgeOffsetX, clearBadgeOffsetY, 0.0f });
+	// UI の他要素と同じく Y 180° 回転で正射影カメラに正面を向ける
+	clearBadge->transform_mut().set_quaternion(
+		Quaternion::EulerDegree(Vector3{ 0.0f, 180.0f + clearBadgeYawDegrees, 0.0f }));
+	clearBadge->transform_mut().set_scale(CVector3::BASIS * clearBadgeScale);
 }
 
 void StageSelectScript::prev_update() {
@@ -183,6 +212,10 @@ void StageSelectScript::setup_json_asset() {
 	previewFloatAnimationPeriod = parameter.get().value("PreviewFloatAnimationPeriod", nlohmann::json::object()).value("value", previewFloatAnimationPeriod);
 	previewFloatAmplitude = parameter.get().value("PreviewFloatAmplitude", nlohmann::json::object()).value("value", previewFloatAmplitude);
 	transitionRotationDegrees = parameter.get().value("TransitionRotationDegrees", nlohmann::json::object()).value("value", transitionRotationDegrees);
+	clearBadgeOffsetX = parameter.get().value("ClearBadgeOffsetX", nlohmann::json::object()).value("value", clearBadgeOffsetX);
+	clearBadgeOffsetY = parameter.get().value("ClearBadgeOffsetY", nlohmann::json::object()).value("value", clearBadgeOffsetY);
+	clearBadgeScale = parameter.get().value("ClearBadgeScale", nlohmann::json::object()).value("value", clearBadgeScale);
+	clearBadgeYawDegrees = parameter.get().value("ClearBadgeYawDegrees", nlohmann::json::object()).value("value", clearBadgeYawDegrees);
 }
 
 //============================================================================
@@ -463,6 +496,10 @@ void StageSelectScript::update_selection_display() {
 	szg::RuntimeStorage::OverwirteValue("Temp", "StageNumber", i32{ selectedStage });
 	if (stageNumberText) {
 		stageNumberText->reset_string(std::format("STAGE {}", selectedStage));
+	}
+	if (clearBadge) {
+		clearBadge->set_active(
+			szg::RuntimeStorage::GetValue<bool>("Temp", ClearedKey(selectedStage)).value_or(false));
 	}
 	set_navigation_active(stageCount > 1, stageCount > 1);
 }
