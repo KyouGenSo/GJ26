@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <string>
 
 #include <Engine/Runtime/Input/InputHandler.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
@@ -12,6 +13,7 @@
 namespace szg {
 class CameraInstance;
 class Rect3d;
+class StaticMeshInstance;
 class StringRectInstance;
 class WorldRoot;
 } // namespace szg
@@ -32,12 +34,19 @@ public:
 	/// </summary>
 	static void RegisterAudioAssets();
 
+	/// <summary>
+	/// ステージのクリア状態を RuntimeStorage の "Temp" に置くときのキー(bool、起動中のみ保持)
+	/// </summary>
+	static std::string ClearedKey(i32 stageNumber);
+
+	/// <param name="clearBadge_">クリア済みステージで "STAGE N" の右に出すゴールメダル(UI ワールドの goal.obj)</param>
 	void setup(
 		Reference<szg::WorldRoot> worldRoot_,
 		Reference<szg::CameraInstance> previewCamera_,
 		Reference<szg::StringRectInstance> stageNumberText_,
 		Reference<szg::Rect3d> leftArrow_,
-		Reference<szg::Rect3d> rightArrow_);
+		Reference<szg::Rect3d> rightArrow_,
+		Reference<szg::StaticMeshInstance> clearBadge_);
 	void prev_update() override;
 
 private:
@@ -59,6 +68,11 @@ private:
 	/// jsonAssetのセットアップ
 	/// </summary>
 	void setup_json_asset();
+
+	/// <summary>
+	/// ゴールメダルを "STAGE N" の右に配置する
+	/// </summary>
+	void setup_clear_badge();
 
 	/// <summary>
 	/// 選択中のステージと、その前後のステージを初期配置する
@@ -120,6 +134,8 @@ private:
 	Reference<szg::Rect3d> leftArrow;
 	// 選択中のステージの前後のステージへ移動する矢印
 	Reference<szg::Rect3d> rightArrow;
+	// クリア済みステージでだけ表示するゴールメダル
+	Reference<szg::StaticMeshInstance> clearBadge;
 	Vector3 leftArrowBasePosition{ CVector3::ZERO };
 	Vector3 rightArrowBasePosition{ CVector3::ZERO };
 	Vector3 leftArrowBaseScale{ CVector3::ONE };
@@ -184,4 +200,11 @@ private:
 	r32 previewFloatAnimationPeriod = 1.8f;
 	// ミニチュアモデルが基準位置から上下に動く最大距離
 	r32 previewFloatAmplitude = 0.08f;
+	// ゴールメダルの "STAGE N" 文字中心からのオフセット
+	r32 clearBadgeOffsetX = 3.0f;
+	r32 clearBadgeOffsetY = -0.7f;
+	// ゴールメダルの大きさ
+	r32 clearBadgeScale = 0.5f;
+	// ゴールメダルの正面をカメラに向けるための追加回転(度)
+	r32 clearBadgeYawDegrees = 0.0f;
 };

@@ -5,13 +5,40 @@
 			"Color": 3,
 			"Position": [
 				1,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				2,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 3,
+			"Position": [
+				3,
+				0,
+				2
+			]
+		},
+		{
+			"BlockedFaces": [],
+			"Color": 1,
+			"Position": [
+				1,
 				1,
 				5
 			]
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				2,
 				1,
@@ -20,7 +47,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				3,
 				1,
@@ -29,7 +56,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				1,
 				1,
@@ -38,7 +65,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 4,
 			"Position": [
 				2,
 				1,
@@ -47,7 +74,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				3,
 				1,
@@ -56,7 +83,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				1,
 				1,
@@ -65,7 +92,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				2,
 				1,
@@ -74,7 +101,7 @@
 		},
 		{
 			"BlockedFaces": [],
-			"Color": 3,
+			"Color": 1,
 			"Position": [
 				3,
 				1,

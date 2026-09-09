@@ -10,5 +10,21 @@
 	"ClearTextSlideDuration": {
 		"type": "R32",
 		"value": 0.65
+	},
+	"CameraInitialDistance": {
+		"type": "R32",
+		"value": 0.0
+	},
+	"CameraFitPadding": {
+		"type": "R32",
+		"value": 1.1
+	},
+	"CameraInitialYawDegrees": {
+		"type": "R32",
+		"value": 0.0
+	},
+	"CameraInitialPitchDegrees": {
+		"type": "R32",
+		"value": 17.188734
 	}
 }

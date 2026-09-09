@@ -27,6 +27,8 @@ public:
 public:
 	void setup(Reference<szg::WorldRoot> worldRoot_);
 	void set_player(Reference<Player> player_);
+	/// カメラ距離を設定する。initialDistanceが0以下ならステージサイズに合わせて自動調整する
+	void set_camera_framing_parameters(r32 initialDistance, r32 fitPadding) noexcept;
 	void set_follow_camera(Reference<FollowCamera> followCamera_);
 	/// <summary>
 	/// ステージ再ロード時に履歴を捨てる Undo
@@ -63,6 +65,8 @@ private:
 	Reference<FollowCamera> followCamera;
 	Reference<UndoManager> undoManager;
 	szg::InputHandler<szg::KeyID> keys;
+	r32 cameraInitialDistance{ 0.0f };
+	r32 cameraFitPadding{ 1.1f };
 	i32 stageNumber{ 1 };
 	i32 stageCount{ 0 };
 };

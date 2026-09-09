@@ -1,9 +1,7 @@
 #pragma once
 
 #include <array>
-#include <optional>
 
-#include <Engine/Runtime/Particle/EmitterSettings.h>
 #include <Engine/Module/Render/RenderPipeline/Posteffect/Bloom/BloomPipeline.h>
 #include <Engine/Runtime/Input/InputHandler.h>
 #include <Engine/Runtime/SceneScript/ISceneScript.h>
@@ -58,9 +56,8 @@ public:
 private:
 	void setup_json_asset();
 	void setup_clear_presentation();
-	void create_confetti_emitters();
-	void destroy_confetti_emitters();
 	void start_confetti_effect();
+	void stop_confetti_effect();
 	void start_clear_ui();
 	void update_clear_ui();
 	void set_gameplay_ui_visible(bool visible);
@@ -78,11 +75,9 @@ private:
 	Reference<FollowCamera> followCamera_;
 	Reference<GoalManager> goalManager_;
 	Reference<UndoManager> undoManager_;
-	Reference<szg::WorldRoot> worldRoot_;
 	Reference<szg::StringRectInstance> clearText_;
 	std::array<Reference<szg::Rect3d>, 5> gameplayUi_;
 	std::array<Reference<szg::EmitterInstance>, 2> confettiEmitters_;
-	std::array<std::optional<szg::EmitterInstanceSettings>, 2> confettiSettings_;
 	/// RenderPath.json の Bloom ノード(EffectTag "ClayGlow")のパラメータ。接続した粘土の光の強さ
 	Reference<szg::BloomPipeline::Data> clayGlow_;
 	/// リセットゲージの塗り(UI.json "ResetGaugeFill")。Y 長押し時間に応じて左から伸ばす
@@ -113,9 +108,13 @@ private:
 	Vector3 clearCameraTargetOffset_{ 0.0f, 0.8f, 0.0f };
 	r32 clearCameraDuration_{ 1.4f };
 	r32 clearCameraBounceStrength_{ 1.1f };
+	/// 0以下ならステージサイズに合わせてカメラ距離を自動調整する
+	r32 cameraInitialDistance_{ 0.0f };
+	r32 cameraFitPadding_{ 1.1f };
+	r32 cameraInitialYawDegrees_{ 0.0f };
+	r32 cameraInitialPitchDegrees_{ 17.188734f };
 	/// ゲージ満タン時の横幅(UI.json の Size.X を setup で控える)
 	r32 resetGaugeFullWidth_{ 0.0f };
-	Vector3 confettiLocalOffset_{ 2.5f, -1.5f, 2.0f };
 	r32 clearTextStartX_{ -14.0f };
 	r32 clearTextTargetX_{ 0.0f };
 	r32 clearTextSlideDuration_{ 0.65f };

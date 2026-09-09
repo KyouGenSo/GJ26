@@ -381,6 +381,11 @@ public:
 	static Reference<szg::StaticMeshInstance> AttachOutline(szg::WorldRoot& worldRoot_, Reference<szg::StaticMeshInstance> visual, const HighlightStyle& style);
 
 	/// <summary>
+	/// cell がピース piece(下段)と一緒に動くセルか(ピースの下段・上段、つながった粘土。範囲外は false)
+	/// </summary>
+	bool moves_with_goal_piece(const MapChipIndex& piece, const MapChipIndex& cell) const;
+
+	/// <summary>
 	/// <para>ゴール条件オブジェクトを from から to へ動かせるか(from がピース、to が同じ高さで前後左右に隣接する空セル)</para>
 	/// <para>つながった粘土も一緒に動くので、粘土の移動先が塞がっていれば false</para>
 	/// </summary>

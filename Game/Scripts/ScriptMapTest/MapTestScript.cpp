@@ -114,6 +114,12 @@ void MapTestScript::set_player(Reference<Player> player_) {
 	reset_player_position();
 }
 
+void MapTestScript::set_camera_framing_parameters(r32 initialDistance, r32 fitPadding) noexcept {
+	cameraInitialDistance = std::max(initialDistance, 0.0f);
+	cameraFitPadding = std::max(fitPadding, 1.0f);
+	update_camera_framing();
+}
+
 void MapTestScript::set_follow_camera(Reference<FollowCamera> followCamera_) {
 	followCamera = followCamera_;
 	update_camera_framing();
@@ -205,11 +211,18 @@ void MapTestScript::update_camera_framing() {
 		field.height() - 1,
 		field.depth() - 1) * 0.5f;
 	target->transform_mut().set_translate(center);
-	followCamera->fit_to_bounds(Vector3{
+	const Vector3 boundsSize{
 		static_cast<r32>(field.width()),
 		static_cast<r32>(field.height()),
 		static_cast<r32>(field.depth()),
-	});
+	};
+	if (cameraInitialDistance > 0.0f) {
+		followCamera->set_distance(cameraInitialDistance);
+		followCamera->request_snap();
+	}
+	else {
+		followCamera->fit_to_bounds(boundsSize, cameraFitPadding);
+	}
 }
 
 void MapTestScript::reset_player_position() {
